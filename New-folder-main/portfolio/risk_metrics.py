@@ -19,7 +19,7 @@ def compute_parametric_var(
     confidence_level: float = 0.95,
     time_horizon_days: int = 1,
     portfolio_value: float = 1.0
-) -> Dict[str, float]:
+    ) -> Dict[str, float]:
     """
     Compute Parametric (Analytical) Value at Risk.
     
@@ -44,14 +44,14 @@ def compute_parametric_var(
     time_horizon_days : int, default=1
         Time horizon in days
     portfolio_value : float, default=1.0
-        Total value of portfolio (to get VaR in currency units)
+        Total value of portfolio in INR (to get VaR in INR)
         
     Returns
     -------
     Dict[str, float]
         Dictionary with:
         - var_percent: VaR as a percentage (positive value = loss)
-        - var_amount: VaR in currency units
+        - var_amount: VaR in INR
         - portfolio_return: Expected return over horizon
         - portfolio_volatility: Volatility over horizon
     """
@@ -112,14 +112,14 @@ def compute_historical_var(
     confidence_level : float, default=0.95
         Confidence level (e.g., 0.95 for 95%)
     portfolio_value : float, default=1.0
-        Portfolio value for scaling
+        Portfolio value in INR for scaling
     
     Returns
     -------
     Dict[str, float]
         Dictionary with:
         - var_percent: VaR as percentage (positive = loss)
-        - var_amount: VaR in currency units
+        - var_amount: VaR in INR
     """
     if returns.empty:
         return {"var_percent": 0.0, "var_amount": 0.0}
@@ -159,14 +159,14 @@ def compute_cvar(
     confidence_level : float, default=0.95
         Confidence level (e.g., 0.95 for 95%)
     portfolio_value : float, default=1.0
-        Portfolio value for scaling
+        Portfolio value in INR for scaling
     
     Returns
     -------
     Dict[str, float]
         Dictionary with:
         - cvar_percent: CVaR as percentage (positive = loss)
-        - cvar_amount: CVaR in currency units
+        - cvar_amount: CVaR in INR
         - var_percent: VaR for reference
     """
     if returns.empty:
@@ -278,8 +278,8 @@ def compute_portfolio_risk_metrics(
     expected_returns: pd.Series,
     covariance_matrix: pd.DataFrame,
     confidence_level: float = 0.95,
-    portfolio_value: float = 1000000.0
-) -> Dict:
+    portfolio_value: float = 10_00_000.0
+    ) -> Dict:
     """
     Compute comprehensive risk metrics for a portfolio.
     
@@ -297,8 +297,8 @@ def compute_portfolio_risk_metrics(
         Annualized covariance matrix
     confidence_level : float, default=0.95
         Confidence level for VaR/CVaR
-    portfolio_value : float, default=1000000
-        Total portfolio value
+    portfolio_value : float, default=10_00_000
+        Total portfolio value in INR (₹10,00,000 = 10 lakhs)
         
     Returns
     -------

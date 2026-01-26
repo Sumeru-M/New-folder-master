@@ -32,6 +32,13 @@ from portfolio.risk_metrics import (
     compute_cvar,
     compute_component_var
 )
+from portfolio.investor_guide import (
+    format_risk_summary,
+    format_scenario_result,
+    format_stress_test_result,
+    get_scenario_menu,
+    interpret_var
+)
 
 
 def parse_args():
@@ -46,8 +53,8 @@ def parse_args():
     parser.add_argument(
         "--portfolio-value",
         type=float,
-        default=1_000_000.0,
-        help="Portfolio value for VaR calculations (default: $1,000,000)"
+        default=10_00_000.0,  # 10 lakhs (₹10,00,000)
+        help="Portfolio value for VaR calculations (default: ₹10,00,000)"
     )
     parser.add_argument(
         "--confidence-level",
@@ -88,12 +95,12 @@ def main():
             args.tickers = "RELIANCE.NS,TCS.NS,INFY.NS,HDFCBANK.NS"
         
         # Get portfolio value
-        pv_input = input(f"Enter portfolio value [default: ${args.portfolio_value:,.0f}]: ").strip()
+        pv_input = input(f"Enter portfolio value [default: ₹{args.portfolio_value:,.0f}]: ").strip()
         if pv_input:
             try:
-                args.portfolio_value = float(pv_input.replace(',', '').replace('$', ''))
+                args.portfolio_value = float(pv_input.replace(',', '').replace('₹', '').replace('$', ''))
             except ValueError:
-                print(f"Invalid input, using default: ${args.portfolio_value:,.0f}")
+                print(f"Invalid input, using default: ₹{args.portfolio_value:,.0f}")
         
         # Get confidence level
         conf_input = input(f"Enter confidence level (e.g., 0.95 for 95%) [default: {args.confidence_level}]: ").strip()
@@ -128,7 +135,7 @@ def main():
     print("Milestone 4: Scenario Analysis & Stress Testing")
     print("=" * 80)
     print(f"Tickers: {', '.join(tickers)}")
-    print(f"Portfolio Value: ${args.portfolio_value:,.2f}")
+    print(f"Portfolio Value: ₹{args.portfolio_value:,.2f}")
     print(f"Confidence Level: {args.confidence_level:.1%}")
     print(f"Risk-Free Rate: {args.risk_free_rate:.2%}")
     print()
@@ -136,13 +143,15 @@ def main():
     # ---------------------------------------------------------
     # 1. Base Portfolio Construction
     # ---------------------------------------------------------
-    print("Step 1: Constructing Base Portfolio (Max Sharpe)")
+    print("Step 1: Building Your Optimal Portfolio")
     print("-" * 80)
+    print()
     
     try:
         # Load recent data for optimization (2 years)
         prices_opt = load_price_data(tickers, period="2y")
         print(f"[OK] Loaded {len(prices_opt)} days of price data")
+        print(f"    Analyzing: {', '.join(tickers)}")
     except Exception as e:
         print(f"[ERROR] Failed to load price data: {e}")
         return
@@ -151,25 +160,39 @@ def main():
     mu = compute_expected_returns(daily_returns)
     sigma = compute_covariance_matrix(daily_returns)
     
-    print("\nOptimizing portfolio for Maximum Sharpe Ratio...")
+    print("\nOptimizing portfolio for best risk-adjusted returns...")
     optimizer = PortfolioOptimizer(mu, sigma, risk_free_rate=args.risk_free_rate)
     result = optimizer.optimize_max_sharpe()
     weights = result.weights
     
-    print("\n[OK] Optimal Weights (Max Sharpe):")
+    # Get investor-friendly summary
+    from portfolio.optimizer import compute_weight_dispersion
+    from portfolio.investor_guide import format_portfolio_summary
+    
+    dispersion = compute_weight_dispersion(weights)
+    
+    print("\n[OK] Portfolio Optimized!")
+    print(format_portfolio_summary(
+        result,
+        dispersion,
+        "YOUR OPTIMIZED PORTFOLIO"
+    ))
+    
+    print("\n📋 RECOMMENDED ALLOCATION:")
+    print("   (How much to invest in each stock)")
+    print()
     for ticker, weight in weights.items():
-        print(f"  {ticker:20s}: {weight:8.2%}")
-    print(f"\nExpected Return: {result.expected_return:8.2%}")
-    print(f"Volatility:      {result.volatility:8.2%}")
-    print(f"Sharpe Ratio:    {result.sharpe_ratio:8.3f}")
+        print(f"   {ticker:20s}: {weight:>6.1%} ({weight*100:>5.1f}% of your portfolio)")
+    print()
     print("-" * 80)
     print()
 
     # ---------------------------------------------------------
     # 2. Risk Metrics (VaR / CVaR / Component VaR)
     # ---------------------------------------------------------
-    print("Step 2: Computing Risk Metrics")
+    print("Step 2: Understanding Your Portfolio Risk")
     print("-" * 80)
+    print()
     
     # Calculate portfolio daily returns
     portfolio_daily_ret = daily_returns.dot(weights)
@@ -180,10 +203,6 @@ def main():
         confidence_level=args.confidence_level,
         portfolio_value=args.portfolio_value
     )
-    print(f"Parametric VaR ({args.confidence_level:.0%}, 1-day):")
-    print(f"  As percentage: {p_var['var_percent']:8.2%}")
-    print(f"  Dollar amount: ${p_var['var_amount']:,.2f}")
-    print()
     
     # Historical VaR
     h_var = compute_historical_var(
@@ -191,10 +210,6 @@ def main():
         confidence_level=args.confidence_level,
         portfolio_value=args.portfolio_value
     )
-    print(f"Historical VaR ({args.confidence_level:.0%}, 1-day):")
-    print(f"  As percentage: {h_var['var_percent']:8.2%}")
-    print(f"  Dollar amount: ${h_var['var_amount']:,.2f}")
-    print()
     
     # CVaR (Expected Shortfall)
     cvar = compute_cvar(
@@ -202,42 +217,90 @@ def main():
         confidence_level=args.confidence_level,
         portfolio_value=args.portfolio_value
     )
-    print(f"CVaR / Expected Shortfall ({args.confidence_level:.0%}):")
-    print(f"  As percentage: {cvar['cvar_percent']:8.2%}")
-    print(f"  Dollar amount: ${cvar['cvar_amount']:,.2f}")
+    
+    # Use the more conservative (higher) VaR for display
+    display_var = p_var if abs(p_var['var_amount']) > abs(h_var['var_amount']) else h_var
+    
+    # Print investor-friendly risk summary
+    print(format_risk_summary(display_var, cvar, args.portfolio_value, args.confidence_level))
     print()
     
-    # Component VaR (Risk Contribution by Asset)
-    print("Risk Contribution by Asset:")
+    # Component VaR (Risk Contribution by Asset) - simplified
     comp_var = compute_component_var(
         weights, sigma,
         confidence_level=args.confidence_level
     )
-    print(comp_var[['Weight', 'Marginal VaR', 'Component VaR', '% Contribution']].round(4))
-    print("\nInterpretation: % Contribution shows how much each asset contributes to total portfolio VaR")
+    
+    print("📊 RISK CONTRIBUTION BY STOCK:")
+    print("   (Which stocks contribute most to your portfolio risk)")
+    print()
+    for ticker, row in comp_var.iterrows():
+        print(f"   {ticker:20s}: {row['% Contribution']:>6.1%} of total risk")
+    print()
     print("-" * 80)
     print()
 
     # ---------------------------------------------------------
-    # 3. Scenario Analysis (Hypothetical Shocks)
+    # 3. Scenario Selection and Analysis
     # ---------------------------------------------------------
-    print("Step 3: Scenario Analysis (Hypothetical Market Shocks)")
+    print("Step 3: Choose a Scenario to Test")
     print("-" * 80)
+    print()
     
     engine = ScenarioEngine(mu, sigma)
-    scenarios = ScenarioEngine.create_standard_scenarios()
+    base_sharpe = result.sharpe_ratio
+    
+    # Get scenario menu
+    scenario_menu = get_scenario_menu()
+    
+    # Display menu
+    print("📋 AVAILABLE SCENARIOS:")
+    print()
+    print("HYPOTHETICAL SCENARIOS (What-if situations):")
+    hypothetical_count = 0
+    for key, info in scenario_menu.items():
+        if info['type'] == 'hypothetical':
+            hypothetical_count += 1
+            print(f"   {key}: {info['name']}")
+    
+    print()
+    print("HISTORICAL SCENARIOS (Real past events):")
+    historical_count = 0
+    for key, info in scenario_menu.items():
+        if info['type'] == 'historical':
+            historical_count += 1
+            start, end = info['dates']
+            print(f"   {key}: {info['name']} ({start} to {end})")
+    
+    print()
+    print("=" * 80)
+    
+    # Get user selection
+    selected_scenario = None
+    while True:
+        choice = input(f"\nEnter scenario code (H1-H{hypothetical_count} or S1-S{historical_count}) to test: ").strip().upper()
+        if choice in scenario_menu:
+            selected_scenario = scenario_menu[choice]
+            break
+        else:
+            print(f"Invalid choice. Please enter H1-H{hypothetical_count} or S1-S{historical_count}")
+    
+    if not selected_scenario:
+        print("[ERROR] No scenario selected. Exiting.")
+        return
+    
+    print()
+    print("=" * 80)
+    print(f"ANALYZING SCENARIO: {selected_scenario['name']}")
+    print("=" * 80)
+    print()
     
     scenario_results = []
     
-    print(f"{'Scenario':<30} | {'Return':>10} | {'Vol':>10} | {'Sharpe':>8} | {'Change':>10}")
-    print("-" * 80)
-    
-    # Base Case
-    base_sharpe = result.sharpe_ratio
-    print(f"{'Base Case':<30} | {result.expected_return:>10.2%} | {result.volatility:>10.2%} | {base_sharpe:>8.3f} | {'-':>10}")
-    
-    for shock in scenarios:
-        # Apply shock to get new parameters
+    # Process selected scenario
+    if selected_scenario['type'] == 'hypothetical':
+        # Hypothetical scenario
+        shock = selected_scenario['shock']
         new_mu, new_sigma = engine.apply_scenario(shock)
         
         # Evaluate portfolio with FIXED weights under new conditions
@@ -246,84 +309,74 @@ def main():
         port_vol = np.sqrt(np.dot(w, np.dot(new_sigma.values, w)))
         sharpe = (port_ret - args.risk_free_rate) / port_vol if port_vol > 0 else 0.0
         
-        sharpe_change = sharpe - base_sharpe
-        change_str = f"{sharpe_change:+.3f}"
-        
-        print(f"{shock.name:<30} | {port_ret:>10.2%} | {port_vol:>10.2%} | {sharpe:>8.3f} | {change_str:>10}")
+        # Display investor-friendly result
+        print(format_scenario_result(
+            selected_scenario['name'],
+            port_ret,
+            port_vol,
+            sharpe,
+            base_sharpe,
+            args.portfolio_value
+        ))
         
         scenario_results.append({
             "Scenario": shock.name,
             "Return": port_ret,
             "Volatility": port_vol,
             "Sharpe": sharpe,
-            "Sharpe_Change": sharpe_change
+            "Sharpe_Change": sharpe - base_sharpe
         })
-    
-    print("-" * 80)
-    print("\nInterpretation: Shows how portfolio performs under various market conditions")
-    print("with current weights (no rebalancing)")
-    print()
+    else:
+        # Historical scenario - will be processed in Step 4
+        pass
 
     # ---------------------------------------------------------
-    # 4. Historical Stress Testing
+    # 4. Historical Stress Testing (if historical scenario selected)
     # ---------------------------------------------------------
-    print("Step 4: Historical Stress Testing")
-    print("-" * 80)
+    stress_results = []
     
-    print("Loading long-term historical data for stress tests...")
-    
-    try:
-        # Load maximum available history
-        prices_long = load_price_data(tickers, period="max")
-        print(f"[OK] Loaded {len(prices_long)} days of historical data")
-        print(f"    Date range: {prices_long.index[0].date()} to {prices_long.index[-1].date()}")
+    if selected_scenario and selected_scenario['type'] == 'historical':
+        print("Step 4: Loading Historical Data for Stress Test")
+        print("-" * 80)
         print()
+        print("Loading long-term historical data...")
         
-        tester = StressTester(prices_long)
-        
-        # Get summary table
-        stress_summary = tester.compute_stress_summary(weights)
-        
-        if not stress_summary.empty:
-            print("Historical Stress Test Summary:")
-            print(stress_summary.to_string(index=False))
+        try:
+            # Load maximum available history
+            prices_long = load_price_data(tickers, period="max")
+            print(f"[OK] Loaded {len(prices_long)} days of historical data")
+            print(f"    Date range: {prices_long.index[0].date()} to {prices_long.index[-1].date()}")
             print()
             
-            # Detailed results
-            stress_results = []
-            historical_scenarios = StressTester.get_historical_scenarios()
+            tester = StressTester(prices_long)
             
-            print("\nDetailed Results:")
-            print("-" * 80)
+            # Get the selected historical scenario
+            scenario_name = selected_scenario['name']
+            start_date, end_date = selected_scenario['dates']
             
-            for name, (start, end) in historical_scenarios.items():
-                res = tester.replay_period(weights, start, end)
-                
-                if "error" in res:
-                    print(f"[SKIP] {name}: {res['error']}")
-                    continue
-                
-                # Add warning for very short periods
-                short_period_warning = " (⚠️ Short period)" if res['n_days'] < 60 else ""
-                adjusted_warning = " (📅 Dates adjusted)" if res.get('dates_adjusted', False) else ""
-                
-                print(f"\n{name}{short_period_warning}{adjusted_warning}:")
-                print(f"  Period:            {res['period_label']}")
-                if res.get('dates_adjusted', False):
-                    print(f"    (Requested: {res['original_period']})")
-                print(f"  Total Return:      {res['total_return']:8.2%}")
-                print(f"  Annualized Return: {res['annualized_return']:8.2%}")
-                if res['n_days'] < 60:
-                    print(f"    Note: Annualized return over {res['n_days']} days - use with caution")
-                print(f"  Max Drawdown:      {res['max_drawdown']:8.2%}")
-                print(f"  Volatility:        {res['volatility']:8.2%}")
-                print(f"  Sharpe Ratio:      {res['sharpe_ratio']:8.3f}")
-                print(f"  Days:              {res['n_days']:8d}")
+            print("=" * 80)
+            print(f"RUNNING STRESS TEST: {scenario_name}")
+            print("=" * 80)
+            print()
+            
+            # Run stress test for selected scenario only
+            res = tester.replay_period(weights, start_date, end_date, initial_investment=args.portfolio_value)
+            
+            if "error" in res:
+                print(f"[ERROR] {scenario_name}: {res['error']}")
+                print("This scenario may not have sufficient data for your selected stocks.")
+            else:
+                # Display investor-friendly result
+                print(format_stress_test_result(
+                    scenario_name,
+                    res,
+                    args.portfolio_value
+                ))
                 
                 stress_results.append({
-                    "Scenario": name,
-                    "Start": start,
-                    "End": end,
+                    "Scenario": scenario_name,
+                    "Start": start_date,
+                    "End": end_date,
                     "Total_Return": res['total_return'],
                     "Annualized_Return": res['annualized_return'],
                     "Max_Drawdown": res['max_drawdown'],
@@ -331,68 +384,124 @@ def main():
                     "Sharpe_Ratio": res['sharpe_ratio'],
                     "Days": res['n_days']
                 })
-        else:
-            print("[WARNING] No historical scenarios had sufficient data")
-            stress_results = []
-            
-    except Exception as e:
-        print(f"[ERROR] Historical stress testing failed: {e}")
-        import traceback
-        traceback.print_exc()
-        stress_results = []
+                
+        except Exception as e:
+            print(f"[ERROR] Historical stress testing failed: {e}")
+            import traceback
+            traceback.print_exc()
     
-    print("-" * 80)
     print()
     
     # ---------------------------------------------------------
     # 5. Saving Results
     # ---------------------------------------------------------
-    print("Step 5: Saving Results")
-    print("-" * 80)
+    print("=" * 80)
+    print("Saving Results")
+    print("=" * 80)
+    print()
     
     output_dir = "artifacts/milestone4"
     os.makedirs(output_dir, exist_ok=True)
     
-    # Save portfolio weights
+    # Save portfolio weights (investor-friendly)
     weights_df = pd.DataFrame({
-        'Ticker': weights.index,
-        'Weight': weights.values
+        'Stock': weights.index,
+        'Allocation (%)': (weights.values * 100).round(2),
+        'What This Means': [
+            f"Invest {weight*100:.1f}% of your portfolio in {ticker}" 
+            for ticker, weight in weights.items()
+        ]
     })
-    weights_df.to_csv(os.path.join(output_dir, "portfolio_weights.csv"), index=False)
-    print(f"[OK] Portfolio weights saved")
+    weights_df.to_csv(os.path.join(output_dir, "portfolio_allocation.csv"), index=False)
+    print(f"[OK] Portfolio allocation saved")
     
-    # Save risk metrics
+    # Save risk metrics (investor-friendly)
     risk_metrics_df = pd.DataFrame({
-        'Metric': ['Parametric VaR', 'Historical VaR', 'CVaR'],
-        'Percent': [p_var['var_percent'], h_var['var_percent'], cvar['cvar_percent']],
-        'Amount': [p_var['var_amount'], h_var['var_amount'], cvar['cvar_amount']]
+        'Risk Metric': [
+            'Maximum Daily Loss (Worst Case)',
+            'Average Loss (If Bad Day Occurs)'
+        ],
+        'Percentage': [
+            f"{abs(display_var['var_percent']):.2%}",
+            f"{abs(cvar['cvar_percent']):.2%}"
+        ],
+        'Amount (INR)': [
+            f"₹{abs(display_var['var_amount']):,.2f}",
+            f"₹{abs(cvar['cvar_amount']):,.2f}"
+        ],
+        'What This Means': [
+            f"On {args.confidence_level:.0%} of days, you might lose at most this amount",
+            f"If a bad day occurs, expect losses around this amount on average"
+        ]
     })
-    risk_metrics_df.to_csv(os.path.join(output_dir, "risk_metrics.csv"), index=False)
-    print(f"[OK] Risk metrics saved")
+    risk_metrics_df.to_csv(os.path.join(output_dir, "risk_assessment.csv"), index=False)
+    print(f"[OK] Risk assessment saved")
     
-    # Save Component VaR
-    comp_var.to_csv(os.path.join(output_dir, "component_var.csv"))
-    print(f"[OK] Component VaR saved")
+    # Save Component VaR (simplified)
+    comp_var_simple = pd.DataFrame({
+        'Stock': comp_var.index,
+        'Risk Contribution (%)': (comp_var['% Contribution'] * 100).round(2),
+        'What This Means': [
+            f"This stock contributes {row['% Contribution']*100:.1f}% to your total portfolio risk"
+            for _, row in comp_var.iterrows()
+        ]
+    })
+    comp_var_simple.to_csv(os.path.join(output_dir, "risk_by_stock.csv"), index=False)
+    print(f"[OK] Risk by stock saved")
     
-    # Save Scenario Analysis Results
+    # Save Scenario Analysis Results (if hypothetical)
     if scenario_results:
-        pd.DataFrame(scenario_results).to_csv(
+        scenario_df = pd.DataFrame({
+            'Scenario': [scenario_results[0]['Scenario']],
+            'Expected Return': [f"{scenario_results[0]['Return']:.2%}"],
+            'Volatility': [f"{scenario_results[0]['Volatility']:.2%}"],
+            'Performance Score': [f"{scenario_results[0]['Sharpe']:.2f}"],
+            'What This Means': [
+                f"Your portfolio would have {scenario_results[0]['Return']:.2%} annual return "
+                f"if this scenario occurs"
+            ]
+        })
+        scenario_df.to_csv(
             os.path.join(output_dir, "scenario_analysis.csv"),
             index=False
         )
         print(f"[OK] Scenario analysis saved")
     
-    # Save Stress Test Results
-    if 'stress_results' in locals() and stress_results:
-        pd.DataFrame(stress_results).to_csv(
-            os.path.join(output_dir, "historical_stress_test.csv"),
+    # Save Stress Test Results (if historical)
+    if stress_results:
+        stress_df = pd.DataFrame({
+            'Scenario': [stress_results[0]['Scenario']],
+            'Period': [f"{stress_results[0]['Start']} to {stress_results[0]['End']}"],
+            'Total Return': [f"{stress_results[0]['Total_Return']:.2%}"],
+            'Annual Return': [f"{stress_results[0]['Annualized_Return']:.2%}"],
+            'Maximum Loss': [f"{stress_results[0]['Max_Drawdown']:.2%}"],
+            'What This Means': [
+                f"Your portfolio would have {stress_results[0]['Total_Return']:.2%} total return "
+                f"during this historical period"
+            ]
+        })
+        stress_df.to_csv(
+            os.path.join(output_dir, "stress_test_result.csv"),
             index=False
         )
-        print(f"[OK] Historical stress test results saved")
+        print(f"[OK] Stress test result saved")
     
     print()
     print("=" * 80)
-    print(f"All results saved to: {output_dir}/")
+    print("✅ ANALYSIS COMPLETE!")
+    print("=" * 80)
+    print()
+    print(f"📁 All results saved to: {output_dir}/")
+    print()
+    print("Files created:")
+    print("  • portfolio_allocation.csv - How your portfolio is allocated")
+    print("  • risk_assessment.csv - Your portfolio's risk metrics")
+    print("  • risk_by_stock.csv - Which stocks contribute most to risk")
+    if scenario_results:
+        print("  • scenario_analysis.csv - Results for selected scenario")
+    if stress_results:
+        print("  • stress_test_result.csv - Historical stress test results")
+    print()
     print("=" * 80)
 
 

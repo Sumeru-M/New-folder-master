@@ -27,6 +27,12 @@ from portfolio.optimizer import (
     compare_covariance_methods
 )
 from portfolio.plotting import plot_efficient_frontier
+from portfolio.investor_guide import (
+    format_portfolio_summary,
+    format_comparison_summary,
+    create_investor_friendly_csv,
+    create_simple_weights_csv
+)
 
 
 def parse_args():
@@ -272,17 +278,28 @@ def main():
     )
     
     # Step 4a: Minimum Variance Portfolio
-    print("4a. Computing Minimum Variance Portfolio...")
+    print("4a. Computing Lowest Risk Portfolio...")
     try:
         min_var_result = optimizer.optimize_min_variance()
-        print(f"[OK] Minimum Variance Portfolio:")
-        print(f"  Expected Return: {min_var_result.expected_return:.2%}")
-        print(f"  Volatility: {min_var_result.volatility:.2%}")
-        print(f"  Sharpe Ratio: {min_var_result.sharpe_ratio:.3f}")
+        print(f"[OK] Lowest Risk Portfolio Found!")
         print()
-        print("  Optimal Weights:")
+        
+        # Get dispersion metrics for investor-friendly output
+        from portfolio.optimizer import compute_weight_dispersion
+        minvar_dispersion = compute_weight_dispersion(min_var_result.weights)
+        
+        # Print investor-friendly summary
+        print(format_portfolio_summary(
+            min_var_result,
+            minvar_dispersion,
+            "LOWEST RISK PORTFOLIO"
+        ))
+        
+        print("\n📋 RECOMMENDED ALLOCATION:")
+        print("   (How much to invest in each stock)")
+        print()
         for ticker, weight in min_var_result.weights.items():
-            print(f"    {ticker:20s}: {weight:8.2%}")
+            print(f"   {ticker:20s}: {weight:>6.1%} ({weight*100:>5.1f}% of your portfolio)")
         print()
     except Exception as e:
         print(f"[ERROR] Failed to compute minimum variance portfolio: {e}")
@@ -291,17 +308,28 @@ def main():
         return
     
     # Step 4b: Maximum Sharpe Ratio Portfolio
-    print("4b. Computing Maximum Sharpe Ratio Portfolio...")
+    print("4b. Computing Best Risk-Adjusted Returns Portfolio...")
     try:
         max_sharpe_result = optimizer.optimize_max_sharpe()
-        print(f"[OK] Maximum Sharpe Ratio Portfolio:")
-        print(f"  Expected Return: {max_sharpe_result.expected_return:.2%}")
-        print(f"  Volatility: {max_sharpe_result.volatility:.2%}")
-        print(f"  Sharpe Ratio: {max_sharpe_result.sharpe_ratio:.3f}")
+        print(f"[OK] Best Risk-Adjusted Returns Portfolio Found!")
         print()
-        print("  Optimal Weights:")
+        
+        # Get dispersion metrics for investor-friendly output
+        from portfolio.optimizer import compute_weight_dispersion
+        maxsharpe_dispersion = compute_weight_dispersion(max_sharpe_result.weights)
+        
+        # Print investor-friendly summary
+        print(format_portfolio_summary(
+            max_sharpe_result,
+            maxsharpe_dispersion,
+            "BEST RISK-ADJUSTED RETURNS PORTFOLIO"
+        ))
+        
+        print("\n📋 RECOMMENDED ALLOCATION:")
+        print("   (How much to invest in each stock)")
+        print()
         for ticker, weight in max_sharpe_result.weights.items():
-            print(f"    {ticker:20s}: {weight:8.2%}")
+            print(f"   {ticker:20s}: {weight:>6.1%} ({weight*100:>5.1f}% of your portfolio)")
         print()
     except Exception as e:
         print(f"[ERROR] Failed to compute maximum Sharpe portfolio: {e}")
@@ -318,7 +346,7 @@ def main():
     comparison_results = {}
     
     # Compare Minimum Variance portfolios
-    print("Comparing Minimum Variance Portfolios...")
+    print("Comparing Lowest Risk Portfolios (Standard vs Robust Method)...")
     try:
         comparison_minvar = compare_covariance_methods(
             returns=daily_returns,
@@ -328,26 +356,12 @@ def main():
         )
         comparison_results['min_variance'] = comparison_minvar
         
-        print(f"[OK] Shrinkage intensity: {comparison_minvar.shrinkage_intensity:.4f}")
+        print(format_comparison_summary(comparison_minvar, "min_variance"))
+        
+        print("\n📋 RECOMMENDED ALLOCATION (Robust Method - More Stable):")
         print()
-        print("Sample Covariance Portfolio:")
-        print(f"  Expected Return: {comparison_minvar.sample_result.expected_return:.2%}")
-        print(f"  Volatility: {comparison_minvar.sample_result.volatility:.2%}")
-        print(f"  Sharpe Ratio: {comparison_minvar.sample_result.sharpe_ratio:.3f}")
-        print(f"  Effective N: {comparison_minvar.sample_dispersion['effective_n']:.2f}")
-        print(f"  Gini Coefficient: {comparison_minvar.sample_dispersion['gini_coefficient']:.4f}")
-        print()
-        print("Shrinkage Covariance Portfolio:")
-        print(f"  Expected Return: {comparison_minvar.shrinkage_result.expected_return:.2%}")
-        print(f"  Volatility: {comparison_minvar.shrinkage_result.volatility:.2%}")
-        print(f"  Sharpe Ratio: {comparison_minvar.shrinkage_result.sharpe_ratio:.3f}")
-        print(f"  Effective N: {comparison_minvar.shrinkage_dispersion['effective_n']:.2f}")
-        print(f"  Gini Coefficient: {comparison_minvar.shrinkage_dispersion['gini_coefficient']:.4f}")
-        print()
-        print("Differences (Shrinkage - Sample):")
-        print(f"  Volatility: {comparison_minvar.volatility_difference:+.4f} ({comparison_minvar.volatility_difference/comparison_minvar.sample_result.volatility*100:+.2f}%%)")
-        print(f"  Sharpe Ratio: {comparison_minvar.sharpe_difference:+.4f}")
-        print(f"  Effective N: {comparison_minvar.shrinkage_dispersion['effective_n'] - comparison_minvar.sample_dispersion['effective_n']:+.2f}")
+        for ticker, weight in comparison_minvar.shrinkage_result.weights.items():
+            print(f"   {ticker:20s}: {weight:>6.1%} ({weight*100:>5.1f}% of your portfolio)")
         print()
     except Exception as e:
         print(f"[ERROR] Failed to compare minimum variance portfolios: {e}")
@@ -355,7 +369,7 @@ def main():
         traceback.print_exc()
     
     # Compare Maximum Sharpe portfolios
-    print("Comparing Maximum Sharpe Ratio Portfolios...")
+    print("Comparing Best Returns Portfolios (Standard vs Robust Method)...")
     try:
         comparison_maxsharpe = compare_covariance_methods(
             returns=daily_returns,
@@ -365,30 +379,12 @@ def main():
         )
         comparison_results['max_sharpe'] = comparison_maxsharpe
         
-        print(f"[OK] Shrinkage intensity: {comparison_maxsharpe.shrinkage_intensity:.4f}")
+        print(format_comparison_summary(comparison_maxsharpe, "max_sharpe"))
+        
+        print("\n📋 RECOMMENDED ALLOCATION (Robust Method - More Stable):")
         print()
-        print("Sample Covariance Portfolio:")
-        print(f"  Expected Return: {comparison_maxsharpe.sample_result.expected_return:.2%}")
-        print(f"  Volatility: {comparison_maxsharpe.sample_result.volatility:.2%}")
-        print(f"  Sharpe Ratio: {comparison_maxsharpe.sample_result.sharpe_ratio:.3f}")
-        print(f"  Effective N: {comparison_maxsharpe.sample_dispersion['effective_n']:.2f}")
-        print(f"  Gini Coefficient: {comparison_maxsharpe.sample_dispersion['gini_coefficient']:.4f}")
-        print()
-        print("Shrinkage Covariance Portfolio:")
-        print(f"  Expected Return: {comparison_maxsharpe.shrinkage_result.expected_return:.2%}")
-        print(f"  Volatility: {comparison_maxsharpe.shrinkage_result.volatility:.2%}")
-        print(f"  Sharpe Ratio: {comparison_maxsharpe.shrinkage_result.sharpe_ratio:.3f}")
-        print(f"  Effective N: {comparison_maxsharpe.shrinkage_dispersion['effective_n']:.2f}")
-        print(f"  Gini Coefficient: {comparison_maxsharpe.shrinkage_dispersion['gini_coefficient']:.4f}")
-        print()
-        print("Differences (Shrinkage - Sample):")
-        print(f"  Volatility: {comparison_maxsharpe.volatility_difference:+.4f} ({comparison_maxsharpe.volatility_difference/comparison_maxsharpe.sample_result.volatility*100:+.2f}%%)")
-        print(f"  Sharpe Ratio: {comparison_maxsharpe.sharpe_difference:+.4f}")
-        print(f"  Effective N: {comparison_maxsharpe.shrinkage_dispersion['effective_n'] - comparison_maxsharpe.sample_dispersion['effective_n']:+.2f}")
-        print()
-        print("Weight Differences (Shrinkage - Sample):")
-        for ticker, diff in comparison_maxsharpe.weight_difference.items():
-            print(f"  {ticker:20s}: {diff:+.4f} ({diff*100:+.2f}%%)")
+        for ticker, weight in comparison_maxsharpe.shrinkage_result.weights.items():
+            print(f"   {ticker:20s}: {weight:>6.1%} ({weight*100:>5.1f}% of your portfolio)")
         print()
     except Exception as e:
         print(f"[ERROR] Failed to compare maximum Sharpe portfolios: {e}")
@@ -462,33 +458,21 @@ def main():
     print()
     
     try:
-        # Save minimum variance portfolio
-        min_var_df = pd.DataFrame({
-            'ticker': min_var_result.weights.index,
-            'weight': min_var_result.weights.values,
-            'expected_return': min_var_result.expected_return,
-            'volatility': min_var_result.volatility,
-            'sharpe_ratio': min_var_result.sharpe_ratio
-        })
+        # Save minimum variance portfolio (investor-friendly format)
+        min_var_df = create_simple_weights_csv(min_var_result, "Lowest Risk Portfolio")
         min_var_df.to_csv(
-            os.path.join(artifacts_dir, "min_variance_portfolio.csv"),
+            os.path.join(artifacts_dir, "lowest_risk_portfolio_allocation.csv"),
             index=False
         )
-        print(f"[OK] Minimum variance portfolio saved")
+        print(f"[OK] Lowest risk portfolio allocation saved")
         
-        # Save maximum Sharpe portfolio
-        max_sharpe_df = pd.DataFrame({
-            'ticker': max_sharpe_result.weights.index,
-            'weight': max_sharpe_result.weights.values,
-            'expected_return': max_sharpe_result.expected_return,
-            'volatility': max_sharpe_result.volatility,
-            'sharpe_ratio': max_sharpe_result.sharpe_ratio
-        })
+        # Save maximum Sharpe portfolio (investor-friendly format)
+        max_sharpe_df = create_simple_weights_csv(max_sharpe_result, "Best Risk-Adjusted Returns Portfolio")
         max_sharpe_df.to_csv(
-            os.path.join(artifacts_dir, "max_sharpe_portfolio.csv"),
+            os.path.join(artifacts_dir, "best_returns_portfolio_allocation.csv"),
             index=False
         )
-        print(f"[OK] Maximum Sharpe portfolio saved")
+        print(f"[OK] Best returns portfolio allocation saved")
         
         # Save efficient frontier data
         ef_df = pd.DataFrame({
@@ -507,135 +491,51 @@ def main():
             print()
             print("Saving comparison results...")
             
-            # Save minimum variance comparison
+            # Save minimum variance comparison (investor-friendly format)
             if 'min_variance' in comparison_results:
                 comp = comparison_results['min_variance']
                 
-                # Create comparison summary DataFrame
-                comparison_summary = pd.DataFrame({
-                    'metric': [
-                        'shrinkage_intensity',
-                        'expected_return_sample',
-                        'expected_return_shrinkage',
-                        'volatility_sample',
-                        'volatility_shrinkage',
-                        'sharpe_ratio_sample',
-                        'sharpe_ratio_shrinkage',
-                        'effective_n_sample',
-                        'effective_n_shrinkage',
-                        'gini_coefficient_sample',
-                        'gini_coefficient_shrinkage',
-                        'weight_entropy_sample',
-                        'weight_entropy_shrinkage',
-                        'max_weight_sample',
-                        'max_weight_shrinkage',
-                        'volatility_difference',
-                        'sharpe_difference',
-                        'effective_n_difference'
-                    ],
-                    'value': [
-                        comp.shrinkage_intensity,
-                        comp.sample_result.expected_return,
-                        comp.shrinkage_result.expected_return,
-                        comp.sample_result.volatility,
-                        comp.shrinkage_result.volatility,
-                        comp.sample_result.sharpe_ratio,
-                        comp.shrinkage_result.sharpe_ratio,
-                        comp.sample_dispersion['effective_n'],
-                        comp.shrinkage_dispersion['effective_n'],
-                        comp.sample_dispersion['gini_coefficient'],
-                        comp.shrinkage_dispersion['gini_coefficient'],
-                        comp.sample_dispersion['weight_entropy'],
-                        comp.shrinkage_dispersion['weight_entropy'],
-                        comp.sample_dispersion['max_weight'],
-                        comp.shrinkage_dispersion['max_weight'],
-                        comp.volatility_difference,
-                        comp.sharpe_difference,
-                        comp.shrinkage_dispersion['effective_n'] - comp.sample_dispersion['effective_n']
-                    ]
-                })
-                comparison_summary.to_csv(
-                    os.path.join(artifacts_dir, "comparison_min_variance_summary.csv"),
+                # Create investor-friendly comparison
+                comparison_df = create_investor_friendly_csv(comp, "min_variance")
+                comparison_df.to_csv(
+                    os.path.join(artifacts_dir, "lowest_risk_comparison.csv"),
                     index=False
                 )
                 
-                # Save weight comparison
-                weight_comparison = pd.DataFrame({
-                    'ticker': comp.sample_result.weights.index,
-                    'weight_sample': comp.sample_result.weights.values,
-                    'weight_shrinkage': comp.shrinkage_result.weights.values,
-                    'weight_difference': comp.weight_difference.values
-                })
-                weight_comparison.to_csv(
-                    os.path.join(artifacts_dir, "comparison_min_variance_weights.csv"),
+                # Save recommended weights (robust method)
+                recommended_weights = create_simple_weights_csv(
+                    comp.shrinkage_result,
+                    "Robust Method - Lowest Risk"
+                )
+                recommended_weights.to_csv(
+                    os.path.join(artifacts_dir, "lowest_risk_recommended_allocation.csv"),
                     index=False
                 )
-                print(f"[OK] Minimum variance comparison saved")
+                
+                print(f"[OK] Lowest risk comparison saved")
             
-            # Save maximum Sharpe comparison
+            # Save maximum Sharpe comparison (investor-friendly format)
             if 'max_sharpe' in comparison_results:
                 comp = comparison_results['max_sharpe']
                 
-                # Create comparison summary DataFrame
-                comparison_summary = pd.DataFrame({
-                    'metric': [
-                        'shrinkage_intensity',
-                        'expected_return_sample',
-                        'expected_return_shrinkage',
-                        'volatility_sample',
-                        'volatility_shrinkage',
-                        'sharpe_ratio_sample',
-                        'sharpe_ratio_shrinkage',
-                        'effective_n_sample',
-                        'effective_n_shrinkage',
-                        'gini_coefficient_sample',
-                        'gini_coefficient_shrinkage',
-                        'weight_entropy_sample',
-                        'weight_entropy_shrinkage',
-                        'max_weight_sample',
-                        'max_weight_shrinkage',
-                        'volatility_difference',
-                        'sharpe_difference',
-                        'effective_n_difference'
-                    ],
-                    'value': [
-                        comp.shrinkage_intensity,
-                        comp.sample_result.expected_return,
-                        comp.shrinkage_result.expected_return,
-                        comp.sample_result.volatility,
-                        comp.shrinkage_result.volatility,
-                        comp.sample_result.sharpe_ratio,
-                        comp.shrinkage_result.sharpe_ratio,
-                        comp.sample_dispersion['effective_n'],
-                        comp.shrinkage_dispersion['effective_n'],
-                        comp.sample_dispersion['gini_coefficient'],
-                        comp.shrinkage_dispersion['gini_coefficient'],
-                        comp.sample_dispersion['weight_entropy'],
-                        comp.shrinkage_dispersion['weight_entropy'],
-                        comp.sample_dispersion['max_weight'],
-                        comp.shrinkage_dispersion['max_weight'],
-                        comp.volatility_difference,
-                        comp.sharpe_difference,
-                        comp.shrinkage_dispersion['effective_n'] - comp.sample_dispersion['effective_n']
-                    ]
-                })
-                comparison_summary.to_csv(
-                    os.path.join(artifacts_dir, "comparison_max_sharpe_summary.csv"),
+                # Create investor-friendly comparison
+                comparison_df = create_investor_friendly_csv(comp, "max_sharpe")
+                comparison_df.to_csv(
+                    os.path.join(artifacts_dir, "best_returns_comparison.csv"),
                     index=False
                 )
                 
-                # Save weight comparison
-                weight_comparison = pd.DataFrame({
-                    'ticker': comp.sample_result.weights.index,
-                    'weight_sample': comp.sample_result.weights.values,
-                    'weight_shrinkage': comp.shrinkage_result.weights.values,
-                    'weight_difference': comp.weight_difference.values
-                })
-                weight_comparison.to_csv(
-                    os.path.join(artifacts_dir, "comparison_max_sharpe_weights.csv"),
+                # Save recommended weights (robust method)
+                recommended_weights = create_simple_weights_csv(
+                    comp.shrinkage_result,
+                    "Robust Method - Best Returns"
+                )
+                recommended_weights.to_csv(
+                    os.path.join(artifacts_dir, "best_returns_recommended_allocation.csv"),
                     index=False
                 )
-                print(f"[OK] Maximum Sharpe comparison saved")
+                
+                print(f"[OK] Best returns comparison saved")
         
         print()
     except Exception as e:
@@ -645,25 +545,53 @@ def main():
     
     # Summary
     print("=" * 80)
-    print("Summary")
+    print("📊 FINAL SUMMARY - YOUR PORTFOLIO OPTIMIZATION RESULTS")
     print("=" * 80)
     print()
-    print("User Portfolio (as provided):")
-    print(f"  Return: {user_portfolio_point['expected_return']:.2%}")
-    print(f"  Risk: {user_portfolio_point['volatility']:.2%}")
-    print(f"  Sharpe: {user_portfolio_point['sharpe']:.3f}")
+    
+    print("🎯 QUICK COMPARISON:")
     print()
-    print("Minimum Variance Portfolio:")
-    print(f"  Return: {min_var_result.expected_return:.2%}")
-    print(f"  Risk: {min_var_result.volatility:.2%}")
-    print(f"  Sharpe: {min_var_result.sharpe_ratio:.3f}")
+    print(f"Your Current Portfolio:")
+    print(f"  • Expected Return: {user_portfolio_point['expected_return']:.2%} per year")
+    print(f"  • Risk Level: {user_portfolio_point['volatility']:.2%} volatility")
+    print(f"  • Performance Score: {user_portfolio_point['sharpe']:.2f}")
     print()
-    print("Maximum Sharpe Ratio Portfolio:")
-    print(f"  Return: {max_sharpe_result.expected_return:.2%}")
-    print(f"  Risk: {max_sharpe_result.volatility:.2%}")
-    print(f"  Sharpe: {max_sharpe_result.sharpe_ratio:.3f}")
+    
+    print(f"💡 RECOMMENDED OPTIONS:")
     print()
-    print(f"All results saved to: {artifacts_dir}/")
+    print(f"Option 1: Lowest Risk Portfolio")
+    print(f"  • Expected Return: {min_var_result.expected_return:.2%} per year")
+    print(f"  • Risk Level: {min_var_result.volatility:.2%} volatility")
+    print(f"  • Performance Score: {min_var_result.sharpe_ratio:.2f}")
+    print(f"  • Best for: Conservative investors who want to minimize risk")
+    print()
+    
+    print(f"Option 2: Best Risk-Adjusted Returns Portfolio")
+    print(f"  • Expected Return: {max_sharpe_result.expected_return:.2%} per year")
+    print(f"  • Risk Level: {max_sharpe_result.volatility:.2%} volatility")
+    print(f"  • Performance Score: {max_sharpe_result.sharpe_ratio:.2f}")
+    print(f"  • Best for: Investors seeking the best balance of risk and return")
+    print()
+    
+    if comparison_results:
+        print("💎 RECOMMENDATION:")
+        print("   We've compared two methods (Standard vs Robust) and recommend")
+        print("   using the Robust Method allocations for more stable and reliable results.")
+        print()
+    
+    print("📁 ALL RESULTS SAVED:")
+    print(f"   Location: {artifacts_dir}/")
+    print()
+    print("   Files created:")
+    print("   • lowest_risk_portfolio_allocation.csv - How to allocate for lowest risk")
+    print("   • best_returns_portfolio_allocation.csv - How to allocate for best returns")
+    if comparison_results:
+        print("   • lowest_risk_comparison.csv - Detailed comparison (lowest risk)")
+        print("   • best_returns_comparison.csv - Detailed comparison (best returns)")
+        print("   • *_recommended_allocation.csv - Recommended allocations (robust method)")
+    print()
+    print("=" * 80)
+    print("✅ Analysis complete! Check the CSV files for detailed recommendations.")
     print("=" * 80)
 
 

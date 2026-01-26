@@ -81,25 +81,25 @@ class StressTester:
         weights: pd.Series,
         start_date: str,
         end_date: str,
-        initial_investment: float = 10000.0
+        initial_investment: float = 1_00_000.0
     ) -> Dict:
-        """
-        Replay portfolio performance over a specific historical period.
-        
-        Uses log returns for calculations and assumes daily rebalancing
-        to fixed weights (simplified approach for stress testing).
-        
-        Parameters
-        ----------
-        weights : pd.Series
-            Portfolio weights (index must match tickers in prices)
-            Weights should sum to 1.0
-        start_date : str
-            Start date (YYYY-MM-DD)
-        end_date : str
-            End date (YYYY-MM-DD)
-        initial_investment : float, default=10000.0
-            Starting portfolio value
+    """
+    Replay portfolio performance over a specific historical period.
+    
+    Uses log returns for calculations and assumes daily rebalancing
+    to fixed weights (simplified approach for stress testing).
+    
+    Parameters
+    ----------
+    weights : pd.Series
+        Portfolio weights (index must match tickers in prices)
+        Weights should sum to 1.0
+    start_date : str
+        Start date (YYYY-MM-DD)
+    end_date : str
+        End date (YYYY-MM-DD)
+    initial_investment : float, default=1_00_000.0
+        Starting portfolio value in INR (₹1,00,000 = 1 lakh)
             
         Returns
         -------
@@ -204,20 +204,20 @@ class StressTester:
         self,
         weights: pd.Series,
         periods: Optional[Dict[str, Tuple[str, str]]] = None,
-        initial_investment: float = 10000.0
+        initial_investment: float = 1_00_000.0
     ) -> Dict[str, Dict]:
-        """
-        Replay portfolio across multiple historical periods.
-        
-        Parameters
-        ----------
-        weights : pd.Series
-            Portfolio weights
-        periods : Dict[str, Tuple[str, str]], optional
-            Dictionary mapping period names to (start_date, end_date) tuples.
-            If None, uses standard historical scenarios.
-        initial_investment : float, default=10000.0
-            Starting portfolio value for each period
+    """
+    Replay portfolio across multiple historical periods.
+    
+    Parameters
+    ----------
+    weights : pd.Series
+        Portfolio weights
+    periods : Dict[str, Tuple[str, str]], optional
+        Dictionary mapping period names to (start_date, end_date) tuples.
+        If None, uses standard historical scenarios.
+    initial_investment : float, default=1_00_000.0
+        Starting portfolio value in INR for each period (₹1,00,000 = 1 lakh)
             
         Returns
         -------

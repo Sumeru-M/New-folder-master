@@ -1,0 +1,3 @@
+Risk Metric,Percentage,Dollar Amount,What This Means
+Maximum Daily Loss (Worst Case),1.86%,"$18,584.11","On 95% of days, you might lose at most this amount"
+Average Loss (If Bad Day Occurs),2.55%,"$25,505.88","If a bad day occurs, expect losses around this amount on average"
