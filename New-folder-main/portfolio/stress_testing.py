@@ -81,40 +81,43 @@ class StressTester:
         weights: pd.Series,
         start_date: str,
         end_date: str,
-        initial_investment: float = 1_00_000.0
+        initial_investment: float = 1_00_000.0,
+        risk_free_rate: float = 0.07
     ) -> Dict:
-    """
-    Replay portfolio performance over a specific historical period.
-    
-    Uses log returns for calculations and assumes daily rebalancing
-    to fixed weights (simplified approach for stress testing).
-    
-    Parameters
-    ----------
-    weights : pd.Series
-        Portfolio weights (index must match tickers in prices)
-        Weights should sum to 1.0
-    start_date : str
-        Start date (YYYY-MM-DD)
-    end_date : str
-        End date (YYYY-MM-DD)
-    initial_investment : float, default=1_00_000.0
-        Starting portfolio value in INR (₹1,00,000 = 1 lakh)
-            
-        Returns
-        -------
-        Dict
-            Results containing:
-            - period_label: Description of the period
-            - portfolio_value: Time series of portfolio value
-            - daily_returns: Daily portfolio returns (log returns)
-            - drawdown: Drawdown series
-            - total_return: Total return over period
-            - annualized_return: Annualized return (CAGR)
-            - max_drawdown: Maximum drawdown
-            - volatility: Annualized volatility
-            - sharpe_ratio: Sharpe ratio (assuming 0 risk-free rate)
         """
+        Replay portfolio performance over a specific historical period.
+        
+        Uses log returns for calculations and assumes daily rebalancing
+        to fixed weights (simplified approach for stress testing).
+        
+        Parameters
+        ----------
+        weights : pd.Series
+            Portfolio weights (index must match tickers in prices)
+            Weights should sum to 1.0
+        start_date : str
+            Start date (YYYY-MM-DD)
+        end_date : str
+            End date (YYYY-MM-DD)
+        initial_investment : float, default=1_00_000.0
+            Starting portfolio value in INR (₹1,00,000 = 1 lakh)
+        risk_free_rate : float, default=0.07
+            Annual risk-free rate for Sharpe ratio calculation (7% default for India)
+                
+            Returns
+            -------
+            Dict
+                Results containing:
+                - period_label: Description of the period
+                - portfolio_value: Time series of portfolio value
+                - daily_returns: Daily portfolio returns (log returns)
+                - drawdown: Drawdown series
+                - total_return: Total return over period
+                - annualized_return: Annualized return (CAGR)
+                - max_drawdown: Maximum drawdown
+                - volatility: Annualized volatility
+                - sharpe_ratio: Sharpe ratio (using provided risk-free rate)
+            """
         # Check if requested dates are within available data range
         data_start = self.daily_returns.index.min()
         data_end = self.daily_returns.index.max()
@@ -184,8 +187,8 @@ class StressTester:
         # Volatility (annualized)
         volatility = portfolio_daily_returns.std() * np.sqrt(252)
         
-        # Sharpe ratio (assuming 0 risk-free rate for simplicity)
-        sharpe_ratio = annualized_return / volatility if volatility > 0 else 0.0
+        # Sharpe ratio (using provided risk-free rate)
+        sharpe_ratio = (annualized_return - risk_free_rate) / volatility if volatility > 0 else 0.0
         
         return {
             "period_label": f"{start_date} to {end_date}",
@@ -204,33 +207,36 @@ class StressTester:
         self,
         weights: pd.Series,
         periods: Optional[Dict[str, Tuple[str, str]]] = None,
-        initial_investment: float = 1_00_000.0
+        initial_investment: float = 1_00_000.0,
+        risk_free_rate: float = 0.07
     ) -> Dict[str, Dict]:
-    """
-    Replay portfolio across multiple historical periods.
-    
-    Parameters
-    ----------
-    weights : pd.Series
-        Portfolio weights
-    periods : Dict[str, Tuple[str, str]], optional
-        Dictionary mapping period names to (start_date, end_date) tuples.
-        If None, uses standard historical scenarios.
-    initial_investment : float, default=1_00_000.0
-        Starting portfolio value in INR for each period (₹1,00,000 = 1 lakh)
-            
-        Returns
-        -------
-        Dict[str, Dict]
-            Dictionary mapping period names to results
         """
+        Replay portfolio across multiple historical periods.
+        
+        Parameters
+        ----------
+        weights : pd.Series
+            Portfolio weights
+        periods : Dict[str, Tuple[str, str]], optional
+            Dictionary mapping period names to (start_date, end_date) tuples.
+            If None, uses standard historical scenarios.
+        initial_investment : float, default=1_00_000.0
+            Starting portfolio value in INR for each period (₹1,00,000 = 1 lakh)
+        risk_free_rate : float, default=0.07
+            Annual risk-free rate for Sharpe ratio calculation
+                
+            Returns
+            -------
+            Dict[str, Dict]
+                Dictionary mapping period names to results
+            """
         if periods is None:
             periods = self.get_historical_scenarios()
             
         results = {}
         for name, (start, end) in periods.items():
             results[name] = self.replay_period(
-                weights, start, end, initial_investment
+                weights, start, end, initial_investment, risk_free_rate
             )
             
         return results

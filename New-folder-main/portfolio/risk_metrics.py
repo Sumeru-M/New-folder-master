@@ -55,10 +55,24 @@ def compute_parametric_var(
         - portfolio_return: Expected return over horizon
         - portfolio_volatility: Volatility over horizon
     """
+    # Input validation
+    if confidence_level <= 0 or confidence_level >= 1:
+        raise ValueError(f"Confidence level must be between 0 and 1, got {confidence_level}")
+    
+    if portfolio_value <= 0:
+        raise ValueError(f"Portfolio value must be positive, got {portfolio_value}")
+    
+    if time_horizon_days <= 0:
+        raise ValueError(f"Time horizon must be positive, got {time_horizon_days}")
+    
     if isinstance(weights, pd.Series):
         w = weights.values
     else:
         w = weights
+    
+    # Validate weights sum to approximately 1
+    if not np.isclose(w.sum(), 1.0, atol=0.01):
+        raise ValueError(f"Weights must sum to 1.0, got {w.sum():.4f}")
         
     # Convert annualized parameters to daily
     mu_daily = expected_returns.values / 252

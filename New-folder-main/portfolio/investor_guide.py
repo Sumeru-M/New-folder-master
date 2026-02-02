@@ -224,6 +224,7 @@ def format_comparison_summary(comparison, optimization_type: str) -> str:
     better_volatility = "Robust Method" if comparison.volatility_difference < 0 else "Standard Method"
     better_sharpe = "Robust Method" if comparison.sharpe_difference > 0 else "Standard Method"
     better_div = "Robust Method" if comparison.shrinkage_dispersion['effective_n'] > comparison.sample_dispersion['effective_n'] else "Standard Method"
+    better_return = "Robust Method" if comparison.shrinkage_result.expected_return > comparison.sample_result.expected_return else "Standard Method"
     
     summary = f"""
 ╔══════════════════════════════════════════════════════════════════════════════╗
@@ -253,9 +254,10 @@ def format_comparison_summary(comparison, optimization_type: str) -> str:
 ╠══════════════════════════════════════════════════════════════════════════════╣
 ║  KEY DIFFERENCES                                                             ║
 ╠══════════════════════════════════════════════════════════════════════════════╣
-║  Risk Change:         {comparison.volatility_difference:+.2%} ({better_volatility:^20})  ║
-║  Performance Change:  {comparison.sharpe_difference:+.2f} ({better_sharpe:^20})  ║
-║  Diversification:     {comparison.shrinkage_dispersion['effective_n'] - comparison.sample_dispersion['effective_n']:+.1f} assets ({better_div:^20}) ║
+║  Return Change:       {(comparison.shrinkage_result.expected_return - comparison.sample_result.expected_return):+.4%} ({better_return:^20})  ║
+║  Risk Change:         {comparison.volatility_difference:+.4%} ({better_volatility:^20})  ║
+║  Performance Change:  {comparison.sharpe_difference:+.4f} ({better_sharpe:^20})  ║
+║  Diversification:     {comparison.shrinkage_dispersion['effective_n'] - comparison.sample_dispersion['effective_n']:+.2f} assets ({better_div:^20})║
 ║                                                                              ║
 ║  💡 RECOMMENDATION                                                           ║
 ║     The Robust Method typically provides more stable and reliable results.  ║

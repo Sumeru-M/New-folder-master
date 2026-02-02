@@ -37,45 +37,102 @@ from portfolio.investor_guide import (
 
 def parse_args():
     """Parse command line arguments for dynamic user portfolio input."""
-    parser = argparse.ArgumentParser(description="Milestone 3 Portfolio Optimization")
+    parser = argparse.ArgumentParser(
+        description="Portfolio Optimization - Find the best way to allocate your investments",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # Basic usage (interactive mode):
+  python run_milestone3.py
+  
+  # Analyze specific stocks with equal weights:
+  python run_milestone3.py --tickers "RELIANCE.NS,TCS.NS,INFY.NS"
+  
+  # Analyze with your current allocation:
+  python run_milestone3.py --tickers "RELIANCE.NS,TCS.NS" --weights "60,40"
+  
+  # Use 5 years of data with 8% safe investment rate:
+  python run_milestone3.py --tickers "ITC.NS,HDFCBANK.NS" --period "5y" --risk_free_rate 8
+        """
+    )
     parser.add_argument(
         "--tickers",
         type=str,
         required=False,
         default=None,
-        help="Comma-separated list of tickers (e.g., RELIANCE.NS,TCS.NS,INFY.NS). If omitted, interactive mode is used."
+        help="Stock symbols to analyze (comma-separated). Example: RELIANCE.NS,TCS.NS,INFY.NS"
     )
     parser.add_argument(
         "--weights",
         type=str,
         default=None,
-        help="Optional comma-separated weights matching tickers (e.g., 0.3,0.4,0.3). If omitted, equal weights are used."
+        help="Your current allocation as percentages (comma-separated). Example: 30,40,30 means 30%% in first stock, 40%% in second, 30%% in third. Leave blank for equal weights."
     )
     parser.add_argument(
         "--period",
         type=str,
         default="2y",
-        help="Data period (e.g., 6mo,1y,2y,5y) if start/end not provided."
+        help="How much historical data to analyze. Options: 6mo, 1y, 2y, 5y, 10y. Default: 2y (recommended)"
     )
     parser.add_argument(
         "--start_date",
         type=str,
         default=None,
-        help="Start date (YYYY-MM-DD). Overrides period if provided with end_date."
+        help="Custom start date (YYYY-MM-DD). Use with --end_date to override --period."
     )
     parser.add_argument(
         "--end_date",
         type=str,
         default=None,
-        help="End date (YYYY-MM-DD). Overrides period if provided with start_date."
+        help="Custom end date (YYYY-MM-DD). Use with --start_date to override --period."
     )
     parser.add_argument(
         "--risk_free_rate",
         type=float,
-        default=0.05,
-        help="Annual risk-free rate (e.g., 0.05 for 5%%)."
+        default=0.07,
+        help="Safe investment return rate (as percentage, e.g., 7 for 7%%). This is your benchmark (FD/bond rate). Default: 7%%"
     )
     return parser.parse_args()
+
+
+def validate_tickers(tickers_list):
+    """
+    Validate ticker symbols and suggest corrections for common mistakes.
+    
+    Returns
+    -------
+    tuple: (valid_tickers, warnings)
+    """
+    # Common ticker mistakes and corrections
+    corrections = {
+        'ICICI.NS': 'ICICIBANK.NS',
+        'HDFC.NS': 'HDFCBANK.NS',
+        'SBI.NS': 'SBIN.NS',
+        'AXIS.NS': 'AXISBANK.NS',
+        'KOTAK.NS': 'KOTAKBANK.NS',
+    }
+    
+    valid_tickers = []
+    warnings = []
+    
+    for ticker in tickers_list:
+        ticker = ticker.strip().upper()
+        
+        # Check for .NS suffix
+        if not ticker.endswith('.NS'):
+            warnings.append(f"⚠️  {ticker} doesn't have .NS suffix. For NSE stocks, use {ticker}.NS")
+            continue
+        
+        # Check for common mistakes
+        if ticker in corrections:
+            correct = corrections[ticker]
+            warnings.append(f"❌ {ticker} is invalid. Did you mean {correct}?")
+            print(f"   Auto-correcting: {ticker} → {correct}")
+            valid_tickers.append(correct)
+        else:
+            valid_tickers.append(ticker)
+    
+    return valid_tickers, warnings
 
 
 def compute_portfolio_point(weights: np.ndarray, expected_returns: pd.Series, covariance_matrix: pd.DataFrame, risk_free_rate: float):
@@ -104,20 +161,40 @@ def main():
         period = args.period
         start_date = args.start_date
         end_date = args.end_date
+        
+        # Handle risk_free_rate - accept as percentage or decimal
         risk_free_rate = args.risk_free_rate
+        if risk_free_rate > 1:  # User entered as percentage (e.g., 7 for 7%)
+            risk_free_rate = risk_free_rate / 100
+            print(f"✓ Using {args.risk_free_rate}% as safe investment rate")
+        else:  # User entered as decimal (e.g., 0.07)
+            print(f"✓ Using {risk_free_rate*100:.1f}% as safe investment rate")
     else:
-        print("\n=== Portfolio Optimization Interactive Mode ===")
-        print("Please enter the following details:\n")
+        print("\n=== Portfolio Optimization - Let's Build Your Best Portfolio ===")
+        print("\n📈 STEP 1: Which stocks do you want to analyze?")
+        print("Enter Indian stock symbols (add .NS for NSE stocks)")
+        print("Examples: RELIANCE.NS, TCS.NS, INFY.NS, HDFCBANK.NS, ITC.NS")
+        print()
         
-        tickers_str = input("Enter tickers (comma-separated, e.g., RELIANCE.NS,TCS.NS): ").strip()
+        tickers_str = input("Enter your stocks (comma-separated): ").strip()
         while not tickers_str:
-             print("Tickers are required.")
-             tickers_str = input("Enter tickers (comma-separated): ").strip()
+             print("❌ You need to enter at least one stock symbol.")
+             tickers_str = input("Enter your stocks (comma-separated): ").strip()
 
-        weights_str = input("Enter weights (optional, comma-separated, press Enter for equal weights): ").strip() or None
-        
+        print("\n💰 CURRENT PORTFOLIO ALLOCATION (Optional)")
+        print("If you already own these stocks, tell us how much of each you have.")
+        print("Examples:")
+        print("  • '30,40,30' means 30% in first stock, 40% in second, 30% in third")
+        print("  • '50,50' means equal 50-50 split between two stocks")
+        print("  • Just press Enter to compare equal allocation across all stocks")
+        weights_str = input("\nYour current allocation (comma-separated percentages, or press Enter): ").strip() or None
+                
         # Date selection
-        period_input = input("Enter data period (e.g., 2y, 1y, 6mo) [default: 2y]: ").strip()
+        print("\n📅 STEP 2: How much historical data should we analyze?")
+        print("More data = more reliable, but older data may be less relevant")
+        print("Recommended: 2 years (good balance)")
+        print("Options: 6mo, 1y, 2y, 5y, 10y")
+        period_input = input("\nEnter time period [default: 2y]: ").strip()
         period = period_input if period_input else "2y"
         
         # Validate period format
@@ -127,54 +204,115 @@ def main():
             period_num = int(period)
             if period_num <= 10:
                 period = f"{period_num}y"
-                print(f"Interpreting '{period_input}' as '{period}'")
+                print(f"✓ Got it! Using {period_num} years of data")
             else:
-                print(f"Warning: '{period_input}' is not a valid period. Using default '2y'")
+                print(f"⚠️  '{period_input}' is too long. Using default 2 years")
                 period = "2y"
         elif period not in valid_periods:
-            print(f"Warning: '{period}' is not a valid period. Valid periods: {', '.join(valid_periods)}")
-            print(f"Using default '2y'")
+            print(f"⚠️  '{period}' is not valid. Valid options: {', '.join(valid_periods)}")
+            print(f"   Using default: 2 years")
             period = "2y"
+        else:
+            print(f"✓ Using {period} of historical data")
         
         start_date = None
         end_date = None
-        # Simple heuristic: if user typed a date format like YYYY-MM-DD instead of a period code, handle that?
-        # For now, let's keep it simple. If they want custom dates, they might need to use CLI or I can add a prompt.
-        # Let's add a quick check if they want custom dates.
+        # Custom date range option
         if period.lower() == 'custom':
+             print("\n📅 Custom Date Range")
              start_date = input("Enter start date (YYYY-MM-DD): ").strip()
              end_date = input("Enter end date (YYYY-MM-DD): ").strip()
              period = None
 
-        rf_input = input("Enter risk-free rate (decimal, e.g., 0.05 for 5%) [default: 0.05]: ").strip()
+        print("\n📊 SAFE INVESTMENT RATE (Benchmark)")
+        print("This is the return you'd get from a 'safe' investment like:")
+        print("  • Fixed Deposits (FDs): ~6-7% per year")
+        print("  • Government Bonds: ~7-8% per year")
+        print("  • Savings Account: ~3-4% per year")
+        print("\nWe use this to measure if your stock portfolio is worth the extra risk.")
+        print("Default is 7% (typical for Indian FDs/bonds)")
+        
+        rf_input = input("\nEnter safe investment return rate (just the number, e.g., 7 for 7%) [default: 7]: ").strip()
         try:
-            risk_free_rate = float(rf_input) if rf_input else 0.05
+            if rf_input:
+                # User entered a number
+                rf_value = float(rf_input)
+                # If user entered as percentage (e.g., 7), convert to decimal
+                if rf_value > 1:
+                    risk_free_rate = rf_value / 100
+                    print(f"Using {rf_value}% ({risk_free_rate:.4f}) as safe investment rate")
+                else:
+                    # User already entered as decimal (e.g., 0.07)
+                    risk_free_rate = rf_value
+                    print(f"Using {rf_value*100}% as safe investment rate")
+            else:
+                risk_free_rate = 0.07  # Changed default to 7% for India
+                print("Using default: 7% safe investment rate")
         except ValueError:
-            print("Invalid number for risk-free rate. Using default 0.05.")
-            risk_free_rate = 0.05
+            print("Invalid number. Using default 7% safe investment rate.")
+            risk_free_rate = 0.07
 
     # Parse tickers and optional weights
-    tickers = [t.strip() for t in tickers_str.split(",") if t.strip()]
-    if not tickers:
+    tickers_raw = [t.strip() for t in tickers_str.split(",") if t.strip()]
+    if not tickers_raw:
         print("[ERROR] No tickers provided.")
         return
+    
+    # Validate and auto-correct tickers
+    print("\nValidating ticker symbols...")
+    tickers, warnings = validate_tickers(tickers_raw)
+    
+    if warnings:
+        for warning in warnings:
+            print(warning)
+        print()
+    
+    if not tickers:
+        print("❌ ERROR: No valid tickers after validation.")
+        return
+    
+    if len(tickers) < 2:
+        print(f"❌ ERROR: Portfolio optimization requires at least 2 stocks.")
+        print(f"   You provided: {', '.join(tickers)}")
+        return
+    
+    print(f"✓ Using tickers: {', '.join(tickers)}\n")
 
     weights = None
     if weights_str:
         parts = [p.strip() for p in weights_str.split(",") if p.strip()]
         if len(parts) != len(tickers):
-            print(f"[ERROR] Number of weights ({len(parts)}) must match number of tickers ({len(tickers)}).")
+            print(f"\n❌ ERROR: You entered {len(parts)} weights but have {len(tickers)} stocks.")
+            print(f"   Please enter {len(tickers)} weights (one for each stock).")
             return
         try:
             weights = np.array([float(p) for p in parts], dtype=float)
+            
+            # If user entered percentages (e.g., 30, 40, 30), convert to decimals
+            if weights.sum() > 1.5:  # Likely percentages
+                print(f"\n✓ Interpreting as percentages: {', '.join([f'{w:.1f}%' for w in weights])}")
+                weights = weights / 100
+            
             if weights.sum() <= 0:
-                raise ValueError("Weights must sum to a positive number.")
+                raise ValueError("Weights must be positive numbers.")
+            
+            # Normalize weights to sum to 1
+            original_sum = weights.sum()
             weights = weights / weights.sum()
+            
+            if abs(original_sum - 1.0) > 0.01:  # If not already close to 100%
+                print(f"✓ Normalized weights to 100%: {', '.join([f'{w:.1%}' for w in weights])}")
+            else:
+                print(f"✓ Using weights: {', '.join([f'{w:.1%}' for w in weights])}")
+                
         except Exception as e:
-            print(f"[ERROR] Invalid weights: {e}")
+            print(f"\n❌ ERROR: Invalid weights - {e}")
+            print("   Weights should be numbers like: 30,40,30 or 0.3,0.4,0.3")
             return
     else:
         weights = np.ones(len(tickers)) / len(tickers)
+        print(f"\n✓ Using equal weights: {', '.join([f'{w:.1%}' for w in weights])}")
+
 
     print("=" * 80)
     print("Milestone 3: Portfolio Optimization Engine")
@@ -215,11 +353,69 @@ def main():
             else:
                 print(f"Period: {period}")
             return
+        
+        # VALIDATION: Check for columns with excessive NaN values
+        print("Validating data quality...")
+        nan_counts = prices.isna().sum()
+        total_rows = len(prices)
+        problematic_tickers = []
+        
+        for ticker in prices.columns:
+            nan_pct = (nan_counts[ticker] / total_rows) * 100
+            if nan_pct > 50:  # More than 50% missing data
+                problematic_tickers.append((ticker, nan_pct))
+        
+        if problematic_tickers:
+            print("\n⚠️  WARNING: Some tickers have insufficient data:")
+            for ticker, pct in problematic_tickers:
+                print(f"   • {ticker}: {pct:.1f}% missing data (likely invalid or delisted)")
+            
+            # Remove problematic tickers
+            good_tickers = [t for t in prices.columns if t not in [x[0] for x in problematic_tickers]]
+            
+            if len(good_tickers) == 0:
+                print("\n❌ ERROR: No valid tickers with sufficient data.")
+                print("\nPlease check your ticker symbols. Common NSE tickers:")
+                print("  Banks: ICICIBANK.NS, HDFCBANK.NS, SBIN.NS, AXISBANK.NS")
+                print("  IT: TCS.NS, INFY.NS, WIPRO.NS, HCLTECH.NS")
+                print("  Others: RELIANCE.NS, ITC.NS, HINDUNILVR.NS, BHARTIARTL.NS")
+                return
+            
+            if len(good_tickers) < 2:
+                print(f"\n❌ ERROR: Only {len(good_tickers)} valid ticker(s) found.")
+                print("   Portfolio optimization requires at least 2 stocks.")
+                return
+            
+            print(f"\n✓ Proceeding with {len(good_tickers)} valid ticker(s): {', '.join(good_tickers)}")
+            prices = prices[good_tickers]
+            
+            # Update tickers list and weights
+            tickers = good_tickers
+            if len(weights) != len(tickers):
+                print(f"⚠️  Adjusting to equal allocation for {len(tickers)} valid stocks")
+                weights = np.ones(len(tickers)) / len(tickers)
+                print(f"   New weights: {', '.join([f'{w:.1%}' for w in weights])}")
+        
+        # Verify we have actual valid data points
+        valid_data = prices.dropna()
+        if valid_data.empty:
+            print("\n❌ ERROR: No valid price data after removing missing values.")
+            print("This usually means:")
+            print("  1. Invalid ticker symbols (check NSE website)")
+            print("  2. Tickers are delisted")
+            print("  3. Data for this period is not available")
+            return
+        
+        if len(valid_data) < 50:
+            print(f"\n⚠️  WARNING: Only {len(valid_data)} valid data points.")
+            print("   Optimization results may be unreliable with limited data.")
+            print("   Recommendation: Use a longer time period or check ticker validity.")
 
         print(f"[OK] Data loaded successfully")
         print(f"  Shape: {prices.shape}")
         print(f"  Date range: {prices.index[0].date()} to {prices.index[-1].date()}")
         print(f"  Tickers with data: {', '.join(prices.columns.tolist())}")
+        print(f"  Valid data points: {len(valid_data)} days")
         print()
     except ValueError as e:
         print(f"[ERROR] Failed to load data: {e}")

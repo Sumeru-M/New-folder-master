@@ -35,6 +35,8 @@ def compute_daily_returns(prices: pd.DataFrame) -> pd.DataFrame:
     
     Uses log returns: ln(P_t / P_{t-1}) = ln(P_t) - ln(P_{t-1})
     
+    This function also validates and removes columns with excessive missing data.
+    
     Parameters
     ----------
     prices : pd.DataFrame
@@ -45,55 +47,76 @@ def compute_daily_returns(prices: pd.DataFrame) -> pd.DataFrame:
     pd.DataFrame
         DataFrame with daily log returns. First row will be NaN.
     
+    Raises
+    ------
+    ValueError
+        If no valid data remains after removing missing values
+    
     Examples
     --------
     >>> returns = compute_daily_returns(prices)
     """
-    return np.log(prices / prices.shift(1)).dropna()
+    # Check for columns with excessive NaN values (more than 50% missing)
+    if prices.isna().any().any():
+        nan_threshold = 0.5
+        nan_pct = prices.isna().sum() / len(prices)
+        invalid_columns = nan_pct[nan_pct >= nan_threshold].index.tolist()
+        
+        if invalid_columns:
+            print(f"⚠️  Warning: Removing ticker(s) with >{nan_threshold*100:.0f}% missing data: {', '.join(invalid_columns)}")
+            prices = prices.drop(columns=invalid_columns)
+    
+    if prices.empty:
+        raise ValueError("No valid price data available after removing columns with missing data")
+    
+    # Compute log returns
+    returns = np.log(prices / prices.shift(1))
+    
+    # Drop first row (will be NaN due to shift)
+    returns = returns.iloc[1:]
+    
+    # Drop any remaining rows with NaN values
+    initial_rows = len(returns)
+    returns = returns.dropna()
+    dropped_rows = initial_rows - len(returns)
+    
+    if dropped_rows > 0:
+        print(f"   Removed {dropped_rows} day(s) with missing data")
+    
+    if returns.empty:
+        raise ValueError("No valid returns data after removing missing values. Check if tickers have overlapping trading days.")
+    
+    return returns
 
 
-def compute_expected_returns(returns: pd.DataFrame, annualized: bool = True) -> pd.Series:
+def compute_expected_returns(daily_returns, annualized=True):
     """
-    Compute expected annual returns from daily log returns using geometric mean (CAGR).
+    Compute expected returns from LOG returns.
     
-    For log returns, the cumulative return is:
-    exp(sum of log returns) - 1
-    
-    Then annualized return is:
-    (1 + cumulative_return)^(252/n) - 1
-    
-    This represents the actual compound annual growth rate achieved
-    over the period, accounting for volatility drag.
+    IMPORTANT: This function expects LOG returns (from np.log(prices/prices.shift(1)))
+    not simple returns. The annualization formula is different for log returns.
     
     Parameters
     ----------
-    returns : pd.DataFrame
-        DataFrame with daily log returns
+    daily_returns : pd.DataFrame or pd.Series
+        Daily LOG returns (not simple returns)
     annualized : bool, default=True
-        If True, annualize returns using geometric mean
+        If True, annualize the returns using exponential growth
     
     Returns
     -------
     pd.Series
-        Expected annual returns for each asset
-    
-    Examples
-    --------
-    >>> expected_returns = compute_expected_returns(daily_returns)
+        Expected returns (annualized if annualized=True)
     """
     if annualized:
-        # For log returns: cumulative return = exp(sum of log returns) - 1
-        n_periods = len(returns)
-        cumulative_return = np.exp(returns.sum()) - 1
-        
-        # Annualize using CAGR formula
-        mean_returns = (1 + cumulative_return) ** (252 / n_periods) - 1
+        # For LOG returns, use exponential annualization
+        # Formula: exp(mean_log_return * 252) - 1
+        # This is correct because log returns add: ln(1+r_total) = sum(ln(1+r_daily))
+        mean_daily_log_return = daily_returns.mean()
+        annualized_return = np.exp(mean_daily_log_return * 252) - 1
+        return annualized_return
     else:
-        # Simple mean of daily returns
-        mean_returns = returns.mean()
-    
-    return mean_returns
-
+        return daily_returns.mean()
 
 def compute_covariance_matrix(returns: pd.DataFrame, annualized: bool = True) -> pd.DataFrame:
     """
@@ -120,6 +143,9 @@ def compute_covariance_matrix(returns: pd.DataFrame, annualized: bool = True) ->
     if annualized:
         # Annualize: multiply by number of trading days per year
         cov_matrix = cov_matrix * 252
+    
+    # Ensure perfect symmetry (fix numerical precision issues)
+    cov_matrix = (cov_matrix + cov_matrix.T) / 2
     
     return cov_matrix
 
@@ -218,6 +244,9 @@ def compute_ledoit_wolf_shrinkage(returns: pd.DataFrame, annualized: bool = True
     # Annualize if requested
     if annualized:
         Sigma_shrink = Sigma_shrink * 252
+    
+    # Ensure perfect symmetry (fix numerical precision issues)
+    Sigma_shrink = (Sigma_shrink + Sigma_shrink.T) / 2
     
     # Convert back to DataFrame with original column/index names
     cov_shrink = pd.DataFrame(
