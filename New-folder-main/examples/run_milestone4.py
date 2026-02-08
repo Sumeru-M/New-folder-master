@@ -333,39 +333,44 @@ def main():
     # ---------------------------------------------------------
     # 4. Historical Stress Testing (if historical scenario selected)
     # ---------------------------------------------------------
+   # Step 4: Historical Stress Testing (if historical scenario selected)
     stress_results = []
-    
+
     if selected_scenario and selected_scenario['type'] == 'historical':
-        print("Step 4: Loading Historical Data for Stress Test")
-        print("-" * 80)
+            print("Step 4: Loading Historical Data for Stress Test")
+    
+    # Check if 'dates' key exists in the selected_scenario dictionary
+    if 'dates' in selected_scenario:
+        start_date, end_date = selected_scenario['dates']
+    else:
+        print("[ERROR] The selected scenario does not contain 'dates'. Please check the input.")
+        return  # Exit or handle the error appropriately
+    
+    try:
+        # Load maximum available history
+        prices_long = load_price_data(tickers, period="max")
+        print(f"[OK] Loaded {len(prices_long)} days of historical data")
+        print(f"    Date range: {prices_long.index[0].date()} to {prices_long.index[-1].date()}")
         print()
-        print("Loading long-term historical data...")
         
-        try:
-            # Load maximum available history
-            prices_long = load_price_data(tickers, period="max")
-            print(f"[OK] Loaded {len(prices_long)} days of historical data")
-            print(f"    Date range: {prices_long.index[0].date()} to {prices_long.index[-1].date()}")
-            print()
-            
-            tester = StressTester(prices_long)
-            
+        tester = StressTester(prices_long)
+        
             # Get the selected historical scenario
-            scenario_name = selected_scenario['name']
-            start_date, end_date = selected_scenario['dates']
+        scenario_name = selected_scenario['name']
+        start_date, end_date = selected_scenario['dates']
             
-            print("=" * 80)
-            print(f"RUNNING STRESS TEST: {scenario_name}")
-            print("=" * 80)
-            print()
+        print("=" * 80)
+        print(f"RUNNING STRESS TEST: {scenario_name}")
+        print("=" * 80)
+        print()
             
             # Run stress test for selected scenario only
-            res = tester.replay_period(weights, start_date, end_date, initial_investment=args.portfolio_value)
-            
-            if "error" in res:
+        res = tester.replay_period(weights, start_date, end_date, initial_investment=args.portfolio_value)
+                
+        if "error" in res:
                 print(f"[ERROR] {scenario_name}: {res['error']}")
                 print("This scenario may not have sufficient data for your selected stocks.")
-            else:
+        else:
                 # Display investor-friendly result
                 print(format_stress_test_result(
                     scenario_name,
@@ -384,11 +389,11 @@ def main():
                     "Sharpe_Ratio": res['sharpe_ratio'],
                     "Days": res['n_days']
                 })
-                
-        except Exception as e:
-            print(f"[ERROR] Historical stress testing failed: {e}")
-            import traceback
-            traceback.print_exc()
+            
+    except Exception as e:
+        print(f"[ERROR] Historical stress testing failed: {e}")
+        import traceback
+        traceback.print_exc()
     
     print()
     

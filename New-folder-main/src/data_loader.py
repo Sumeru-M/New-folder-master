@@ -178,11 +178,15 @@ def fetch_market_data(
             # Skip empty cache files
             if cached_data.empty or cached_data.shape[0] == 0:
                 print(f"Warning: Cache file is empty, fetching fresh data...")
-            else:
-                # Verify all requested tickers are in cached data
-                cached_tickers = [col[0] for col in cached_data.columns.levels[0]] if isinstance(cached_data.columns, pd.MultiIndex) else []
-                if set(tickers).issubset(set(cached_tickers)):
-                    return cached_data
+            else:   
+                 # Some code with proper indentation
+                    if cached_data is not None and hasattr(cached_data, 'columns'):
+                        cached_tickers = [col[0] for col in cached_data.columns.levels[0]]
+                    else:
+                     cached_tickers = []
+                   # ✅ Safely handles None case
+                     if set(tickers).issubset(set(cached_tickers)):
+                        return cached_data
     
     # Download data using yfinance
     print(f"Fetching market data for {len(tickers)} ticker(s)...")

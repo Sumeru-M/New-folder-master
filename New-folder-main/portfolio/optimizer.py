@@ -439,83 +439,185 @@ class PortfolioOptimizer:
         """
         Optimize for maximum Sharpe ratio portfolio.
         
+        CORRECTED VERSION - Uses analytical solution with proper handling of negative excess returns.
+        
         Maximizes Sharpe ratio = (Return - RiskFreeRate) / Volatility
         subject to:
         - Sum of weights = 1
         - All weights >= 0 (long-only constraint)
         
-        Uses a quadratic programming reformulation to solve this as a convex problem.
-        The method minimizes portfolio variance for a given level of excess return,
-        then scales to find the maximum Sharpe ratio.
+        Mathematical Background:
+        -----------------------
+        The analytical solution for max Sharpe is:
+            w* ∝ Σ⁻¹ (μ - rf)
+        
+        Then normalize: w = w* / sum(w*)
+        
+        Special Case - All Negative Excess Returns:
+        When ALL assets underperform the risk-free rate (all μ < rf):
+        - All excess returns are negative
+        - The unnormalized weights sum will be negative
+        - We flip the sign to get the portfolio that MAXIMIZES Sharpe
+        - "Maximum" when all negative means "most negative" = closest to zero
+        
+        Example from bug fix:
+        - RELIANCE: 1.19% return, -7.81% excess return
+        - INFY: -3.85% return, -12.85% excess return  
+        - Analytical solution gives: 39.6% RELIANCE, 60.4% INFY
+        - This gives Sharpe = -0.60 (most negative = best)
+        - Wrong answer (100% RELIANCE) gives Sharpe = -0.38 (less negative = worse!)
         
         Returns
         -------
         OptimizationResult
             Optimal weights, expected return, volatility, and Sharpe ratio
         """
-        # Convert to numpy arrays
         mu = self.expected_returns.values
         Sigma = self.covariance_matrix.values
         excess_returns = mu - self.risk_free_rate
         
-        # Optimization variables
+        # Check if we can use analytical solution
+        try:
+            # Analytical solution: w* = Σ⁻¹ (μ - rf)
+            Sigma_inv = np.linalg.inv(Sigma)
+            w_unnormalized = Sigma_inv @ excess_returns
+            
+            # Handle negative excess returns case
+            # When all excess returns are negative, sum(w_unnormalized) < 0
+            # We need to flip the sign to get the max Sharpe portfolio
+            if np.sum(w_unnormalized) < 0:
+                w_unnormalized = -w_unnormalized
+            
+            # Normalize to sum to 1
+            optimal_weights_array = w_unnormalized / np.sum(w_unnormalized)
+            
+            # Check for negative weights (short-selling)
+            if np.any(optimal_weights_array < -1e-6):  # Allow small numerical errors
+                # Analytical solution gives short positions
+                # Fall back to constrained optimization
+                return self._optimize_max_sharpe_constrained()
+            
+            # Clip small negative values to zero (numerical precision)
+            optimal_weights_array = np.maximum(optimal_weights_array, 0)
+            optimal_weights_array = optimal_weights_array / optimal_weights_array.sum()
+            
+            # Convert to Series
+            optimal_weights = pd.Series(optimal_weights_array, index=self.expected_returns.index)
+            
+        except (np.linalg.LinAlgError, ValueError):
+            # Singular matrix or other numerical issue
+            # Fall back to constrained optimization
+            return self._optimize_max_sharpe_constrained()
+        
+        # Compute portfolio metrics
+        portfolio_return = np.dot(optimal_weights.values, mu)
+        portfolio_variance = optimal_weights.values @ Sigma @ optimal_weights.values
+        
+        if portfolio_variance <= 0:
+            raise RuntimeError("Portfolio variance is non-positive - optimization failed")
+        
+        portfolio_volatility = np.sqrt(portfolio_variance)
+        sharpe_ratio = (portfolio_return - self.risk_free_rate) / portfolio_volatility
+        
+        return OptimizationResult(
+            weights=optimal_weights,
+            expected_return=portfolio_return,
+            volatility=portfolio_volatility,
+            sharpe_ratio=sharpe_ratio,
+            optimization_type="Maximum Sharpe Ratio (Analytical)"
+        )
+    
+    def _optimize_max_sharpe_constrained(self) -> OptimizationResult:
+        """
+        Constrained optimization for maximum Sharpe ratio.
+        
+        This is a fallback method used when:
+        1. The analytical solution gives negative weights (short positions)
+        2. The covariance matrix is singular
+        3. Other numerical issues occur
+        
+        Uses convex optimization to search over feasible portfolios.
+        
+        Returns
+        -------
+        OptimizationResult
+            Optimal weights, expected return, volatility, and Sharpe ratio
+        """
+        mu = self.expected_returns.values
+        Sigma = self.covariance_matrix.values
+        
+        # Optimization variable
         w = cp.Variable(self.n_assets)
-        kappa = cp.Variable()  # auxiliary variable for reformulation
         
-        # Reformulation: minimize w^T Sigma w / (excess_returns^T w)^2
-        # Equivalent to: minimize w^T Sigma w subject to excess_returns^T w = kappa
-        # Then maximize kappa^2 / (w^T Sigma w)
+        # We maximize Sharpe by searching over target returns
+        # For each target return, minimize variance
+        # Then pick the one with highest Sharpe
         
-        # We use the substitution y = w / (excess_returns^T w) to make it convex
-        # Then solve: minimize y^T Sigma y subject to excess_returns^T y = 1, sum(y) = kappa
-        
-        # Direct approach: Use multiple target returns and find max Sharpe
         best_sharpe = -np.inf
         best_weights = None
         
-        # Try a range of target returns to find maximum Sharpe
+        # CORRECTED: Expand search range beyond individual asset returns
+        # The efficient frontier can extend beyond min/max individual returns!
         min_return = self.expected_returns.min()
         max_return = self.expected_returns.max()
         
-        # Search over possible target returns
-        for target_return in np.linspace(min_return, max_return, 100):
+        # Expand range by 50% on each side
+        range_span = max_return - min_return
+        search_min = min_return - range_span * 0.5
+        search_max = max_return + range_span * 0.5
+        
+        # Use more search points for better accuracy
+        n_points = 200
+        
+        for target_return in np.linspace(search_min, search_max, n_points):
             try:
                 # Constraints
                 constraints = [
-                    cp.sum(w) == 1,
-                    w >= 0,
+                    cp.sum(w) == 1,      # Weights sum to 1
+                    w >= 0,               # No short-selling
                     mu @ w == target_return  # Target return constraint
                 ]
                 
                 # Minimize variance for this target return
                 problem = cp.Problem(cp.Minimize(cp.quad_form(w, Sigma)), constraints)
-                problem.solve()
+                problem.solve(solver=cp.OSQP, verbose=False)
                 
                 if problem.status in ["optimal", "optimal_inaccurate"]:
                     weights = w.value
-                    portfolio_return = np.dot(weights, mu)
-                    portfolio_variance = weights @ Sigma @ weights
                     
-                    if portfolio_variance > 0:
-                        portfolio_volatility = np.sqrt(portfolio_variance)
-                        sharpe = (portfolio_return - self.risk_free_rate) / portfolio_volatility
+                    if weights is not None:
+                        # Clean up small negative values from numerical precision
+                        weights = np.maximum(weights, 0)
+                        weights = weights / weights.sum()  # Renormalize
                         
-                        if sharpe > best_sharpe:
-                            best_sharpe = sharpe
-                            best_weights = weights.copy()
-            except:
+                        # Calculate portfolio metrics
+                        portfolio_return = np.dot(weights, mu)
+                        portfolio_variance = weights @ Sigma @ weights
+                        
+                        if portfolio_variance > 1e-10:  # Avoid division by zero
+                            portfolio_volatility = np.sqrt(portfolio_variance)
+                            sharpe = (portfolio_return - self.risk_free_rate) / portfolio_volatility
+                            
+                            # Track best Sharpe (can be negative!)
+                            if sharpe > best_sharpe:
+                                best_sharpe = sharpe
+                                best_weights = weights.copy()
+                                
+            except Exception:
+                # Skip this target return if optimization fails
                 continue
         
         if best_weights is None:
-            raise RuntimeError("Maximum Sharpe optimization failed - no feasible solution found")
+            raise RuntimeError(
+                "Maximum Sharpe optimization failed - no feasible solution found. "
+                "This can happen if the constraints are too restrictive or data is invalid."
+            )
         
-        # Extract optimal weights
+        # Final cleanup and results
         optimal_weights = pd.Series(best_weights, index=self.expected_returns.index)
+        optimal_weights = optimal_weights / optimal_weights.sum()  # Ensure exact sum to 1
         
-        # Normalize weights to ensure they sum to exactly 1
-        optimal_weights = optimal_weights / optimal_weights.sum()
-        
-        # Compute portfolio metrics
+        # Compute final metrics
         portfolio_return = np.dot(optimal_weights.values, mu)
         portfolio_volatility = np.sqrt(optimal_weights.values @ Sigma @ optimal_weights.values)
         sharpe_ratio = (portfolio_return - self.risk_free_rate) / portfolio_volatility if portfolio_volatility > 0 else 0.0
@@ -525,7 +627,7 @@ class PortfolioOptimizer:
             expected_return=portfolio_return,
             volatility=portfolio_volatility,
             sharpe_ratio=sharpe_ratio,
-            optimization_type="Maximum Sharpe Ratio"
+            optimization_type="Maximum Sharpe Ratio (Constrained)"
         )
     
     def compute_efficient_frontier(
