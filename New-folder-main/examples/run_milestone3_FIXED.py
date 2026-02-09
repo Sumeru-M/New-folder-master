@@ -787,6 +787,149 @@ def main():
         print("   • *_recommended_allocation.csv - Recommended allocations (robust method)")
     print()
     print("=" * 80)
+
+    # Step 8: Institutional Risk Analysis (New Step)
+    print("-" * 80)
+    print("Step 8: Institutional Risk Analysis")
+    print("-" * 80)
+    print()
+    
+    try:
+        # Import new modules here (or at top)
+        # Assuming imports are added at top, but for safety in this block:
+        from portfolio.factor_model import FactorModel
+        from portfolio.risk_metrics import (
+            compute_portfolio_risk_metrics, 
+            compute_max_drawdown, 
+            compute_ulcer_index,
+            detect_market_regime
+        )
+        from portfolio.plotting import plot_correlation_heatmap, plot_drawdown_chart
+
+        print("[OK] Analyzing Maximum Sharpe Portfolio for institutional metrics...")
+        
+        # Use Max Sharpe weights for analysis (most common recommendation)
+        # Ensure we have the returns for just the assets in the portfolio
+        # daily_returns already contains asset returns
+        
+        # 1. Factor Analysis (vs Nifty)
+        # We need Nifty 50 data. It wasn't loaded in Step 1 unless requested.
+        # Let's try to fetch it now if not present, or skip if unavailable.
+        try:
+            index_ticker = "^NSEI"
+            if index_ticker not in prices.columns:
+                print(f"    Fetching {index_ticker} for factor analysis...")
+                idx_data = load_price_data([index_ticker], period=period if not (start_date and end_date) else None, start_date=start_date, end_date=end_date)
+                idx_returns = compute_daily_returns(idx_data)
+            else:
+                 # If user included ^NSEI in their tickers
+                idx_returns = daily_returns[[index_ticker]]
+            
+            # Align dates
+            common_idx = daily_returns.index.intersection(idx_returns.index)
+            asset_ret_aligned = daily_returns.loc[common_idx]
+            factor_ret_aligned = idx_returns.loc[common_idx]
+            
+            fm = FactorModel(factor_ret_aligned)
+            # Use max_sharpe_weights
+            max_sharpe_series = max_sharpe_result.weights
+            
+            decomp = fm.decompose_portfolio_risk(max_sharpe_series, asset_ret_aligned)
+            
+            print(f"\n    🔍 FACTOR ANALYSIS (What drives your risk?):")
+            print(f"      • Market Risk (Systematic):  {decomp['systematic_volatility']:.2%} (Explains {decomp['r_squared']:.1%} of price moves)")
+            print(f"        (Risk from the overall market moving up/down - cannot be diversified away)")
+            print(f"      • Specific Risk (Unique):    {decomp['idiosyncratic_volatility']:.2%}")
+            print(f"        (Risk unique to your selected stocks - can be reduced by diversifying)")
+            
+            # Regime Analysis
+            regime = detect_market_regime(factor_ret_aligned.iloc[:, 0])
+            print(f"\n    🌍 MARKET REGIME (Current Environment):")
+            print(f"      • Status:              {regime['regime'].upper()}")
+            print(f"      • Volatility Level:    {regime['current_vol_annualized']:.2%}")
+
+        except Exception as e:
+            print(f"    [WARNING] Factor analysis skipped: {e}")
+
+        # 2. Advanced Risk Metrics
+        # Calculate portfolio daily returns series
+        port_daily_ret = (daily_returns * max_sharpe_result.weights).sum(axis=1)
+        
+        # VaR / CVaR
+        risk_stats = compute_portfolio_risk_metrics(
+            max_sharpe_result.weights, 
+            port_daily_ret, 
+            expected_returns, 
+            covariance_matrix
+        )
+        
+        print(f"\n    🛡️ DOWNSIDE RISK METRICS (What's the worst case?):")
+        print(f"      • Max Likely Daily Loss (VaR 95%):   {risk_stats['parametric_var']['var_percent']:.2%}")
+        print(f"        (On 95 out of 100 days, your loss won't exceed this)")
+        print(f"      • Avg Loss on Bad Days (CVaR):       {risk_stats['cvar']['cvar_percent']:.2%}")
+        print(f"        (If a bad day happens, this is the average loss expected)")
+        
+        # Drawdown & Ulcer Index
+        dd_stats = compute_max_drawdown(port_daily_ret)
+        ulcer_idx = compute_ulcer_index(port_daily_ret)
+        
+        print(f"\n    📉 HISTORICAL STRESS (Based on past performance):")
+        print(f"      • Worst Drop (Max Drawdown):         {dd_stats['max_drawdown']:.2%}")
+        print(f"        (The biggest drop from peak to bottom in the analyzed period)")
+        print(f"      • Recovery Time:                     {dd_stats['max_drawdown_duration_days']} days")
+        print(f"        (Time taken to recover from the worst drop)")
+        print(f"      • Ulcer Index (Pain Score):          {ulcer_idx:.4f}")
+        print(f"        (Measures the depth and duration of drawdowns; lower is better)")
+
+        
+        # 3. Visualizations
+        print(f"\n    Generating additional visual reports...")
+        
+        # Heatmap
+        plot_correlation_heatmap(
+            daily_returns.corr(), 
+            title="Asset Correlation Matrix",
+            save_path=os.path.join(artifacts_dir, "correlation_heatmap.png")
+        )
+        print(f"      [OK] Heatmap saved: correlation_heatmap.png")
+        
+        # Drawdown Chart
+        # Calculate cumulative returns and drawdowns for plotting
+        cum_ret = (1 + port_daily_ret).cumprod()
+        wealth_index = (1 + port_daily_ret).cumprod()
+        previous_peaks = wealth_index.cummax()
+        drawdowns = (wealth_index - previous_peaks) / previous_peaks
+        
+        plot_drawdown_chart(
+            cum_ret, 
+            drawdowns, 
+            title="Max Sharpe Portfolio Drawdown Analysis",
+            save_path=os.path.join(artifacts_dir, "drawdown_analysis.png")
+        )
+        print(f"      [OK] Drawdown chart saved: drawdown_analysis.png")
+        
+        # Save Report CSV
+        risk_report = pd.DataFrame({
+            "Metric": ["Annual Return", "Annual Volatility", "Sharpe", "Max Drawdown", "VaR (95%)", "CVaR (95%)"],
+            "Value": [
+                f"{max_sharpe_result.expected_return:.2%}",
+                f"{max_sharpe_result.volatility:.2%}",
+                f"{max_sharpe_result.sharpe_ratio:.2f}",
+                f"{dd_stats['max_drawdown']:.2%}",
+                f"{risk_stats['parametric_var']['var_percent']:.2%}",
+                f"{risk_stats['cvar']['cvar_percent']:.2%}"
+            ]
+        })
+        risk_report.to_csv(os.path.join(artifacts_dir, "institutional_risk_report.csv"), index=False)
+        print(f"      [OK] Risk report saved: institutional_risk_report.csv")
+
+    except Exception as e:
+        print(f"[ERROR] Failed to run institutional analysis: {e}")
+        import traceback
+        traceback.print_exc()
+
+    print()
+    print("=" * 80)
     print("✅ Analysis complete! Check the CSV files for detailed recommendations.")
     print("=" * 80)
 

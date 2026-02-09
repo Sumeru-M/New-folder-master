@@ -221,6 +221,18 @@ class ScenarioEngine:
                 correlation_shock=0.3  # Correlations increase (flight to quality)
             ),
             MarketShock(
+                name="Rate Hike Shock",
+                return_shock=-0.15,  # General market drag
+                volatility_shock=1.2,  # 20% vol increase
+                correlation_shock=0.1  # Correlations tighten slightly
+            ),
+            MarketShock(
+                name="Volatility Regime Shift",
+                return_shock=0.0,    # No directional bias assumed
+                volatility_shock=1.5, # 50% Higher volatility regime
+                correlation_shock=0.0 # Correlations unchanged
+            ),
+            MarketShock(
                 name="Tech Sector Crash",
                 return_shock=-0.25,  # 25% return drop
                 volatility_shock=1.5,  # 50% volatility increase

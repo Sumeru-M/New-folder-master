@@ -352,3 +352,176 @@ def compute_portfolio_risk_metrics(
         "component_var": component_var,
         "confidence_level": confidence_level
     }
+
+
+def compute_max_drawdown(returns: pd.Series) -> Dict[str, float]:
+    """
+    Compute Maximum Drawdown (MDD) and related metrics.
+    
+    Maximum Drawdown is the maximum observed loss from a peak to a trough of a portfolio,
+    before a new peak is attained.
+    
+    Parameters
+    ----------
+    returns : pd.Series
+        Historical daily returns (log returns)
+        
+    Returns
+    -------
+    Dict[str, float]
+        - max_drawdown: Maximum drawdown (positive value representing loss)
+        - max_drawdown_duration: Number of days of the longest drawdown
+        - current_drawdown: Drawdown at the last observation
+    """
+    if returns.empty:
+        return {"max_drawdown": 0.0, "duration": 0.0, "current": 0.0}
+
+    # Convert log returns to cumulative wealth index
+    wealth_index = (1 + returns).cumprod()
+    previous_peaks = wealth_index.cummax()
+    drawdowns = (wealth_index - previous_peaks) / previous_peaks
+    
+    max_drawdown = abs(drawdowns.min()) # Convert to positive number
+    
+    # Calculate duration (max consecutive days below peak)
+    is_underwater = drawdowns < 0
+    # Group by consecutive True values
+    drawdown_periods = is_underwater.ne(is_underwater.shift()).cumsum()
+    # Filter only underwater periods
+    underwater_periods = drawdown_periods[is_underwater]
+    if underwater_periods.empty:
+        max_duration = 0
+    else:
+        max_duration = underwater_periods.value_counts().max()
+
+    return {
+        "max_drawdown": max_drawdown,
+        "max_drawdown_duration_days": float(max_duration),
+        "current_drawdown": abs(drawdowns.iloc[-1])
+    }
+
+
+def compute_ulcer_index(returns: pd.Series, period: int = 14) -> float:
+    """
+    Compute Ulcer Index.
+    
+    The Ulcer Index is a measure of the depth and duration of drawdowns in prices.
+    Unlike standard deviation, it only penalizes downside volatility.
+    
+    sqrt(mean(drawdowns^2))
+    """
+    if returns.empty:
+        return 0.0
+        
+    wealth_index = (1 + returns).cumprod()
+    previous_peaks = wealth_index.cummax()
+    drawdowns = (wealth_index - previous_peaks) / previous_peaks
+    drawdowns_pct = drawdowns * 100 # Convert to percent
+    
+    squared_drawdowns = drawdowns_pct ** 2
+    ulcer_index = np.sqrt(squared_drawdowns.mean())
+    
+    return float(ulcer_index / 100) # Return as decimal
+
+
+def detect_market_regime(returns: pd.Series, window: int = 21) -> Dict[str, Union[str, float]]:
+    """
+    Detect Market Regime based on Volatility.
+    
+    Uses rolling volatility Z-score to classify market state.
+    
+    Regimes:
+    - Low Volatility (Z < -1)
+    - Normal (1 >= Z >= -1)
+    - High Volatility (Z > 1)
+    - Crisis (Z > 2)
+    
+    Parameters
+    ----------
+    returns : pd.Series
+        Market returns (e.g. Nifty) or Portfolio returns
+    window : int
+        Rolling window for current volatility (default 21 days ~ 1 month)
+        
+    Returns
+    -------
+    Dict
+        - regime: str (Low, Normal, High, Crisis)
+        - z_score: float
+        - current_vol: float (annualized)
+        - long_term_vol: float (annualized)
+    """
+    if len(returns) < window + 2:
+        return {"regime": "Unknown", "z_score": 0.0, "current_vol": 0.0}
+        
+    daily_vol = returns.rolling(window=window).std()
+    current_vol = daily_vol.iloc[-1]
+    
+    # Long term stats (using full history available)
+    long_term_mean_vol = daily_vol.mean()
+    long_term_std_vol = daily_vol.std()
+    
+    if long_term_std_vol == 0:
+        z_score = 0
+    else:
+        z_score = (current_vol - long_term_mean_vol) / long_term_std_vol
+        
+    if z_score > 2.0:
+        regime = "Crisis"
+    elif z_score > 1.0:
+        regime = "High Volatility"
+    elif z_score < -1.0:
+        regime = "Low Volatility"
+    else:
+        regime = "Normal"
+        
+    return {
+        "regime": regime,
+        "z_score": float(z_score),
+        "current_vol_annualized": float(current_vol * np.sqrt(252)),
+        "long_term_vol_annualized": float(long_term_mean_vol * np.sqrt(252))
+    }
+
+
+def compute_rolling_correlations(returns: pd.DataFrame, window: int = 60) -> pd.DataFrame:
+    """
+    Compute average pairwise rolling correlations.
+    
+    Parameters
+    ----------
+    returns : pd.DataFrame
+        Asset returns
+    window : int
+        Rolling window size
+        
+    Returns
+    -------
+    pd.DataFrame
+        Average pairwise correlation over time.
+    """
+    if returns.empty or len(returns.columns) < 2:
+         return pd.DataFrame()
+         
+    # pairwise correlation for each window
+    rolling_corr = returns.rolling(window=window).corr()
+    
+    # We want to extract a single time series representing "Average Correlation"
+    # This is useful to see if assets are moving together (Crisis) or apart (Diversification)
+    
+    avg_corrs = []
+    dates = returns.index[window-1:]
+    
+    for dt in dates:
+        # Get corr matrix for this date
+        try:
+            corr_mat = rolling_corr.loc[dt]
+            # Average off-diagonal elements
+            # Mask diagonal
+            mask = np.ones_like(corr_mat, dtype=bool)
+            np.fill_diagonal(mask, False)
+            avg_corr = corr_mat.values[mask].mean()
+            avg_corrs.append(avg_corr)
+        except KeyError:
+            avg_corrs.append(np.nan)
+            
+    return pd.DataFrame({"Average Correlation": avg_corrs}, index=dates)

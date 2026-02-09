@@ -163,3 +163,93 @@ def plot_efficient_frontier(
         print(f"Figure saved to: {save_path}")
     
     return fig
+
+def plot_correlation_heatmap(
+    correlation_matrix: pd.DataFrame,
+    title: str = "Correlation Matrix",
+    save_path: Optional[str] = None,
+    figsize: Tuple[int, int] = (10, 8)
+) -> plt.Figure:
+    """
+    Plot correlation matrix as a heatmap.
+    """
+    fig, ax = plt.subplots(figsize=figsize)
+    
+    # Use seaborn if available, else matplotlib
+    try:
+        import seaborn as sns
+        sns.heatmap(
+            correlation_matrix,
+            annot=True,
+            fmt=".2f",
+            cmap="coolwarm",
+            vmin=-1,
+            vmax=1,
+            center=0,
+            square=True,
+            ax=ax,
+            cbar_kws={"shrink": .8}
+        )
+    except ImportError:
+        # Fallback to matplotlib
+        cax = ax.imshow(correlation_matrix, cmap="coolwarm", vmin=-1, vmax=1)
+        fig.colorbar(cax)
+        
+        # Annotations
+        for i in range(len(correlation_matrix)):
+            for j in range(len(correlation_matrix)):
+                text = ax.text(j, i, f"{correlation_matrix.iloc[i, j]:.2f}",
+                               ha="center", va="center", color="black", fontsize=9)
+                               
+        # Ticks
+        ax.set_xticks(np.arange(len(correlation_matrix)))
+        ax.set_yticks(np.arange(len(correlation_matrix)))
+        ax.set_xticklabels(correlation_matrix.columns, rotation=45, ha="right")
+        ax.set_yticklabels(correlation_matrix.index)
+
+    ax.set_title(title, fontsize=14, fontweight='bold', pad=20)
+    plt.tight_layout()
+    
+    if save_path:
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        print(f"Heatmap saved to: {save_path}")
+        
+    return fig
+
+def plot_drawdown_chart(
+    cumulative_returns: pd.Series,
+    drawdowns: pd.Series,
+    title: str = "Portfolio Drawdown Analysis",
+    save_path: Optional[str] = None,
+    figsize: Tuple[int, int] = (12, 8)
+) -> plt.Figure:
+    """
+    Plot Cumulative Returns and Drawdowns.
+    """
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=figsize, sharex=True, gridspec_kw={'height_ratios': [3, 1]})
+    
+    # Plot Cumulative Returns
+    ax1.plot(cumulative_returns.index, cumulative_returns, label='Cumulative Return', color='blue', linewidth=1.5)
+    ax1.set_title(title, fontsize=14, fontweight='bold')
+    ax1.set_ylabel('Growth of $1')
+    ax1.grid(True, alpha=0.3)
+    ax1.legend(loc='upper left')
+    
+    # Plot Drawdowns (Area Chart)
+    ax2.fill_between(drawdowns.index, drawdowns, 0, color='red', alpha=0.3, label='Drawdown')
+    ax2.plot(drawdowns.index, drawdowns, color='red', linewidth=0.5, alpha=0.8)
+    ax2.set_ylabel('Drawdown (%)')
+    ax2.set_xlabel('Date')
+    ax2.grid(True, alpha=0.3)
+    ax2.legend(loc='lower left')
+    
+    # Format Y-axis as percent for drawdown
+    ax2.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, _: f'{x:.0%}'))
+    
+    plt.tight_layout()
+    
+    if save_path:
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        print(f"Drawdown chart saved to: {save_path}")
+        
+    return fig

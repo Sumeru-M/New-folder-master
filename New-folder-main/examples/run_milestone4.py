@@ -71,6 +71,17 @@ def parse_args():
     return parser.parse_args()
 
 
+
+def validate_tickers(tickers_list):
+    """Validate ticker symbols."""
+    valid_tickers = []
+    for ticker in tickers_list:
+        ticker = ticker.strip().upper()
+        if not ticker.endswith('.NS'):
+            ticker += '.NS'
+        valid_tickers.append(ticker)
+    return valid_tickers
+
 def main():
     """Main execution function."""
     args = parse_args()
@@ -81,19 +92,13 @@ def main():
         print("Please enter the following details (or press Enter for defaults):\n")
         
         # Get tickers
-        tickers_input = input("Enter tickers (comma-separated, e.g., RELIANCE.NS,TCS.NS) [default: RELIANCE.NS,TCS.NS,INFY.NS,HDFCBANK.NS]: ").strip()
+        tickers_input = input("Enter tickers (comma-separated, e.g., RELIANCE, TCS) [default: RELIANCE, TCS, INFY, HDFCBANK]: ").strip()
         
         if tickers_input:
-            # Validate ticker input
-            if '"' in tickers_input or '\\' in tickers_input or '/' in tickers_input:
-                print("\n[ERROR] Invalid ticker input detected. Using default tickers.")
-                print("Tickers should be comma-separated symbols like: RELIANCE.NS,TCS.NS\n")
-                args.tickers = "RELIANCE.NS,TCS.NS,INFY.NS,HDFCBANK.NS"
-            else:
-                args.tickers = tickers_input
+            args.tickers = tickers_input
         else:
-            args.tickers = "RELIANCE.NS,TCS.NS,INFY.NS,HDFCBANK.NS"
-        
+            args.tickers = "RELIANCE, TCS, INFY, HDFCBANK"
+            
         # Get portfolio value
         pv_input = input(f"Enter portfolio value [default: ₹{args.portfolio_value:,.0f}]: ").strip()
         if pv_input:
@@ -124,7 +129,8 @@ def main():
         print()
     
     # Parse tickers
-    tickers = [t.strip() for t in args.tickers.split(",") if t.strip()]
+    tickers_raw = [t.strip() for t in args.tickers.split(",") if t.strip()]
+    tickers = validate_tickers(tickers_raw)
     
     # Validate tickers
     if not tickers:
