@@ -74,7 +74,8 @@ def _load_from_cache(cache_file: str) -> Optional[pd.DataFrame]:
     """
     if os.path.exists(cache_file):
         try:
-            data = pd.read_csv(cache_file, index_col=0, parse_dates=True, date_format='ISO8601')
+            # Load with MultiIndex columns (header=[0,1] reads two header rows)
+            data = pd.read_csv(cache_file, index_col=0, parse_dates=True, date_format='ISO8601', header=[0, 1])
             print(f"Loaded data from cache: {cache_file}")
             return data
         except Exception as e:
@@ -95,7 +96,8 @@ def _save_to_cache(data: pd.DataFrame, cache_file: str) -> None:
         Path to cache file
     """
     try:
-        data.to_csv(cache_file)
+        # Save with MultiIndex columns preserved (header=True saves both levels)
+        data.to_csv(cache_file, header=True)
         print(f"Data cached to: {cache_file}")
     except Exception as e:
         print(f"Warning: Could not save to cache: {e}")
@@ -178,15 +180,18 @@ def fetch_market_data(
             # Skip empty cache files
             if cached_data.empty or cached_data.shape[0] == 0:
                 print(f"Warning: Cache file is empty, fetching fresh data...")
-            else:   
-                 # Some code with proper indentation
-                    if cached_data is not None and hasattr(cached_data, 'columns'):
-                        cached_tickers = [col[0] for col in cached_data.columns.levels[0]]
-                    else:
-                     cached_tickers = []
-                   # ✅ Safely handles None case
-                     if set(tickers).issubset(set(cached_tickers)):
-                        return cached_data
+            else:
+                # Check if cached data has the tickers we need
+                if isinstance(cached_data.columns, pd.MultiIndex):
+                    # For MultiIndex columns, get unique tickers from level 0
+                    cached_tickers = list(cached_data.columns.get_level_values(0).unique())
+                else:
+                    # For flat columns, use column names directly
+                    cached_tickers = list(cached_data.columns)
+                
+                # If all requested tickers are in cache, return cached data
+                if set(tickers).issubset(set(cached_tickers)):
+                    return cached_data
     
     # Download data using yfinance
     print(f"Fetching market data for {len(tickers)} ticker(s)...")

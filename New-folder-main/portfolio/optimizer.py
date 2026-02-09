@@ -118,6 +118,7 @@ def compute_expected_returns(daily_returns, annualized=True):
     else:
         return daily_returns.mean()
 
+
 def compute_covariance_matrix(returns: pd.DataFrame, annualized: bool = True) -> pd.DataFrame:
     """
     Compute sample covariance matrix of returns.
