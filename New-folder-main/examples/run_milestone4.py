@@ -108,24 +108,28 @@ def main():
                 print(f"Invalid input, using default: ₹{args.portfolio_value:,.0f}")
         
         # Get confidence level
-        conf_input = input(f"Enter confidence level (e.g., 0.95 for 95%) [default: {args.confidence_level}]: ").strip()
+        print(f"Enter 'Worst Case' Confidence Level (default: {args.confidence_level*100:.0f}%)")
+        print("   (e.g., 0.95 means we are 95% sure losses won't exceed the calculated amount)")
+        conf_input = input(f"   Value [0.90-0.99]: ").strip()
         if conf_input:
             try:
                 conf_val = float(conf_input)
                 if 0 < conf_val < 1:
                     args.confidence_level = conf_val
                 else:
-                    print(f"Confidence level must be between 0 and 1, using default: {args.confidence_level}")
+                    print(f"   [!] Input must be between 0 and 1. Using default: {args.confidence_level}")
             except ValueError:
-                print(f"Invalid input, using default: {args.confidence_level}")
+                print(f"   [!] Invalid input. Using default: {args.confidence_level}")
         
         # Get risk-free rate
-        rf_input = input(f"Enter risk-free rate (e.g., 0.05 for 5%) [default: {args.risk_free_rate}]: ").strip()
+        print(f"Enter 'Safe Savings Rate' (Risk-Free Rate) (default: {args.risk_free_rate*100:.1f}%)")
+        print("   (The return you'd get from a bank FD or government bond, e.g., 0.07 for 7%)")
+        rf_input = input(f"   Value: ").strip()
         if rf_input:
             try:
                 args.risk_free_rate = float(rf_input)
             except ValueError:
-                print(f"Invalid input, using default: {args.risk_free_rate}")
+                print(f"   [!] Invalid input. Using default: {args.risk_free_rate}")
         print()
     
     # Parse tickers
@@ -241,7 +245,8 @@ def main():
     print("   (Which stocks contribute most to your portfolio risk)")
     print()
     for ticker, row in comp_var.iterrows():
-        print(f"   {ticker:20s}: {row['% Contribution']:>6.1%} of total risk")
+        # Fixed formatting: The value is already a percentage (0-100), so use 'f' not '%'
+        print(f"   {ticker:20s}: {row['% Contribution']:>6.1f}% of total risk")
     print()
     print("-" * 80)
     print()
