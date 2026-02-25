@@ -10,7 +10,6 @@ import pandas as pd
 import numpy as np
 from dataclasses import dataclass
 import statsmodels.api as sm
-from sklearn.linear_model import LinearRegression
 
 @dataclass
 class FactorAnalysisResult:
@@ -96,15 +95,14 @@ class FactorModel:
             results = rolling_model.fit()
             return results.params.drop('const', axis=1)
         except ImportError:
-            # Fallback for old statsmodels or if statsmodels missing (though we listed it)
-            # Simple loop
+            # Fallback using pure numpy least squares
             betas = []
             for start in range(len(df) - window + 1):
                 end = start + window
-                y_sub = y.iloc[start:end]
-                X_sub = X.iloc[start:end]
-                reg = LinearRegression().fit(X_sub, y_sub)
-                betas.append(reg.coef_)
+                y_sub = y.iloc[start:end].values
+                X_sub = X.iloc[start:end].values
+                coef, _, _, _ = np.linalg.lstsq(X_sub, y_sub, rcond=None)
+                betas.append(coef)
             
             return pd.DataFrame(betas, index=df.index[window-1:], columns=X.columns)
 
