@@ -1,14 +1,14 @@
 Metric,Value,What This Means
-Expected Annual Return (Standard),11.52%,How much your portfolio is expected to grow per year
-Expected Annual Return (Robust),11.52%,How much your portfolio is expected to grow per year (more reliable estimate)
-Risk Level - Volatility (Standard),16.73%,How much your portfolio price can swing up or down
-Risk Level - Volatility (Robust),16.73%,How much your portfolio price can swing (more stable estimate)
-Risk-Adjusted Performance - Sharpe (Standard),-0.15,How good your returns are relative to risk taken
-Risk-Adjusted Performance - Sharpe (Robust),-0.15,How good your returns are relative to risk (more accurate)
-Number of Effective Assets (Standard),1.0,How many different investments you effectively have
-Number of Effective Assets (Robust),1.0,How many different investments you effectively have (more balanced)
-Diversification Level (Standard),Highly Concentrated,How spread out your investments are
-Diversification Level (Robust),Highly Concentrated,How spread out your investments are (better balanced)
-Change in Risk (Robust vs Standard),+0.00%,Lower is better - shows if robust method reduces risk
-Change in Performance (Robust vs Standard),+0.00,Higher is better - shows if robust method improves performance
+Expected Annual Return (Standard),16.86%,How much your portfolio is expected to grow per year
+Expected Annual Return (Robust),16.86%,How much your portfolio is expected to grow per year (more reliable estimate)
+Risk Level - Volatility (Standard),15.97%,How much your portfolio price can swing up or down
+Risk Level - Volatility (Robust),15.24%,How much your portfolio price can swing (more stable estimate)
+Risk-Adjusted Performance - Sharpe (Standard),0.62,How good your returns are relative to risk taken
+Risk-Adjusted Performance - Sharpe (Robust),0.65,How good your returns are relative to risk (more accurate)
+Number of Effective Assets (Standard),2.8,How many different investments you effectively have
+Number of Effective Assets (Robust),2.8,How many different investments you effectively have (more balanced)
+Diversification Level (Standard),Highly Diversified,How spread out your investments are
+Diversification Level (Robust),Highly Diversified,How spread out your investments are (better balanced)
+Change in Risk (Robust vs Standard),-0.73%,Lower is better - shows if robust method reduces risk
+Change in Performance (Robust vs Standard),+0.03,Higher is better - shows if robust method improves performance
 Change in Diversification (Robust vs Standard),+0.0 assets,Higher is better - shows if robust method improves diversification

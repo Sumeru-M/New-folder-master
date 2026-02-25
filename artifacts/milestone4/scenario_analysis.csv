@@ -1,2 +1,2 @@
-Scenario,Expected Return,Volatility,Performance Score,What This Means
-2008-Style Financial Crisis,-24.29%,37.32%,-0.78,Your portfolio would have -24.29% annual return if this scenario occurs
+Scenario,Code,Category,Return_Chg_%,Vol_Chg_%,Sharpe_Chg,Loss_INR,Loss_%,Likelihood,Duration,Recovery
+RBI Rate Hike Cycle,INDIA_1,🔵 INDIA-SPECIFIC,-14.999999999999996,43.036189221548526,-0.8726823607383779,149999.99999999997,14.999999999999996,Moderate (15-20% annual),6-15 months,9-18 months
