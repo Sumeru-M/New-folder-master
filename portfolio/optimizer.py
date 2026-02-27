@@ -113,11 +113,11 @@ def compute_expected_returns(daily_returns, annualized=True):
         Expected returns (annualized if annualized=True)
     """
     if annualized:
-        # For LOG returns, use exponential annualization
-        # Formula: exp(mean_log_return * 252) - 1
-        # This is correct because log returns add: ln(1+r_total) = sum(ln(1+r_daily))
+    # Arithmetic annualized return (lognormal adjustment: geometric + sigma^2/2)
+    # Required for mean-variance optimization (Markowitz uses arithmetic returns)
         mean_daily_log_return = daily_returns.mean()
-        annualized_return = np.exp(mean_daily_log_return * 252) - 1
+        var_daily_log_return  = daily_returns.var()
+        annualized_return = np.exp(mean_daily_log_return * 252 + 0.5 * var_daily_log_return * 252) - 1
         return annualized_return
     else:
         return daily_returns.mean()
@@ -214,22 +214,30 @@ def compute_ledoit_wolf_shrinkage(returns: pd.DataFrame, annualized: bool = True
     
     # Estimate the expected squared Frobenius norm of (S - Sigma_true)
     # This is approximated by the sum of squared sample covariances
+    # Analytical LW formula for scaled-identity target (Ledoit-Wolf 2004, Appendix B)
+# pi_hat: sum of asymptotic variances of sample covariance entries
     pi_hat = 0.0
     for i in range(N):
         for j in range(N):
-            # Compute variance of sample covariance element S_ij
             cross_prod = X_centered[:, i] * X_centered[:, j]
             pi_hat += np.var(cross_prod, ddof=1)
-    
-    pi_hat = pi_hat / T
-    
-    # Compute gamma: squared Frobenius norm of (S - F)
-    gamma_hat = np.sum((S - F) ** 2)
-    
-    # Compute kappa (simplification - assumes constant correlation)
-    kappa_hat = pi_hat / gamma_hat if gamma_hat > 0 else 1.0
-    
-    # Shrinkage intensity delta
+            pi_hat = pi_hat / T
+
+# rho_hat: correction term for scaled-identity target (missing in original)
+# rho_hat = (1/T) * sum_i [ AsymVar(S_ii) * (S_ii - mu) / mu ]
+    rho_hat = 0.0
+    for i in range(N):
+        cross_prod_ii = X_centered[:, i] ** 2
+        asym_var_ii = np.var(cross_prod_ii, ddof=1) / T
+        rho_hat += asym_var_ii * (S[i, i] - mu) / mu if mu > 0 else 0.0
+
+# gamma_hat: squared Frobenius norm of (S - F)
+        gamma_hat = np.sum((S - F) ** 2)
+
+# Optimal shrinkage intensity (full formula: delta* = (pi - rho) / gamma)
+    kappa_hat = (pi_hat - rho_hat) / gamma_hat if gamma_hat > 0 else 1.0
+
+# Shrinkage intensity delta
     delta = max(0.0, min(1.0, kappa_hat))  # Clamp between 0 and 1
     
     # Apply shrinkage

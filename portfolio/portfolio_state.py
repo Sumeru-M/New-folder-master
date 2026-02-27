@@ -101,9 +101,12 @@ class PortfolioState:
         
         # Apply shocks
         new_stds = stds * (1 + vol_shock)
-        new_corr = corr_matrix + correlation_shock
-        new_corr = new_corr.clip(-1, 1) # Ensure within bounds
-        np.fill_diagonal(new_corr.values, 1.0) # Reset diagonal
+        new_corr = corr_matrix.copy()
+        # Apply shock to off-diagonal elements only
+        mask = ~np.eye(len(stds), dtype=bool)
+        new_corr.values[mask] += correlation_shock
+        new_corr = new_corr.clip(-1, 1)
+        np.fill_diagonal(new_corr.values, 1.0)
         
         # Reconstruct Covariance
         new_outer_vol = np.outer(new_stds, new_stds)

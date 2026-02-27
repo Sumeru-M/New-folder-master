@@ -132,10 +132,11 @@ class PerformanceAnalyzer:
             Portfolio CAGR
         """
         weights = self._compute_weights()
-        
-        # Portfolio returns = weighted sum
-        portfolio_returns = self.returns[self.tickers].dot(weights[self.tickers])
-        
+    
+        simple_returns = np.exp(self.returns[self.tickers]) - 1
+        portfolio_simple = simple_returns.dot(weights[self.tickers])
+        portfolio_returns = np.log(1 + portfolio_simple)
+
         return self.compute_cagr(portfolio_returns, self.n_years)
     
     def compute_stock_cagrs(self) -> pd.Series:
@@ -432,32 +433,38 @@ class PerformanceAnalyzer:
         # Expected value
         expected_value = current_value * ((1 + cagr) ** horizon_years)
         
-        # Estimate volatility-based confidence intervals
+        # Correct lognormal GBM percentile bands
         weights = self._compute_weights()
-        portfolio_returns = self.returns[self.tickers].dot(weights[self.tickers])
-        volatility = portfolio_returns.std() * np.sqrt(TRADING_DAYS_PER_YEAR)
-        
-        # Approximate percentiles using normal distribution
-        # This is simplistic - monte carlo gives better estimates
-        annual_std = volatility * np.sqrt(horizon_years)
-        
+        simple_returns = np.exp(self.returns[self.tickers]) - 1
+        port_simple = simple_returns.dot(weights[self.tickers])
+        portfolio_returns = np.log(1 + port_simple)
+
+        mu_log = portfolio_returns.mean()       # daily log drift
+        sigma_log = portfolio_returns.std()     # daily log vol
+        T = horizon_years * TRADING_DAYS_PER_YEAR
+
+        # Lognormal median and spread (correct GBM formula)
+        log_median = mu_log * T - 0.5 * sigma_log**2 * T
+        log_std    = sigma_log * np.sqrt(T)
+
         percentiles = {
-            10: expected_value * np.exp(-1.28 * annual_std),
-            25: expected_value * np.exp(-0.67 * annual_std),
-            50: expected_value,
-            75: expected_value * np.exp(0.67 * annual_std),
-            90: expected_value * np.exp(1.28 * annual_std),
-        }
-        
+        10: current_value * np.exp(log_median - 1.28 * log_std),
+        25: current_value * np.exp(log_median - 0.67 * log_std),
+        50: current_value * np.exp(log_median),
+        75: current_value * np.exp(log_median + 0.67 * log_std),
+        90: current_value * np.exp(log_median + 1.28 * log_std),
+    }
+        median_value = current_value * np.exp(log_median)
+
         return ProjectedValue(
-            horizon_years=horizon_years,
-            expected_value=expected_value,
-            median_value=expected_value,
-            std_dev=current_value * annual_std,
-            percentiles=percentiles,
-            probability_of_loss=0.0,  # Simplified
-            probability_of_double=1.0 if expected_value >= 2 * current_value else 0.0
-        )
+        horizon_years=horizon_years,
+        expected_value=expected_value,
+        median_value=median_value,
+        std_dev=current_value * sigma_log * np.sqrt(T),
+        percentiles=percentiles,
+        probability_of_loss=0.0,  # Simplified
+        probability_of_double=1.0 if expected_value >= 2 * current_value else 0.0
+    )
     
     def _project_monte_carlo(
         self,
@@ -526,15 +533,19 @@ class PerformanceAnalyzer:
         
         # Risk-adjusted metrics (simplified - full version in risk_metrics.py)
         weights = self._compute_weights()
-        portfolio_returns = self.returns[self.tickers].dot(weights[self.tickers])
+        simple_returns = np.exp(self.returns[self.tickers]) - 1
+        portfolio_returns = np.log(1 + simple_returns.dot(weights[self.tickers]))
         
         volatility = portfolio_returns.std() * np.sqrt(TRADING_DAYS_PER_YEAR)
         sharpe_ratio = (portfolio_cagr - self.risk_free_rate) / volatility if volatility > 0 else 0.0
         
         # Downside metrics
-        downside_returns = portfolio_returns[portfolio_returns < 0]
-        downside_vol = downside_returns.std() * np.sqrt(TRADING_DAYS_PER_YEAR) if len(downside_returns) > 0 else volatility
-        sortino_ratio = (portfolio_cagr - self.risk_free_rate) / downside_vol if downside_vol > 0 else 0.0
+        # Downside metrics — MAR = risk-free rate (standard Sortino definition)
+        daily_rfr = self.risk_free_rate / TRADING_DAYS_PER_YEAR
+        excess_daily = portfolio_returns - daily_rfr
+        downside = np.minimum(excess_daily, 0)
+        downside_vol = np.sqrt((downside**2).mean()) * np.sqrt(TRADING_DAYS_PER_YEAR)
+        sortino_ratio = (portfolio_cagr - self.risk_free_rate) / downside_vol if downside_vol > 0 else 0.0  
         
         # Max drawdown (simplified)
         cumulative_returns = np.exp(portfolio_returns.cumsum())
