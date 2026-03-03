@@ -1,0 +1,17 @@
+{
+  "risk_contribution": {
+    "INDIGO.NS": 0.3333333244811557,
+    "SBIN.NS": 0.33333332962863665,
+    "ETERNAL.NS": 0.3333333458902077
+  },
+  "factor_exposure": {},
+  "diversification_ratio": 1.4161602165464926,
+  "concentration": {
+    "herfindahl_index": 0.34251603478508114,
+    "effective_n": 2.9195713439444404,
+    "entropy": 1.0849244971344019,
+    "normalised_entropy": 0.9875408352201284,
+    "max_weight": 0.40506728020235055,
+    "gini_coefficient": 0.0897713324373755
+  }
+}
