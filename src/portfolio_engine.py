@@ -149,9 +149,8 @@ def _compute_annualized_returns(daily_returns: pd.DataFrame) -> pd.Series:
         Annualized returns for each asset
     """
     n_periods = len(daily_returns)
-    cumulative_return = (1 + daily_returns).prod()
-    return cumulative_return ** (252 / n_periods) - 1
-
+    cumulative_return = np.exp(daily_returns.sum()) - 1
+    return (1 + cumulative_return) ** (252 / n_periods) - 1
 
 def _compute_annualized_volatility(daily_returns: pd.DataFrame) -> pd.Series:
     """

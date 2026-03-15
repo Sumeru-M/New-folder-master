@@ -1,0 +1,481 @@
+{
+  "portfolio": {
+    "tickers": [
+      "RELIANCE.NS",
+      "TCS.NS",
+      "INFY.NS",
+      "HDFCBANK.NS",
+      "ICICIBANK.NS"
+    ],
+    "portfolio_value_inr": 1000000.0,
+    "risk_free_rate": 0.07,
+    "data_period": "2y",
+    "current_weights": {
+      "RELIANCE.NS": 0.2,
+      "TCS.NS": 0.2,
+      "INFY.NS": 0.2,
+      "HDFCBANK.NS": 0.2,
+      "ICICIBANK.NS": 0.2
+    },
+    "current_stats": {
+      "expected_return": 0.082163,
+      "volatility": 0.092035,
+      "sharpe_ratio": 0.1322
+    },
+    "shrinkage_delta": 0.1296
+  },
+  "optimization_results": {
+    "mean_variance": {
+      "optimal_weights": {
+        "RELIANCE.NS": 0.385833,
+        "TCS.NS": 0.214167,
+        "INFY.NS": 0.0,
+        "HDFCBANK.NS": 0.4,
+        "ICICIBANK.NS": 0.0
+      },
+      "expected_return": 0.137104,
+      "volatility": 0.123637,
+      "sharpe_ratio": 0.5427,
+      "cvar": 0.013914,
+      "optimization_type": "Mean-Variance (\u03bb=2.0)",
+      "solve_status": "optimal",
+      "risk_contribution": {
+        "RELIANCE.NS": 0.54657,
+        "TCS.NS": 0.174732,
+        "INFY.NS": -0.0,
+        "HDFCBANK.NS": 0.278698,
+        "ICICIBANK.NS": 0.0
+      },
+      "factor_exposure": {},
+      "allocation_health_score": 68,
+      "overweight_underweight_flags": {
+        "RELIANCE.NS": "OW +18.6%",
+        "TCS.NS": "Neutral",
+        "INFY.NS": "UW -20.0%",
+        "HDFCBANK.NS": "OW +20.0%",
+        "ICICIBANK.NS": "UW -20.0%"
+      },
+      "rebalance_actions_rupees": {
+        "RELIANCE.NS": 185833.19,
+        "TCS.NS": 14166.8,
+        "INFY.NS": -200000.0,
+        "HDFCBANK.NS": 200000.01,
+        "ICICIBANK.NS": -199999.99
+      },
+      "diagnostics": {
+        "health_score_breakdown": {
+          "diversification": 57.31199484389921,
+          "concentration": 80.65816623043234,
+          "risk_balance": 49.139606644089305,
+          "factor_balance": 75.0,
+          "liquidity": 100.0,
+          "tracking_error": 80.0
+        },
+        "concentration": {
+          "herfindahl_index": 0.3547346693499595,
+          "effective_n": 2.819008364286664,
+          "entropy": 1.0639958468774502,
+          "normalised_entropy": 0.6610977898912993,
+          "max_weight": 0.40000000545055525,
+          "gini_coefficient": 0.47433327294951017
+        },
+        "diversification_ratio": 1.7084152155317687,
+        "factor_imbalance_warning": null,
+        "portfolio_comparison": {
+          "current": {
+            "expected_return": 0.0822,
+            "volatility": 0.092,
+            "sharpe_ratio": 0.1322,
+            "herfindahl_index": 0.2,
+            "effective_n": 5.0,
+            "diversification_ratio": 2.2642
+          },
+          "optimised": {
+            "expected_return": 0.1371,
+            "volatility": 0.1236,
+            "sharpe_ratio": 0.5427,
+            "herfindahl_index": 0.3547,
+            "effective_n": 2.82,
+            "diversification_ratio": 1.7084
+          },
+          "improvement": {
+            "expected_return": 0.0549,
+            "volatility": 0.0316,
+            "sharpe_ratio": 0.4105,
+            "herfindahl_index": 0.1547,
+            "effective_n": -2.18,
+            "diversification_ratio": -0.5558
+          },
+          "one_way_turnover": 0.8
+        }
+      }
+    },
+    "min_variance": {
+      "optimal_weights": {
+        "RELIANCE.NS": 0.155037,
+        "TCS.NS": 0.145596,
+        "INFY.NS": 0.199367,
+        "HDFCBANK.NS": 0.277172,
+        "ICICIBANK.NS": 0.222828
+      },
+      "expected_return": 0.081187,
+      "volatility": 0.088404,
+      "sharpe_ratio": 0.1265,
+      "cvar": 0.010321,
+      "optimization_type": "Minimum Variance",
+      "solve_status": "optimal",
+      "risk_contribution": {
+        "RELIANCE.NS": 0.163447,
+        "TCS.NS": 0.153493,
+        "INFY.NS": 0.21018,
+        "HDFCBANK.NS": 0.262139,
+        "ICICIBANK.NS": 0.210741
+      },
+      "factor_exposure": {},
+      "allocation_health_score": 93,
+      "overweight_underweight_flags": {
+        "RELIANCE.NS": "UW -4.5%",
+        "TCS.NS": "UW -5.4%",
+        "INFY.NS": "Neutral",
+        "HDFCBANK.NS": "OW +7.7%",
+        "ICICIBANK.NS": "Neutral"
+      },
+      "rebalance_actions_rupees": {
+        "RELIANCE.NS": -44962.7,
+        "TCS.NS": -54404.06,
+        "INFY.NS": -633.24,
+        "HDFCBANK.NS": 77172.38,
+        "ICICIBANK.NS": 22827.62
+      },
+      "diagnostics": {
+        "health_score_breakdown": {
+          "diversification": 100.0,
+          "concentration": 98.56768437806434,
+          "risk_balance": 90.26650201301413,
+          "factor_balance": 75.0,
+          "liquidity": 100.0,
+          "tracking_error": 80.0
+        },
+        "concentration": {
+          "herfindahl_index": 0.21145852398980833,
+          "effective_n": 4.729059775562403,
+          "entropy": 1.5812437855011867,
+          "normalised_entropy": 0.9824820039871728,
+          "max_weight": 0.2771723808456092,
+          "gini_coefficient": 0.1323772828279089
+        },
+        "diversification_ratio": 2.2827403275592055,
+        "factor_imbalance_warning": null,
+        "portfolio_comparison": {
+          "current": {
+            "expected_return": 0.0822,
+            "volatility": 0.092,
+            "sharpe_ratio": 0.1322,
+            "herfindahl_index": 0.2,
+            "effective_n": 5.0,
+            "diversification_ratio": 2.2642
+          },
+          "optimised": {
+            "expected_return": 0.0812,
+            "volatility": 0.0884,
+            "sharpe_ratio": 0.1265,
+            "herfindahl_index": 0.2115,
+            "effective_n": 4.73,
+            "diversification_ratio": 2.2827
+          },
+          "improvement": {
+            "expected_return": -0.001,
+            "volatility": -0.0036,
+            "sharpe_ratio": -0.0057,
+            "herfindahl_index": 0.0115,
+            "effective_n": -0.27,
+            "diversification_ratio": 0.0185
+          },
+          "one_way_turnover": 0.2
+        }
+      }
+    },
+    "cvar": {
+      "optimal_weights": {
+        "RELIANCE.NS": 0.4,
+        "TCS.NS": 0.2,
+        "INFY.NS": 0.0,
+        "HDFCBANK.NS": 0.4,
+        "ICICIBANK.NS": 0.0
+      },
+      "expected_return": 0.137624,
+      "volatility": 0.124775,
+      "sharpe_ratio": 0.542,
+      "cvar": 0.014032,
+      "optimization_type": "CVaR Optimisation (\u03b1=95%)",
+      "solve_status": "user_limit",
+      "risk_contribution": {
+        "RELIANCE.NS": 0.577093,
+        "TCS.NS": 0.15017,
+        "INFY.NS": -0.0,
+        "HDFCBANK.NS": 0.272737,
+        "ICICIBANK.NS": 0.0
+      },
+      "factor_exposure": {},
+      "allocation_health_score": 67,
+      "overweight_underweight_flags": {
+        "RELIANCE.NS": "OW +20.0%",
+        "TCS.NS": "Neutral",
+        "INFY.NS": "UW -20.0%",
+        "HDFCBANK.NS": "OW +20.0%",
+        "ICICIBANK.NS": "UW -20.0%"
+      },
+      "rebalance_actions_rupees": {
+        "RELIANCE.NS": 199999.95,
+        "INFY.NS": -199999.99,
+        "HDFCBANK.NS": 199999.92,
+        "ICICIBANK.NS": -199999.88
+      },
+      "diagnostics": {
+        "health_score_breakdown": {
+          "diversification": 56.08636128381276,
+          "concentration": 80.00001320851773,
+          "risk_balance": 46.384105055514866,
+          "factor_balance": 75.0,
+          "liquidity": 100.0,
+          "tracking_error": 80.0
+        },
+        "concentration": {
+          "herfindahl_index": 0.35999989353185785,
+          "effective_n": 2.777778599291463,
+          "entropy": 1.0549223280820992,
+          "normalised_entropy": 0.6554600956843645,
+          "max_weight": 0.3999999504244201,
+          "gini_coefficient": 0.47999987000359895
+        },
+        "diversification_ratio": 1.6932655515740496,
+        "factor_imbalance_warning": null,
+        "portfolio_comparison": {
+          "current": {
+            "expected_return": 0.0822,
+            "volatility": 0.092,
+            "sharpe_ratio": 0.1322,
+            "herfindahl_index": 0.2,
+            "effective_n": 5.0,
+            "diversification_ratio": 2.2642
+          },
+          "optimised": {
+            "expected_return": 0.1376,
+            "volatility": 0.1248,
+            "sharpe_ratio": 0.542,
+            "herfindahl_index": 0.36,
+            "effective_n": 2.78,
+            "diversification_ratio": 1.6933
+          },
+          "improvement": {
+            "expected_return": 0.0554,
+            "volatility": 0.0328,
+            "sharpe_ratio": 0.4098,
+            "herfindahl_index": 0.16,
+            "effective_n": -2.22,
+            "diversification_ratio": -0.5709
+          },
+          "one_way_turnover": 0.8
+        }
+      }
+    },
+    "risk_parity": {
+      "optimal_weights": {
+        "RELIANCE.NS": 0.171382,
+        "TCS.NS": 0.167638,
+        "INFY.NS": 0.19655,
+        "HDFCBANK.NS": 0.245818,
+        "ICICIBANK.NS": 0.218613
+      },
+      "expected_return": 0.081261,
+      "volatility": 0.089162,
+      "sharpe_ratio": 0.1263,
+      "cvar": 0.010478,
+      "optimization_type": "Risk Parity",
+      "solve_status": "optimal",
+      "risk_contribution": {
+        "RELIANCE.NS": 0.2,
+        "TCS.NS": 0.2,
+        "INFY.NS": 0.2,
+        "HDFCBANK.NS": 0.2,
+        "ICICIBANK.NS": 0.2
+      },
+      "factor_exposure": {},
+      "allocation_health_score": 95,
+      "overweight_underweight_flags": {
+        "RELIANCE.NS": "Neutral",
+        "TCS.NS": "UW -3.2%",
+        "INFY.NS": "Neutral",
+        "HDFCBANK.NS": "Neutral",
+        "ICICIBANK.NS": "Neutral"
+      },
+      "rebalance_actions_rupees": {
+        "RELIANCE.NS": -28618.36,
+        "TCS.NS": -32362.15,
+        "INFY.NS": -3450.04,
+        "HDFCBANK.NS": 45817.94,
+        "ICICIBANK.NS": 18612.61
+      },
+      "diagnostics": {
+        "health_score_breakdown": {
+          "diversification": 100.0,
+          "concentration": 99.45950795730971,
+          "risk_balance": 99.99996005713577,
+          "factor_balance": 75.0,
+          "liquidity": 100.0,
+          "tracking_error": 80.0
+        },
+        "concentration": {
+          "herfindahl_index": 0.20432393534692717,
+          "effective_n": 4.894189211371995,
+          "entropy": 1.5987547244652611,
+          "normalised_entropy": 0.9933621621024933,
+          "max_weight": 0.24581794167979706,
+          "gini_coefficient": 0.08143646347920136
+        },
+        "diversification_ratio": 2.2911338306283855,
+        "factor_imbalance_warning": null,
+        "portfolio_comparison": {
+          "current": {
+            "expected_return": 0.0822,
+            "volatility": 0.092,
+            "sharpe_ratio": 0.1322,
+            "herfindahl_index": 0.2,
+            "effective_n": 5.0,
+            "diversification_ratio": 2.2642
+          },
+          "optimised": {
+            "expected_return": 0.0813,
+            "volatility": 0.0892,
+            "sharpe_ratio": 0.1263,
+            "herfindahl_index": 0.2043,
+            "effective_n": 4.89,
+            "diversification_ratio": 2.2911
+          },
+          "improvement": {
+            "expected_return": -0.0009,
+            "volatility": -0.0028,
+            "sharpe_ratio": -0.0059,
+            "herfindahl_index": 0.0043,
+            "effective_n": -0.11,
+            "diversification_ratio": 0.0269
+          },
+          "one_way_turnover": 0.1289
+        }
+      }
+    },
+    "multi_objective": {
+      "optimal_weights": {
+        "RELIANCE.NS": 0.4,
+        "TCS.NS": 0.2,
+        "INFY.NS": 0.0,
+        "HDFCBANK.NS": 0.4,
+        "ICICIBANK.NS": 0.0
+      },
+      "expected_return": 0.137624,
+      "volatility": 0.124775,
+      "sharpe_ratio": 0.542,
+      "cvar": 0.014032,
+      "optimization_type": "Multi-Objective (\u03bb_ret=1.0, \u03bb_vol=1.0, \u03bb_cvar=0.5, \u03bb_dd=0.3, \u03bb_fc=0.0)",
+      "solve_status": "user_limit",
+      "risk_contribution": {
+        "RELIANCE.NS": 0.577093,
+        "TCS.NS": 0.15017,
+        "INFY.NS": -0.0,
+        "HDFCBANK.NS": 0.272737,
+        "ICICIBANK.NS": 0.0
+      },
+      "factor_exposure": {},
+      "allocation_health_score": 67,
+      "overweight_underweight_flags": {
+        "RELIANCE.NS": "OW +20.0%",
+        "TCS.NS": "Neutral",
+        "INFY.NS": "UW -20.0%",
+        "HDFCBANK.NS": "OW +20.0%",
+        "ICICIBANK.NS": "UW -20.0%"
+      },
+      "rebalance_actions_rupees": {
+        "RELIANCE.NS": 199999.7,
+        "INFY.NS": -200000.0,
+        "HDFCBANK.NS": 200000.09,
+        "ICICIBANK.NS": -200000.0
+      },
+      "diagnostics": {
+        "health_score_breakdown": {
+          "diversification": 56.08636927362392,
+          "concentration": 80.00001046133916,
+          "risk_balance": 46.38416070982928,
+          "factor_balance": 75.0,
+          "liquidity": 100.0,
+          "tracking_error": 80.0
+        },
+        "concentration": {
+          "herfindahl_index": 0.35999991550928645,
+          "effective_n": 2.777778429712449,
+          "entropy": 1.0549203143974077,
+          "normalised_entropy": 0.6554588445117185,
+          "max_weight": 0.4000000911011493,
+          "gini_coefficient": 0.47999995194960193
+        },
+        "diversification_ratio": 1.6932656503335468,
+        "factor_imbalance_warning": null,
+        "portfolio_comparison": {
+          "current": {
+            "expected_return": 0.0822,
+            "volatility": 0.092,
+            "sharpe_ratio": 0.1322,
+            "herfindahl_index": 0.2,
+            "effective_n": 5.0,
+            "diversification_ratio": 2.2642
+          },
+          "optimised": {
+            "expected_return": 0.1376,
+            "volatility": 0.1248,
+            "sharpe_ratio": 0.542,
+            "herfindahl_index": 0.36,
+            "effective_n": 2.78,
+            "diversification_ratio": 1.6933
+          },
+          "improvement": {
+            "expected_return": 0.0554,
+            "volatility": 0.0328,
+            "sharpe_ratio": 0.4098,
+            "herfindahl_index": 0.16,
+            "effective_n": -2.22,
+            "diversification_ratio": -0.5709
+          },
+          "one_way_turnover": 0.8
+        }
+      }
+    }
+  },
+  "recommendation": {
+    "best_method": "mean_variance",
+    "reason": "Highest Sharpe ratio (0.54) among all methods",
+    "summary": {
+      "expected_return": 0.1371,
+      "volatility": 0.1236,
+      "sharpe_ratio": 0.5427,
+      "health_score": 68
+    },
+    "risk_attribution": {
+      "risk_contribution": {
+        "RELIANCE.NS": 0.546569679468081,
+        "TCS.NS": 0.17473234338726765,
+        "INFY.NS": -3.4837685262032524e-10,
+        "HDFCBANK.NS": 0.2786979774702183,
+        "ICICIBANK.NS": 2.2809733901754888e-11
+      },
+      "factor_exposure": {},
+      "diversification_ratio": 1.7084152155317687,
+      "concentration": {
+        "herfindahl_index": 0.3547346693499595,
+        "effective_n": 2.819008364286664,
+        "entropy": 1.0639958468774502,
+        "normalised_entropy": 0.6610977898912993,
+        "max_weight": 0.40000000545055525,
+        "gini_coefficient": 0.47433327294951017
+      }
+    }
+  }
+}

@@ -577,7 +577,10 @@ def main():
         print(f"  Return:  {impact['base_return']:>6.2%} → {impact['stressed_return']:>6.2%}  ({impact['return_change']:>+6.2%})")
         print(f"  Vol:     {impact['base_vol']:>6.2%} → {impact['stressed_vol']:>6.2%}  ({impact['vol_change_pct']:>+6.1%})")
         print(f"  Sharpe:  {impact['base_sharpe']:>6.2f} → {impact['stressed_sharpe']:>6.2f}  ({impact['sharpe_change']:>+6.2f})")
-        print(f"\n  Loss:    ₹{abs(impact['portfolio_loss']):>10,.0f}  ({abs(impact['loss_pct']):>5.2%})")
+        if impact['portfolio_loss'] >= 0:
+            print(f"\n  Profit:  ₹{impact['portfolio_loss']:>10,.0f}  (+{impact['loss_pct']:>5.2%})")
+        else:
+            print(f"\n  Loss:    ₹{abs(impact['portfolio_loss']):>10,.0f}  ({abs(impact['loss_pct']):>5.2%})")
         print()
         
         results.append({
@@ -587,8 +590,8 @@ def main():
             "Return_Chg_%": impact['return_change'] * 100,
             "Vol_Chg_%": impact['vol_change_pct'] * 100,
             "Sharpe_Chg": impact['sharpe_change'],
-            "Loss_INR": abs(impact['portfolio_loss']),
-            "Loss_%": abs(impact['loss_pct']) * 100,
+            "PnL_INR": impact['portfolio_loss'],
+            "PnL_%": impact['loss_pct'] * 100,
             "Likelihood": info['likelihood'],
             "Duration": info['duration'],
             "Recovery": info['recovery']
@@ -605,12 +608,15 @@ def main():
     print(f"\n📁 artifacts/milestone4/scenario_analysis.csv\n")
     print("SUMMARY:")
     print(f"  Tested:      {len(selected)}")
-    print(f"  Worst Loss:  ₹{df['Loss_INR'].max():,.0f} ({df['Loss_%'].max():.1f}%)")
-    if df['Loss_%'].min() < 0:
-        print(f"  Best Gain:   ₹{abs(df['Loss_INR'].min()):,.0f} ({abs(df['Loss_%'].min()):.1f}%)")
+    if df['PnL_INR'].min() < 0:
+        worst = df.loc[df['PnL_INR'].idxmin()]
+        print(f"  Worst Loss:  ₹{abs(worst['PnL_INR']):,.0f} ({abs(worst['PnL_%']):.1f}%)  [{worst['Scenario']}]")
+    if df['PnL_INR'].max() > 0:
+        best = df.loc[df['PnL_INR'].idxmax()]
+        print(f"  Best Gain:   ₹{best['PnL_INR']:,.0f} (+{best['PnL_%']:.1f}%)  [{best['Scenario']}]")
     
     print("\nRISK ASSESSMENT:")
-    max_loss = df['Loss_%'].max()
+    max_loss = abs(df[df['PnL_%'] < 0]['PnL_%'].min()) if (df['PnL_%'] < 0).any() else 0
     if max_loss > 35:
         print("  🔴 HIGH RISK - Consider hedging")
     elif max_loss > 20:

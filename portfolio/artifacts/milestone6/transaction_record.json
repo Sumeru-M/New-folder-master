@@ -1,0 +1,49 @@
+{
+  "tx_id": "d35dee7357be5a4f8097eb619ad132cc",
+  "payload": {
+    "trade_id": "c24e7a6f-1ccd-488a-8fae-6a54598a0c12",
+    "ticker": "WIPRO.NS",
+    "quantity": 50.0,
+    "price": 450.0,
+    "trade_value": 22500.0,
+    "timestamp": 1772687542.457408,
+    "note": "Virtual buy: 50.0 \u00d7 WIPRO.NS @ \u20b9450.00",
+    "type": "VIRTUAL_BUY",
+    "virtual_portfolio_snapshot_id": "9673f0b2-fe7e-4257-89ce-fab8c752b481",
+    "virtual_total_value": 258500.0,
+    "virtual_return": -0.048181,
+    "virtual_volatility": 0.150056,
+    "virtual_sharpe": -0.7876,
+    "weight_fingerprint": "4ecb734f8a3ebc67494cb467b56dba5505f76e06b7a8dfe1c9a27de6f33b7a50",
+    "n_assets": 5,
+    "new_ticker_added": true
+  },
+  "sha3_hash": "44851c7c6244b62c5950ab4dbd99bc90ea801dc97f3a7e115d7490905d8e7a5b",
+  "signature": {
+    "scheme": "ML-DSA-III-simulated",
+    "c_tilde_hex": "c4147f689ac97a03d742ee8bf1ad42b3b91744ecb0e9c808ac0b927c591e4ac3",
+    "nonce": 76,
+    "z_infinity_norm": 130680,
+    "packed_length_bytes": 22564,
+    "acceptance_bound": 130876,
+    "valid_norm": true
+  },
+  "public_key": {
+    "key_id": "d042ecff-49ec-4994-9a68-a6889b9c7ffe",
+    "fingerprint": "cdc82902f321d5772c95e8958f158c3a2be7c04251ea96cfee502e39ece5c282",
+    "rho_hex": "7878907b56f0e0ecbd1f021a6e69914a524318355e839d5ed7ad5b7697f1d14d",
+    "created_at": 1772687542.448826,
+    "scheme": "ML-DSA-III (simulated, FIPS 204)",
+    "params": {
+      "q": 8380417,
+      "n": 256,
+      "k": 6,
+      "l": 5,
+      "eta": 4,
+      "tau": 49,
+      "beta": 196
+    }
+  },
+  "verification_status": false,
+  "signed_at": 1772687542.60638
+}

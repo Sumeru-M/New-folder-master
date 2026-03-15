@@ -1,0 +1,28 @@
+=== STDOUT ===
+✓ Using 7.5% as safe investment rate
+
+Validating ticker symbols...
+✓ Using tickers: ITC.NS, BSE.NS, SBIN.NS, HDFCBANK.NS
+
+
+✓ Interpreting as percentages: 25.0%, 25.0%, 30.0%, 20.0%
+✓ Using weights: 25.0%, 25.0%, 30.0%, 20.0%
+================================================================================
+Milestone 3: Portfolio Optimization Engine
+================================================================================
+
+Portfolio Tickers: ITC.NS, BSE.NS, SBIN.NS, HDFCBANK.NS
+Weights: [0.25 0.25 0.3  0.2 ]
+Risk-free Rate: 7.50%
+Data Period: 4
+
+--------------------------------------------------------------------------------
+Step 1: Loading Price Data
+--------------------------------------------------------------------------------
+
+[ERROR] Failed to load data: Invalid period '4'. Valid periods are: 1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, max. Did you mean '1y' or '1d'?
+
+Troubleshooting tips:
+  - Verify ticker symbols are correct (e.g., RELIANCE.NS, TCS.NS, INFY.NS)
+  - Try a longer period (e.g., '2y' or '5y')
+  - Check your internet connection

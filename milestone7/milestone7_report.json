@@ -1,0 +1,688 @@
+{
+  "regime_probabilities": {
+    "current_regime": 2,
+    "current_regime_label": "Crisis",
+    "current_probs": {
+      "Low-Vol Bull": 0.0,
+      "High-Vol Bear": 0.015814,
+      "Crisis": 0.984186,
+      "Transitional": 0.0
+    },
+    "filtered_probs_last10": [
+      [
+        1.1215449564544965e-133,
+        0.00039516133317808906,
+        0.999602070322878,
+        2.768343944065999e-06
+      ],
+      [
+        6.824540752531428e-133,
+        0.0006816371697058798,
+        0.9993169143023182,
+        1.4485279759626717e-06
+      ],
+      [
+        2.0200062354868835e-132,
+        0.0012336944850557358,
+        0.9987657947810321,
+        5.107339121976039e-07
+      ],
+      [
+        8.761881756053006e-133,
+        0.00277905409361114,
+        0.9972207616481483,
+        1.8425824046924972e-07
+      ],
+      [
+        7.103024381021333e-133,
+        0.0010018564535207814,
+        0.9989960878509216,
+        2.055695557680051e-06
+      ],
+      [
+        1.0852101902786412e-133,
+        0.0014940944830193151,
+        0.9985055354916066,
+        3.700253741999625e-07
+      ],
+      [
+        1.2464992633308196e-132,
+        0.007449172046531018,
+        0.9925508155795645,
+        1.2373904564021074e-08
+      ],
+      [
+        3.534895887134818e-132,
+        0.0032859950413576533,
+        0.9967135800711935,
+        4.24887448923349e-07
+      ],
+      [
+        1.2467160834068141e-132,
+        0.004091964423453153,
+        0.9959079600243946,
+        7.555215205816003e-08
+      ],
+      [
+        1.4815311371124678e-131,
+        0.01581448496383854,
+        0.9841855085173933,
+        6.518768220571798e-09
+      ]
+    ],
+    "smoothed_probs_last10": [
+      [
+        4.6912364451938924e-139,
+        9.7937781711475e-06,
+        0.9999901557972123,
+        5.0424616653290036e-08
+      ],
+      [
+        5.482973707035112e-138,
+        1.758226078344207e-05,
+        0.9999823913500432,
+        2.6389173427606876e-08
+      ],
+      [
+        3.2092114757966556e-137,
+        3.436165008719964e-05,
+        0.9999656290410006,
+        9.308912072419657e-09
+      ],
+      [
+        5.078261732309278e-138,
+        7.01978347531944e-05,
+        0.9999297988010573,
+        3.3641897234879015e-09
+      ],
+      [
+        1.1305457204727187e-137,
+        2.7906661850813555e-05,
+        0.9999720558776961,
+        3.7460453008050255e-08
+      ],
+      [
+        9.463252412077376e-138,
+        6.938050840511072e-05,
+        0.9999306127478682,
+        6.743726757296248e-09
+      ],
+      [
+        1.3709657478916028e-136,
+        0.00039112970383380346,
+        0.9996088700693834,
+        2.2678283176828368e-10
+      ],
+      [
+        2.408599154435149e-135,
+        0.0006613260184803528,
+        0.999338666247406,
+        7.73411364807383e-09
+      ],
+      [
+        3.8271158989566384e-135,
+        0.0033693896090285355,
+        0.9966306090317801,
+        1.3591912223166998e-09
+      ],
+      [
+        1.4815311371124678e-131,
+        0.01581448496383854,
+        0.9841855085173933,
+        6.518768220571798e-09
+      ]
+    ],
+    "viterbi_path_last10": [
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "log_likelihood": 6734.9904,
+    "transition_matrix": {
+      "Low-Vol Bull": {
+        "Low-Vol Bull": 0.996251,
+        "High-Vol Bear": 0.003749,
+        "Crisis": 0.0,
+        "Transitional": 0.0
+      },
+      "High-Vol Bear": {
+        "Low-Vol Bull": 0.0,
+        "High-Vol Bear": 0.976933,
+        "Crisis": 0.023067,
+        "Transitional": 0.0
+      },
+      "Crisis": {
+        "Low-Vol Bull": 0.0,
+        "High-Vol Bear": 0.015377,
+        "Crisis": 0.973911,
+        "Transitional": 0.010712
+      },
+      "Transitional": {
+        "Low-Vol Bull": 0.0,
+        "High-Vol Bear": 0.0,
+        "Crisis": 0.017731,
+        "Transitional": 0.982269
+      }
+    },
+    "regime_stats": {
+      "Low-Vol Bull": {
+        "state_index": 0,
+        "persistence_days": 266.76,
+        "average_occupancy": 0.3629,
+        "emission_mean_return_ann": -0.0259,
+        "emission_mean_vol_ann": 0.1438,
+        "emission_mean_corr": 0.577,
+        "emission_mean_drawdown": -0.0484,
+        "self_transition_prob": 0.996251
+      },
+      "High-Vol Bear": {
+        "state_index": 1,
+        "persistence_days": 43.35,
+        "average_occupancy": 0.2276,
+        "emission_mean_return_ann": -0.1663,
+        "emission_mean_vol_ann": 0.1633,
+        "emission_mean_corr": 0.4092,
+        "emission_mean_drawdown": -0.2214,
+        "self_transition_prob": 0.976933
+      },
+      "Crisis": {
+        "state_index": 2,
+        "persistence_days": 38.33,
+        "average_occupancy": 0.2557,
+        "emission_mean_return_ann": 0.2566,
+        "emission_mean_vol_ann": 0.1974,
+        "emission_mean_corr": 0.6018,
+        "emission_mean_drawdown": -0.2248,
+        "self_transition_prob": 0.973911
+      },
+      "Transitional": {
+        "state_index": 3,
+        "persistence_days": 56.4,
+        "average_occupancy": 0.1537,
+        "emission_mean_return_ann": -0.4228,
+        "emission_mean_vol_ann": 0.3356,
+        "emission_mean_corr": 0.7385,
+        "emission_mean_drawdown": -0.2033,
+        "self_transition_prob": 0.982269
+      }
+    }
+  },
+  "transition_matrix": {
+    "transition_matrix": {
+      "Low-Vol Bull": {
+        "Low-Vol Bull": 0.996251,
+        "High-Vol Bear": 0.003749,
+        "Crisis": 0.0,
+        "Transitional": 0.0
+      },
+      "High-Vol Bear": {
+        "Low-Vol Bull": 0.0,
+        "High-Vol Bear": 0.976933,
+        "Crisis": 0.023067,
+        "Transitional": 0.0
+      },
+      "Crisis": {
+        "Low-Vol Bull": 0.0,
+        "High-Vol Bear": 0.015377,
+        "Crisis": 0.973911,
+        "Transitional": 0.010712
+      },
+      "Transitional": {
+        "Low-Vol Bull": 0.0,
+        "High-Vol Bear": 0.0,
+        "Crisis": 0.017731,
+        "Transitional": 0.982269
+      }
+    },
+    "stationary_distribution": {
+      "Low-Vol Bull": 0.000266,
+      "High-Vol Bear": 0.293513,
+      "Crisis": 0.440248,
+      "Transitional": 0.265973
+    },
+    "expected_duration_days": {
+      "Low-Vol Bull": 266.76,
+      "High-Vol Bear": 43.35,
+      "Crisis": 38.33,
+      "Transitional": 56.4
+    },
+    "forward_probabilities": {
+      "21d": {
+        "Low-Vol Bull": 0.0,
+        "High-Vol Bear": 0.210806,
+        "Crisis": 0.641247,
+        "Transitional": 0.147947
+      },
+      "63d": {
+        "Low-Vol Bull": 0.0,
+        "High-Vol Bear": 0.294702,
+        "Crisis": 0.469371,
+        "Transitional": 0.235927
+      },
+      "1d": {
+        "Low-Vol Bull": 0.0,
+        "High-Vol Bear": 0.030584,
+        "Crisis": 0.958874,
+        "Transitional": 0.010543
+      },
+      "5d": {
+        "Low-Vol Bull": 0.0,
+        "High-Vol Bear": 0.082704,
+        "Crisis": 0.86896,
+        "Transitional": 0.048336
+      },
+      "10d": {
+        "Low-Vol Bull": 0.0,
+        "High-Vol Bear": 0.134541,
+        "Crisis": 0.778337,
+        "Transitional": 0.087122
+      }
+    },
+    "crisis_probability_by_horizon": {
+      "21d": 0.641247,
+      "63d": 0.469371,
+      "1d": 0.958874,
+      "5d": 0.86896,
+      "10d": 0.778337
+    },
+    "mixing_time_days": 1227,
+    "row_entropy": {
+      "Low-Vol Bull": 0.0247,
+      "High-Vol Bear": 0.1097,
+      "Crisis": 0.1385,
+      "Transitional": 0.0891
+    }
+  },
+  "forward_return_forecast": {
+    "dominant_regime": "Crisis",
+    "regime_weights_now": {
+      "Low-Vol Bull": 0.0,
+      "High-Vol Bear": 0.015814,
+      "Crisis": 0.984186,
+      "Transitional": 0.0
+    },
+    "garch_adjusted": true,
+    "garch_vol_current": 0.129556,
+    "forward_distributions": {
+      "21d": {
+        "horizon_days": 21,
+        "expected_return_ann": 0.066952,
+        "expected_return_H_day": 0.005579,
+        "std_H_day": 0.045461,
+        "annualised_vol": 0.157481,
+        "skewness": -0.363,
+        "excess_kurtosis": 0.5687,
+        "var_95_percent": 0.072102,
+        "var_99_percent": 0.117284,
+        "cvar_95_percent": 0.099432,
+        "cvar_99_percent": 0.140564,
+        "tail_prob_minus5pct": 0.1067,
+        "tail_prob_minus10pct": 0.018826,
+        "tail_prob_minus20pct": 0.000179,
+        "mixture_components": {
+          "Low-Vol Bull": {
+            "weight": 0.0,
+            "mean_H": -0.002157,
+            "std_H": 0.032536
+          },
+          "High-Vol Bear": {
+            "weight": 0.210806,
+            "mean_H": -0.013861,
+            "std_H": 0.034051
+          },
+          "Crisis": {
+            "weight": 0.641247,
+            "mean_H": 0.021387,
+            "std_H": 0.037454
+          },
+          "Transitional": {
+            "weight": 0.147947,
+            "mean_H": -0.035234,
+            "std_H": 0.054311
+          }
+        },
+        "regime_variance_contribution": {
+          "Low-Vol Bull": {
+            "within_regime_var": 0.0,
+            "between_regime_var": 0.0
+          },
+          "High-Vol Bear": {
+            "within_regime_var": 0.00024443,
+            "between_regime_var": 7.967e-05
+          },
+          "Crisis": {
+            "within_regime_var": 0.00089952,
+            "between_regime_var": 0.00016023
+          },
+          "Transitional": {
+            "within_regime_var": 0.0004364,
+            "between_regime_var": 0.00024645
+          }
+        }
+      },
+      "63d": {
+        "horizon_days": 63,
+        "expected_return_ann": -0.028312,
+        "expected_return_H_day": -0.007078,
+        "std_H_day": 0.100578,
+        "annualised_vol": 0.201155,
+        "skewness": -0.3641,
+        "excess_kurtosis": 0.0802,
+        "var_95_percent": 0.184187,
+        "var_99_percent": 0.267927,
+        "cvar_95_percent": 0.235297,
+        "cvar_99_percent": 0.306177,
+        "tail_prob_minus5pct": 0.319644,
+        "tail_prob_minus10pct": 0.173778,
+        "tail_prob_minus20pct": 0.03837,
+        "mixture_components": {
+          "Low-Vol Bull": {
+            "weight": 0.0,
+            "mean_H": -0.006471,
+            "std_H": 0.056354
+          },
+          "High-Vol Bear": {
+            "weight": 0.294702,
+            "mean_H": -0.041583,
+            "std_H": 0.058979
+          },
+          "Crisis": {
+            "weight": 0.469371,
+            "mean_H": 0.06416,
+            "std_H": 0.064871
+          },
+          "Transitional": {
+            "weight": 0.235927,
+            "mean_H": -0.105703,
+            "std_H": 0.094069
+          }
+        },
+        "regime_variance_contribution": {
+          "Low-Vol Bull": {
+            "within_regime_var": 0.0,
+            "between_regime_var": 0.0
+          },
+          "High-Vol Bear": {
+            "within_regime_var": 0.00102512,
+            "between_regime_var": 0.00035088
+          },
+          "Crisis": {
+            "within_regime_var": 0.00197525,
+            "between_regime_var": 0.00238201
+          },
+          "Transitional": {
+            "within_regime_var": 0.00208773,
+            "between_regime_var": 0.00229485
+          }
+        }
+      }
+    }
+  },
+  "volatility_forecast": {
+    "current_vol_ann": 0.129556,
+    "forecast_30d_vol": 0.138583,
+    "forecast_path": {
+      "1": {
+        "vol_ann": 0.129981,
+        "ci_lower_95": 0.122464,
+        "ci_upper_95": 0.138214,
+        "forecast_std": 4.24e-06
+      },
+      "5": {
+        "vol_ann": 0.131574,
+        "ci_lower_95": 0.122303,
+        "ci_upper_95": 0.142563,
+        "forecast_std": 5.4e-06
+      },
+      "10": {
+        "vol_ann": 0.133348,
+        "ci_lower_95": 0.122721,
+        "ci_upper_95": 0.147352,
+        "forecast_std": 6.78e-06
+      },
+      "21": {
+        "vol_ann": 0.136544,
+        "ci_lower_95": 0.122963,
+        "ci_upper_95": 0.155389,
+        "forecast_std": 9.16e-06
+      },
+      "30": {
+        "vol_ann": 0.138583,
+        "ci_lower_95": 0.123473,
+        "ci_upper_95": 0.159691,
+        "forecast_std": 1.055e-05
+      }
+    }
+  },
+  "adaptive_parameter_shift": {
+    "dominant_regime": "Crisis",
+    "regime_probabilities": {
+      "Low-Vol Bull": 0.0,
+      "High-Vol Bear": 0.015814,
+      "Crisis": 0.984186,
+      "Transitional": 0.0
+    },
+    "blending_weights": {
+      "Low-Vol Bull": 1.6e-05,
+      "High-Vol Bear": 0.032094,
+      "Crisis": 0.952298,
+      "Transitional": 0.015592
+    },
+    "optimization_method": "cvar",
+    "adapted_parameters": {
+      "lam_return": 0.327,
+      "lam_vol": 2.9206,
+      "lam_cvar": 1.9396,
+      "lam_drawdown": 0.7794,
+      "max_weight": 0.1548,
+      "target_vol_ann": 0.0822,
+      "cvar_confidence": 0.9894,
+      "risk_free_rate": 0.0898,
+      "position_scale": 0.6346
+    },
+    "uncertainty_metrics": {
+      "regime_entropy": 0.0586,
+      "shrinkage": 0.0586
+    },
+    "parameter_shift_notes": [
+      "CRISIS signal P=98.4%: \u03bb_vol=2.92 (\u2191\u2191 variance penalised), \u03bb_cvar=1.94 (\u2191\u2191 tail risk penalised), max_weight=0.15 (\u2193 forced diversification).",
+      "GARCH vol scaling: position_scale=0.63 applied (GARCH vol > target vol; effective leverage reduced)."
+    ]
+  },
+  "uncertainty_metrics": {
+    "regime_probability_ci_95": {
+      "Low-Vol Bull": {
+        "mean": 0.0,
+        "lower_95": 0.0,
+        "upper_95": 0.0,
+        "half_width": 0.0
+      },
+      "High-Vol Bear": {
+        "mean": 0.015814,
+        "lower_95": 3.8e-05,
+        "upper_95": 0.997707,
+        "half_width": 0.498834
+      },
+      "Crisis": {
+        "mean": 0.984186,
+        "lower_95": 0.002293,
+        "upper_95": 0.999961,
+        "half_width": 0.498834
+      },
+      "Transitional": {
+        "mean": 0.0,
+        "lower_95": 0.0,
+        "upper_95": 1e-06,
+        "half_width": 1e-06
+      }
+    },
+    "transition_matrix_se": {
+      "Low-Vol Bull": {
+        "Low-Vol Bull": 0.061111,
+        "High-Vol Bear": 0.061111,
+        "Crisis": 0.0,
+        "Transitional": 0.0
+      },
+      "High-Vol Bear": {
+        "Low-Vol Bull": 0.0,
+        "High-Vol Bear": 0.010221,
+        "Crisis": 0.010221,
+        "Transitional": 0.0
+      },
+      "Crisis": {
+        "Low-Vol Bull": 0.0,
+        "High-Vol Bear": 0.00684,
+        "Crisis": 0.008861,
+        "Transitional": 0.005723
+      },
+      "Transitional": {
+        "Low-Vol Bull": 0.0,
+        "High-Vol Bear": 0.0,
+        "Crisis": 0.009439,
+        "Transitional": 0.009439
+      }
+    },
+    "forecast_return_ci_95": {
+      "21d": {
+        "mean_ann": 0.066952,
+        "lower_95": 0.045393,
+        "upper_95": 0.249662,
+        "half_width": 0.102135
+      },
+      "63d": {
+        "mean_ann": -0.028312,
+        "lower_95": 0.045393,
+        "upper_95": 0.249662,
+        "half_width": 0.102135
+      }
+    },
+    "weight_regime_sensitivity": {
+      "RELIANCE.NS": {
+        "regime_sensitivity_index": 0.0,
+        "per_regime_sensitivity": {
+          "Low-Vol Bull": 0.0,
+          "High-Vol Bear": 0.0,
+          "Crisis": 0.0,
+          "Transitional": -0.0
+        }
+      },
+      "TCS.NS": {
+        "regime_sensitivity_index": 0.0,
+        "per_regime_sensitivity": {
+          "Low-Vol Bull": 0.0,
+          "High-Vol Bear": 0.0,
+          "Crisis": 0.0,
+          "Transitional": -0.0
+        }
+      },
+      "HDFCBANK.NS": {
+        "regime_sensitivity_index": 0.0,
+        "per_regime_sensitivity": {
+          "Low-Vol Bull": 0.0,
+          "High-Vol Bear": 0.0,
+          "Crisis": 0.0,
+          "Transitional": -0.0
+        }
+      },
+      "INFY.NS": {
+        "regime_sensitivity_index": 0.0,
+        "per_regime_sensitivity": {
+          "Low-Vol Bull": 0.0,
+          "High-Vol Bear": 0.0,
+          "Crisis": 0.0,
+          "Transitional": -0.0
+        }
+      },
+      "ITC.NS": {
+        "regime_sensitivity_index": 0.0,
+        "per_regime_sensitivity": {
+          "Low-Vol Bull": 0.0,
+          "High-Vol Bear": 0.0,
+          "Crisis": 0.0,
+          "Transitional": -0.0
+        }
+      },
+      "WIPRO.NS": {
+        "regime_sensitivity_index": 0.0,
+        "per_regime_sensitivity": {
+          "Low-Vol Bull": 0.0,
+          "High-Vol Bear": 0.0,
+          "Crisis": 0.0,
+          "Transitional": -0.0
+        }
+      }
+    },
+    "model_selection_criteria": {
+      "K=4": {
+        "n_parameters": 72,
+        "log_likelihood": 6734.9904,
+        "AIC": -13325.9809,
+        "BIC": -12994.7902
+      }
+    },
+    "key_parameter_standard_errors": {
+      "A_00": 0.061111,
+      "A_01": 0.061111,
+      "A_02": 0.0,
+      "A_03": 0.0,
+      "A_10": 0.0,
+      "A_11": 0.010221,
+      "A_12": 0.010221,
+      "A_13": 0.0,
+      "A_20": 0.0,
+      "A_21": 0.00684,
+      "A_22": 0.008861,
+      "A_23": 0.005723,
+      "A_30": 0.0,
+      "A_31": 0.0,
+      "A_32": 0.009439,
+      "A_33": 0.009439,
+      "mu_0[return]": 0.00046164,
+      "mu_1[return]": 0.00048314,
+      "mu_2[return]": 0.00053141,
+      "mu_3[return]": 0.0007706
+    },
+    "effective_sample_size": 756
+  },
+  "optimal_allocation": {
+    "weights": {
+      "RELIANCE.NS": 0.173804,
+      "TCS.NS": 0.159027,
+      "HDFCBANK.NS": 0.160615,
+      "INFY.NS": 0.167156,
+      "ITC.NS": 0.172115,
+      "WIPRO.NS": 0.167283
+    },
+    "expected_return_ann": -0.043184,
+    "volatility_ann": 0.169393,
+    "sharpe_ratio": -0.66817,
+    "cvar_95": 0.017553,
+    "optimization_type": "equal_risk_parity_fallback",
+    "solve_status": "fallback",
+    "position_scale": 0.634633
+  },
+  "meta": {
+    "tickers": [
+      "RELIANCE.NS",
+      "TCS.NS",
+      "HDFCBANK.NS",
+      "INFY.NS",
+      "ITC.NS",
+      "WIPRO.NS"
+    ],
+    "n_assets": 6,
+    "elapsed_seconds": 16.72,
+    "milestone": 7,
+    "model": "HMM(K=4) + GARCH(1,1) + Gaussian Mixture Forecast",
+    "look_ahead_bias": false,
+    "optimizer_isolation": "M5 optimization_engine called as black-box",
+    "m1_m6_isolation": "No M1-M6 files modified"
+  }
+}

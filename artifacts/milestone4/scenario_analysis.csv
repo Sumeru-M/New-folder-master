@@ -1,2 +1,3 @@
 Scenario,Code,Category,Return_Chg_%,Vol_Chg_%,Sharpe_Chg,Loss_INR,Loss_%,Likelihood,Duration,Recovery
-RBI Rate Hike Cycle,INDIA_1,🔵 INDIA-SPECIFIC,-14.999999999999996,43.036189221548526,-0.8726823607383779,149999.99999999997,14.999999999999996,Moderate (15-20% annual),6-15 months,9-18 months
+Global Financial Crisis,CRISIS_1,🔴 SEVERE,-45.00000000000001,233.54821096150874,-1.4865928305224774,450000.00000000006,45.00000000000001,Very Rare (1-2% annual),12-18 months,24-36 months
+Black Swan Pandemic/War,CRISIS_2,🔴 SEVERE,-40.0,283.6694176385073,-1.2566014612984415,400000.0,40.0,Extremely Rare (<1% annual),"1 month crash, 6 months total",6-12 months (if strong policy response)

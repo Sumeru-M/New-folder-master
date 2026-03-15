@@ -13,7 +13,6 @@ import os
 import argparse
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
 
 # Add parent directory to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))

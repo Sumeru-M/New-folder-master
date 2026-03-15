@@ -1,0 +1,17 @@
+=== STDOUT ===
+
+================================================================================
+PORTFOLIO OPTIMIZATION ENGINE — MILESTONE 5
+================================================================================
+  Stocks          : ITC.NS, BSE.NS, SBIN.NS, HDFCBANK.NS
+  Portfolio Value : ₹55,000
+  Method          : all
+  Risk-Free Rate  : 7.5%
+  Max Weight      : 40% per stock
+  Sector Cap      : 50% per sector
+  Data Period     : 4
+
+--------------------------------------------------------------------------------
+Step 1: Loading Market Data
+--------------------------------------------------------------------------------
+  ✗ Failed to load data: Invalid period '4'. Valid periods are: 1d, 5d, 1mo, 3mo, 6mo, 1y, 2y, 5y, 10y, ytd, max. Did you mean '1y' or '1d'?
