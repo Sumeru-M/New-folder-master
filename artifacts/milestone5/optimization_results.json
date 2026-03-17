@@ -1,480 +1,459 @@
 {
   "portfolio": {
     "tickers": [
-      "RELIANCE.NS",
-      "TCS.NS",
-      "INFY.NS",
-      "HDFCBANK.NS",
-      "ICICIBANK.NS"
+      "BSE.NS",
+      "ETERNAL.NS",
+      "SBIN.NS",
+      "ITC.NS"
     ],
     "portfolio_value_inr": 1000000.0,
     "risk_free_rate": 0.07,
     "data_period": "2y",
     "current_weights": {
-      "RELIANCE.NS": 0.2,
-      "TCS.NS": 0.2,
-      "INFY.NS": 0.2,
-      "HDFCBANK.NS": 0.2,
-      "ICICIBANK.NS": 0.2
+      "BSE.NS": 0.25,
+      "ETERNAL.NS": 0.25,
+      "SBIN.NS": 0.25,
+      "ITC.NS": 0.25
     },
     "current_stats": {
-      "expected_return": 0.082163,
-      "volatility": 0.092035,
-      "sharpe_ratio": 0.1322
+      "expected_return": 0.465024,
+      "volatility": 0.227958,
+      "sharpe_ratio": 1.7329
     },
-    "shrinkage_delta": 0.1296
+    "shrinkage_delta": 0.014
   },
   "optimization_results": {
     "mean_variance": {
       "optimal_weights": {
-        "RELIANCE.NS": 0.385833,
-        "TCS.NS": 0.214167,
-        "INFY.NS": 0.0,
-        "HDFCBANK.NS": 0.4,
-        "ICICIBANK.NS": 0.0
+        "BSE.NS": 0.4,
+        "ETERNAL.NS": 0.1,
+        "SBIN.NS": 0.4,
+        "ITC.NS": 0.1
       },
-      "expected_return": 0.137104,
-      "volatility": 0.123637,
-      "sharpe_ratio": 0.5427,
-      "cvar": 0.013914,
+      "expected_return": 0.663824,
+      "volatility": 0.280649,
+      "sharpe_ratio": 2.1159,
+      "cvar": 0.034721,
       "optimization_type": "Mean-Variance (\u03bb=2.0)",
       "solve_status": "optimal",
       "risk_contribution": {
-        "RELIANCE.NS": 0.54657,
-        "TCS.NS": 0.174732,
-        "INFY.NS": -0.0,
-        "HDFCBANK.NS": 0.278698,
-        "ICICIBANK.NS": 0.0
+        "BSE.NS": 0.709357,
+        "ETERNAL.NS": 0.060163,
+        "SBIN.NS": 0.21439,
+        "ITC.NS": 0.016089
       },
       "factor_exposure": {},
-      "allocation_health_score": 68,
+      "allocation_health_score": 60,
       "overweight_underweight_flags": {
-        "RELIANCE.NS": "OW +18.6%",
-        "TCS.NS": "Neutral",
-        "INFY.NS": "UW -20.0%",
-        "HDFCBANK.NS": "OW +20.0%",
-        "ICICIBANK.NS": "UW -20.0%"
+        "BSE.NS": "OW +15.0%",
+        "ETERNAL.NS": "UW -15.0%",
+        "SBIN.NS": "OW +15.0%",
+        "ITC.NS": "UW -15.0%"
       },
       "rebalance_actions_rupees": {
-        "RELIANCE.NS": 185833.19,
-        "TCS.NS": 14166.8,
-        "INFY.NS": -200000.0,
-        "HDFCBANK.NS": 200000.01,
-        "ICICIBANK.NS": -199999.99
+        "BSE.NS": 150000.0,
+        "ETERNAL.NS": -150000.0,
+        "SBIN.NS": 150000.0,
+        "ITC.NS": -150000.0
       },
       "diagnostics": {
         "health_score_breakdown": {
-          "diversification": 57.31199484389921,
-          "concentration": 80.65816623043234,
-          "risk_balance": 49.139606644089305,
+          "diversification": 33.922924698239854,
+          "concentration": 87.99999980359722,
+          "risk_balance": 36.435903696512014,
           "factor_balance": 75.0,
           "liquidity": 100.0,
           "tracking_error": 80.0
         },
         "concentration": {
-          "herfindahl_index": 0.3547346693499595,
-          "effective_n": 2.819008364286664,
-          "entropy": 1.0639958468774502,
-          "normalised_entropy": 0.6610977898912993,
-          "max_weight": 0.40000000545055525,
-          "gini_coefficient": 0.47433327294951017
+          "herfindahl_index": 0.34000000059302105,
+          "effective_n": 2.9411764654582955,
+          "entropy": 1.1935496027279637,
+          "normalised_entropy": 0.8609640464553129,
+          "max_weight": 0.40000000095260535,
+          "gini_coefficient": 0.3000000016421769
         },
-        "diversification_ratio": 1.7084152155317687,
+        "diversification_ratio": 1.3392292469823985,
         "factor_imbalance_warning": null,
         "portfolio_comparison": {
           "current": {
-            "expected_return": 0.0822,
-            "volatility": 0.092,
-            "sharpe_ratio": 0.1322,
-            "herfindahl_index": 0.2,
-            "effective_n": 5.0,
-            "diversification_ratio": 2.2642
+            "expected_return": 0.465,
+            "volatility": 0.228,
+            "sharpe_ratio": 1.7329,
+            "herfindahl_index": 0.25,
+            "effective_n": 4.0,
+            "diversification_ratio": 1.5017
           },
           "optimised": {
-            "expected_return": 0.1371,
-            "volatility": 0.1236,
-            "sharpe_ratio": 0.5427,
-            "herfindahl_index": 0.3547,
-            "effective_n": 2.82,
-            "diversification_ratio": 1.7084
+            "expected_return": 0.6638,
+            "volatility": 0.2806,
+            "sharpe_ratio": 2.1159,
+            "herfindahl_index": 0.34,
+            "effective_n": 2.94,
+            "diversification_ratio": 1.3392
           },
           "improvement": {
-            "expected_return": 0.0549,
-            "volatility": 0.0316,
-            "sharpe_ratio": 0.4105,
-            "herfindahl_index": 0.1547,
-            "effective_n": -2.18,
-            "diversification_ratio": -0.5558
+            "expected_return": 0.1988,
+            "volatility": 0.0526,
+            "sharpe_ratio": 0.383,
+            "herfindahl_index": 0.09,
+            "effective_n": -1.06,
+            "diversification_ratio": -0.1625
           },
-          "one_way_turnover": 0.8
+          "one_way_turnover": 0.6
         }
       }
     },
     "min_variance": {
       "optimal_weights": {
-        "RELIANCE.NS": 0.155037,
-        "TCS.NS": 0.145596,
-        "INFY.NS": 0.199367,
-        "HDFCBANK.NS": 0.277172,
-        "ICICIBANK.NS": 0.222828
+        "BSE.NS": 0.032851,
+        "ETERNAL.NS": 0.167149,
+        "SBIN.NS": 0.4,
+        "ITC.NS": 0.4
       },
-      "expected_return": 0.081187,
-      "volatility": 0.088404,
-      "sharpe_ratio": 0.1265,
-      "cvar": 0.010321,
+      "expected_return": 0.180592,
+      "volatility": 0.171421,
+      "sharpe_ratio": 0.6451,
+      "cvar": 0.023519,
       "optimization_type": "Minimum Variance",
       "solve_status": "optimal",
       "risk_contribution": {
-        "RELIANCE.NS": 0.163447,
-        "TCS.NS": 0.153493,
-        "INFY.NS": 0.21018,
-        "HDFCBANK.NS": 0.262139,
-        "ICICIBANK.NS": 0.210741
+        "BSE.NS": 0.042297,
+        "ETERNAL.NS": 0.215213,
+        "SBIN.NS": 0.457941,
+        "ITC.NS": 0.284549
       },
       "factor_exposure": {},
-      "allocation_health_score": 93,
+      "allocation_health_score": 72,
       "overweight_underweight_flags": {
-        "RELIANCE.NS": "UW -4.5%",
-        "TCS.NS": "UW -5.4%",
-        "INFY.NS": "Neutral",
-        "HDFCBANK.NS": "OW +7.7%",
-        "ICICIBANK.NS": "Neutral"
+        "BSE.NS": "UW -21.7%",
+        "ETERNAL.NS": "UW -8.3%",
+        "SBIN.NS": "OW +15.0%",
+        "ITC.NS": "OW +15.0%"
       },
       "rebalance_actions_rupees": {
-        "RELIANCE.NS": -44962.7,
-        "TCS.NS": -54404.06,
-        "INFY.NS": -633.24,
-        "HDFCBANK.NS": 77172.38,
-        "ICICIBANK.NS": 22827.62
+        "BSE.NS": -217148.98,
+        "ETERNAL.NS": -82851.02,
+        "SBIN.NS": 149999.99,
+        "ITC.NS": 150000.01
       },
       "diagnostics": {
         "health_score_breakdown": {
-          "diversification": 100.0,
-          "concentration": 98.56768437806434,
-          "risk_balance": 90.26650201301413,
+          "diversification": 51.22480648389285,
+          "concentration": 86.79760360016985,
+          "risk_balance": 65.59382834890289,
           "factor_balance": 75.0,
           "liquidity": 100.0,
           "tracking_error": 80.0
         },
         "concentration": {
-          "herfindahl_index": 0.21145852398980833,
-          "effective_n": 4.729059775562403,
-          "entropy": 1.5812437855011867,
-          "normalised_entropy": 0.9824820039871728,
-          "max_weight": 0.2771723808456092,
-          "gini_coefficient": 0.1323772828279089
+          "herfindahl_index": 0.34901797213075014,
+          "effective_n": 2.865181967263786,
+          "entropy": 1.1442519460392881,
+          "normalised_entropy": 0.8254033040392134,
+          "max_weight": 0.400000005170496,
+          "gini_coefficient": 0.33357449466013533
         },
-        "diversification_ratio": 2.2827403275592055,
+        "diversification_ratio": 1.5122480648389285,
         "factor_imbalance_warning": null,
         "portfolio_comparison": {
           "current": {
-            "expected_return": 0.0822,
-            "volatility": 0.092,
-            "sharpe_ratio": 0.1322,
-            "herfindahl_index": 0.2,
-            "effective_n": 5.0,
-            "diversification_ratio": 2.2642
+            "expected_return": 0.465,
+            "volatility": 0.228,
+            "sharpe_ratio": 1.7329,
+            "herfindahl_index": 0.25,
+            "effective_n": 4.0,
+            "diversification_ratio": 1.5017
           },
           "optimised": {
-            "expected_return": 0.0812,
-            "volatility": 0.0884,
-            "sharpe_ratio": 0.1265,
-            "herfindahl_index": 0.2115,
-            "effective_n": 4.73,
-            "diversification_ratio": 2.2827
+            "expected_return": 0.1806,
+            "volatility": 0.1714,
+            "sharpe_ratio": 0.6451,
+            "herfindahl_index": 0.349,
+            "effective_n": 2.87,
+            "diversification_ratio": 1.5122
           },
           "improvement": {
-            "expected_return": -0.001,
-            "volatility": -0.0036,
-            "sharpe_ratio": -0.0057,
-            "herfindahl_index": 0.0115,
-            "effective_n": -0.27,
-            "diversification_ratio": 0.0185
+            "expected_return": -0.2844,
+            "volatility": -0.0566,
+            "sharpe_ratio": -1.0878,
+            "herfindahl_index": 0.099,
+            "effective_n": -1.13,
+            "diversification_ratio": 0.0105
           },
-          "one_way_turnover": 0.2
+          "one_way_turnover": 0.6
         }
       }
     },
     "cvar": {
       "optimal_weights": {
-        "RELIANCE.NS": 0.4,
-        "TCS.NS": 0.2,
-        "INFY.NS": 0.0,
-        "HDFCBANK.NS": 0.4,
-        "ICICIBANK.NS": 0.0
+        "BSE.NS": 0.399996,
+        "ETERNAL.NS": 0.100003,
+        "SBIN.NS": 0.4,
+        "ITC.NS": 0.100001
       },
-      "expected_return": 0.137624,
-      "volatility": 0.124775,
-      "sharpe_ratio": 0.542,
-      "cvar": 0.014032,
+      "expected_return": 0.66382,
+      "volatility": 0.280648,
+      "sharpe_ratio": 2.1159,
+      "cvar": 0.03472,
       "optimization_type": "CVaR Optimisation (\u03b1=95%)",
       "solve_status": "user_limit",
       "risk_contribution": {
-        "RELIANCE.NS": 0.577093,
-        "TCS.NS": 0.15017,
-        "INFY.NS": -0.0,
-        "HDFCBANK.NS": 0.272737,
-        "ICICIBANK.NS": 0.0
+        "BSE.NS": 0.709353,
+        "ETERNAL.NS": 0.060166,
+        "SBIN.NS": 0.214391,
+        "ITC.NS": 0.01609
       },
       "factor_exposure": {},
-      "allocation_health_score": 67,
+      "allocation_health_score": 60,
       "overweight_underweight_flags": {
-        "RELIANCE.NS": "OW +20.0%",
-        "TCS.NS": "Neutral",
-        "INFY.NS": "UW -20.0%",
-        "HDFCBANK.NS": "OW +20.0%",
-        "ICICIBANK.NS": "UW -20.0%"
+        "BSE.NS": "OW +15.0%",
+        "ETERNAL.NS": "UW -15.0%",
+        "SBIN.NS": "OW +15.0%",
+        "ITC.NS": "UW -15.0%"
       },
       "rebalance_actions_rupees": {
-        "RELIANCE.NS": 199999.95,
-        "INFY.NS": -199999.99,
-        "HDFCBANK.NS": 199999.92,
-        "ICICIBANK.NS": -199999.88
+        "BSE.NS": 149996.16,
+        "ETERNAL.NS": -149996.62,
+        "SBIN.NS": 149999.68,
+        "ITC.NS": -149999.22
       },
       "diagnostics": {
         "health_score_breakdown": {
-          "diversification": 56.08636128381276,
-          "concentration": 80.00001320851773,
-          "risk_balance": 46.384105055514866,
+          "diversification": 33.923308286171206,
+          "concentration": 88.00033280871132,
+          "risk_balance": 36.436502195964984,
           "factor_balance": 75.0,
           "liquidity": 100.0,
           "tracking_error": 80.0
         },
         "concentration": {
-          "herfindahl_index": 0.35999989353185785,
-          "effective_n": 2.777778599291463,
-          "entropy": 1.0549223280820992,
-          "normalised_entropy": 0.6554600956843645,
-          "max_weight": 0.3999999504244201,
-          "gini_coefficient": 0.47999987000359895
+          "herfindahl_index": 0.33999750305466175,
+          "effective_n": 2.9411980706200334,
+          "entropy": 1.1935553732502313,
+          "normalised_entropy": 0.8609682090072422,
+          "max_weight": 0.39999967817649357,
+          "gini_coefficient": 0.2999973680620103
         },
-        "diversification_ratio": 1.6932655515740496,
+        "diversification_ratio": 1.339233082861712,
         "factor_imbalance_warning": null,
         "portfolio_comparison": {
           "current": {
-            "expected_return": 0.0822,
-            "volatility": 0.092,
-            "sharpe_ratio": 0.1322,
-            "herfindahl_index": 0.2,
-            "effective_n": 5.0,
-            "diversification_ratio": 2.2642
+            "expected_return": 0.465,
+            "volatility": 0.228,
+            "sharpe_ratio": 1.7329,
+            "herfindahl_index": 0.25,
+            "effective_n": 4.0,
+            "diversification_ratio": 1.5017
           },
           "optimised": {
-            "expected_return": 0.1376,
-            "volatility": 0.1248,
-            "sharpe_ratio": 0.542,
-            "herfindahl_index": 0.36,
-            "effective_n": 2.78,
-            "diversification_ratio": 1.6933
+            "expected_return": 0.6638,
+            "volatility": 0.2806,
+            "sharpe_ratio": 2.1159,
+            "herfindahl_index": 0.34,
+            "effective_n": 2.94,
+            "diversification_ratio": 1.3392
           },
           "improvement": {
-            "expected_return": 0.0554,
-            "volatility": 0.0328,
-            "sharpe_ratio": 0.4098,
-            "herfindahl_index": 0.16,
-            "effective_n": -2.22,
-            "diversification_ratio": -0.5709
+            "expected_return": 0.1988,
+            "volatility": 0.0526,
+            "sharpe_ratio": 0.383,
+            "herfindahl_index": 0.09,
+            "effective_n": -1.06,
+            "diversification_ratio": -0.1625
           },
-          "one_way_turnover": 0.8
+          "one_way_turnover": 0.6
         }
       }
     },
     "risk_parity": {
       "optimal_weights": {
-        "RELIANCE.NS": 0.171382,
-        "TCS.NS": 0.167638,
-        "INFY.NS": 0.19655,
-        "HDFCBANK.NS": 0.245818,
-        "ICICIBANK.NS": 0.218613
+        "BSE.NS": 0.130913,
+        "ETERNAL.NS": 0.187939,
+        "SBIN.NS": 0.280455,
+        "ITC.NS": 0.400693
       },
-      "expected_return": 0.081261,
-      "volatility": 0.089162,
-      "sharpe_ratio": 0.1263,
-      "cvar": 0.010478,
+      "expected_return": 0.285719,
+      "volatility": 0.183089,
+      "sharpe_ratio": 1.1782,
+      "cvar": 0.024252,
       "optimization_type": "Risk Parity",
       "solve_status": "optimal",
       "risk_contribution": {
-        "RELIANCE.NS": 0.2,
-        "TCS.NS": 0.2,
-        "INFY.NS": 0.2,
-        "HDFCBANK.NS": 0.2,
-        "ICICIBANK.NS": 0.2
+        "BSE.NS": 0.25,
+        "ETERNAL.NS": 0.25,
+        "SBIN.NS": 0.25,
+        "ITC.NS": 0.25
       },
       "factor_exposure": {},
-      "allocation_health_score": 95,
+      "allocation_health_score": 84,
       "overweight_underweight_flags": {
-        "RELIANCE.NS": "Neutral",
-        "TCS.NS": "UW -3.2%",
-        "INFY.NS": "Neutral",
-        "HDFCBANK.NS": "Neutral",
-        "ICICIBANK.NS": "Neutral"
+        "BSE.NS": "UW -11.9%",
+        "ETERNAL.NS": "UW -6.2%",
+        "SBIN.NS": "Neutral",
+        "ITC.NS": "OW +15.1%"
       },
       "rebalance_actions_rupees": {
-        "RELIANCE.NS": -28618.36,
-        "TCS.NS": -32362.15,
-        "INFY.NS": -3450.04,
-        "HDFCBANK.NS": 45817.94,
-        "ICICIBANK.NS": 18612.61
+        "BSE.NS": -119086.93,
+        "ETERNAL.NS": -62060.92,
+        "SBIN.NS": 30454.8,
+        "ITC.NS": 150693.05
       },
       "diagnostics": {
         "health_score_breakdown": {
-          "diversification": 100.0,
-          "concentration": 99.45950795730971,
-          "risk_balance": 99.99996005713577,
+          "diversification": 58.7015644829479,
+          "concentration": 94.44411375532691,
+          "risk_balance": 99.99998090254286,
           "factor_balance": 75.0,
           "liquidity": 100.0,
           "tracking_error": 80.0
         },
         "concentration": {
-          "herfindahl_index": 0.20432393534692717,
-          "effective_n": 4.894189211371995,
-          "entropy": 1.5987547244652611,
-          "normalised_entropy": 0.9933621621024933,
-          "max_weight": 0.24581794167979706,
-          "gini_coefficient": 0.08143646347920136
+          "herfindahl_index": 0.2916691458906071,
+          "effective_n": 3.42854228528875,
+          "entropy": 1.3033531403572727,
+          "normalised_entropy": 0.9401705560602472,
+          "max_weight": 0.400693049864494,
+          "gini_coefficient": 0.22546391861084292
         },
-        "diversification_ratio": 2.2911338306283855,
+        "diversification_ratio": 1.587015644829479,
         "factor_imbalance_warning": null,
         "portfolio_comparison": {
           "current": {
-            "expected_return": 0.0822,
-            "volatility": 0.092,
-            "sharpe_ratio": 0.1322,
-            "herfindahl_index": 0.2,
-            "effective_n": 5.0,
-            "diversification_ratio": 2.2642
+            "expected_return": 0.465,
+            "volatility": 0.228,
+            "sharpe_ratio": 1.7329,
+            "herfindahl_index": 0.25,
+            "effective_n": 4.0,
+            "diversification_ratio": 1.5017
           },
           "optimised": {
-            "expected_return": 0.0813,
-            "volatility": 0.0892,
-            "sharpe_ratio": 0.1263,
-            "herfindahl_index": 0.2043,
-            "effective_n": 4.89,
-            "diversification_ratio": 2.2911
+            "expected_return": 0.2857,
+            "volatility": 0.1831,
+            "sharpe_ratio": 1.1782,
+            "herfindahl_index": 0.2917,
+            "effective_n": 3.43,
+            "diversification_ratio": 1.587
           },
           "improvement": {
-            "expected_return": -0.0009,
-            "volatility": -0.0028,
-            "sharpe_ratio": -0.0059,
-            "herfindahl_index": 0.0043,
-            "effective_n": -0.11,
-            "diversification_ratio": 0.0269
+            "expected_return": -0.1793,
+            "volatility": -0.0449,
+            "sharpe_ratio": -0.5547,
+            "herfindahl_index": 0.0417,
+            "effective_n": -0.57,
+            "diversification_ratio": 0.0853
           },
-          "one_way_turnover": 0.1289
+          "one_way_turnover": 0.3623
         }
       }
     },
     "multi_objective": {
       "optimal_weights": {
-        "RELIANCE.NS": 0.4,
-        "TCS.NS": 0.2,
-        "INFY.NS": 0.0,
-        "HDFCBANK.NS": 0.4,
-        "ICICIBANK.NS": 0.0
+        "BSE.NS": 0.400002,
+        "ETERNAL.NS": 0.099998,
+        "SBIN.NS": 0.4,
+        "ITC.NS": 0.1
       },
-      "expected_return": 0.137624,
-      "volatility": 0.124775,
-      "sharpe_ratio": 0.542,
-      "cvar": 0.014032,
+      "expected_return": 0.663826,
+      "volatility": 0.28065,
+      "sharpe_ratio": 2.1159,
+      "cvar": 0.034721,
       "optimization_type": "Multi-Objective (\u03bb_ret=1.0, \u03bb_vol=1.0, \u03bb_cvar=0.5, \u03bb_dd=0.3, \u03bb_fc=0.0)",
       "solve_status": "user_limit",
       "risk_contribution": {
-        "RELIANCE.NS": 0.577093,
-        "TCS.NS": 0.15017,
-        "INFY.NS": -0.0,
-        "HDFCBANK.NS": 0.272737,
-        "ICICIBANK.NS": 0.0
+        "BSE.NS": 0.70936,
+        "ETERNAL.NS": 0.060161,
+        "SBIN.NS": 0.214389,
+        "ITC.NS": 0.016089
       },
       "factor_exposure": {},
-      "allocation_health_score": 67,
+      "allocation_health_score": 60,
       "overweight_underweight_flags": {
-        "RELIANCE.NS": "OW +20.0%",
-        "TCS.NS": "Neutral",
-        "INFY.NS": "UW -20.0%",
-        "HDFCBANK.NS": "OW +20.0%",
-        "ICICIBANK.NS": "UW -20.0%"
+        "BSE.NS": "OW +15.0%",
+        "ETERNAL.NS": "UW -15.0%",
+        "SBIN.NS": "OW +15.0%",
+        "ITC.NS": "UW -15.0%"
       },
       "rebalance_actions_rupees": {
-        "RELIANCE.NS": 199999.7,
-        "INFY.NS": -200000.0,
-        "HDFCBANK.NS": 200000.09,
-        "ICICIBANK.NS": -200000.0
+        "BSE.NS": 150002.05,
+        "ETERNAL.NS": -150001.73,
+        "SBIN.NS": 150000.17,
+        "ITC.NS": -150000.49
       },
       "diagnostics": {
         "health_score_breakdown": {
-          "diversification": 56.08636927362392,
-          "concentration": 80.00001046133916,
-          "risk_balance": 46.38416070982928,
+          "diversification": 33.922720459414315,
+          "concentration": 87.99982195877125,
+          "risk_balance": 36.43558820712279,
           "factor_balance": 75.0,
           "liquidity": 100.0,
           "tracking_error": 80.0
         },
         "concentration": {
-          "herfindahl_index": 0.35999991550928645,
-          "effective_n": 2.777778429712449,
-          "entropy": 1.0549203143974077,
-          "normalised_entropy": 0.6554588445117185,
-          "max_weight": 0.4000000911011493,
-          "gini_coefficient": 0.47999995194960193
+          "herfindahl_index": 0.34000133442921743,
+          "effective_n": 2.9411649271282,
+          "entropy": 1.193546520907765,
+          "normalised_entropy": 0.860961823391954,
+          "max_weight": 0.4000020520875138,
+          "gini_coefficient": 0.300003002594466
         },
-        "diversification_ratio": 1.6932656503335468,
+        "diversification_ratio": 1.3392272045941431,
         "factor_imbalance_warning": null,
         "portfolio_comparison": {
           "current": {
-            "expected_return": 0.0822,
-            "volatility": 0.092,
-            "sharpe_ratio": 0.1322,
-            "herfindahl_index": 0.2,
-            "effective_n": 5.0,
-            "diversification_ratio": 2.2642
+            "expected_return": 0.465,
+            "volatility": 0.228,
+            "sharpe_ratio": 1.7329,
+            "herfindahl_index": 0.25,
+            "effective_n": 4.0,
+            "diversification_ratio": 1.5017
           },
           "optimised": {
-            "expected_return": 0.1376,
-            "volatility": 0.1248,
-            "sharpe_ratio": 0.542,
-            "herfindahl_index": 0.36,
-            "effective_n": 2.78,
-            "diversification_ratio": 1.6933
+            "expected_return": 0.6638,
+            "volatility": 0.2806,
+            "sharpe_ratio": 2.1159,
+            "herfindahl_index": 0.34,
+            "effective_n": 2.94,
+            "diversification_ratio": 1.3392
           },
           "improvement": {
-            "expected_return": 0.0554,
-            "volatility": 0.0328,
-            "sharpe_ratio": 0.4098,
-            "herfindahl_index": 0.16,
-            "effective_n": -2.22,
-            "diversification_ratio": -0.5709
+            "expected_return": 0.1988,
+            "volatility": 0.0526,
+            "sharpe_ratio": 0.383,
+            "herfindahl_index": 0.09,
+            "effective_n": -1.06,
+            "diversification_ratio": -0.1625
           },
-          "one_way_turnover": 0.8
+          "one_way_turnover": 0.6
         }
       }
     }
   },
   "recommendation": {
-    "best_method": "mean_variance",
-    "reason": "Highest Sharpe ratio (0.54) among all methods",
+    "best_method": "multi_objective",
+    "reason": "Highest Sharpe ratio (2.12) among all methods",
     "summary": {
-      "expected_return": 0.1371,
-      "volatility": 0.1236,
-      "sharpe_ratio": 0.5427,
-      "health_score": 68
+      "expected_return": 0.6638,
+      "volatility": 0.2806,
+      "sharpe_ratio": 2.1159,
+      "health_score": 60
     },
     "risk_attribution": {
       "risk_contribution": {
-        "RELIANCE.NS": 0.546569679468081,
-        "TCS.NS": 0.17473234338726765,
-        "INFY.NS": -3.4837685262032524e-10,
-        "HDFCBANK.NS": 0.2786979774702183,
-        "ICICIBANK.NS": 2.2809733901754888e-11
+        "BSE.NS": 0.709359973581954,
+        "ETERNAL.NS": 0.060161489751776896,
+        "SBIN.NS": 0.21438922696103613,
+        "ITC.NS": 0.016089309705233257
       },
       "factor_exposure": {},
-      "diversification_ratio": 1.7084152155317687,
+      "diversification_ratio": 1.3392272045941431,
       "concentration": {
-        "herfindahl_index": 0.3547346693499595,
-        "effective_n": 2.819008364286664,
-        "entropy": 1.0639958468774502,
-        "normalised_entropy": 0.6610977898912993,
-        "max_weight": 0.40000000545055525,
-        "gini_coefficient": 0.47433327294951017
+        "herfindahl_index": 0.34000133442921743,
+        "effective_n": 2.9411649271282,
+        "entropy": 1.193546520907765,
+        "normalised_entropy": 0.860961823391954,
+        "max_weight": 0.4000020520875138,
+        "gini_coefficient": 0.300003002594466
       }
     }
   }

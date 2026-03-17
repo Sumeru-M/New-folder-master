@@ -1,19 +1,18 @@
 {
   "risk_contribution": {
-    "RELIANCE.NS": 0.546569679468081,
-    "TCS.NS": 0.17473234338726765,
-    "INFY.NS": -3.4837685262032524e-10,
-    "HDFCBANK.NS": 0.2786979774702183,
-    "ICICIBANK.NS": 2.2809733901754888e-11
+    "BSE.NS": 0.709359973581954,
+    "ETERNAL.NS": 0.060161489751776896,
+    "SBIN.NS": 0.21438922696103613,
+    "ITC.NS": 0.016089309705233257
   },
   "factor_exposure": {},
-  "diversification_ratio": 1.7084152155317687,
+  "diversification_ratio": 1.3392272045941431,
   "concentration": {
-    "herfindahl_index": 0.3547346693499595,
-    "effective_n": 2.819008364286664,
-    "entropy": 1.0639958468774502,
-    "normalised_entropy": 0.6610977898912993,
-    "max_weight": 0.40000000545055525,
-    "gini_coefficient": 0.47433327294951017
+    "herfindahl_index": 0.34000133442921743,
+    "effective_n": 2.9411649271282,
+    "entropy": 1.193546520907765,
+    "normalised_entropy": 0.860961823391954,
+    "max_weight": 0.4000020520875138,
+    "gini_coefficient": 0.300003002594466
   }
 }
