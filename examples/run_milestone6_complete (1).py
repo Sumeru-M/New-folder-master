@@ -26,9 +26,11 @@ import types, importlib.util
 def _find_and_load():
     here = os.path.dirname(os.path.abspath(__file__))
     for folder in [here,
-                   os.path.join(here, ".."),
-                   os.path.join(here, "..", ".."),
-                   os.path.join(here, "..", "src")]:
+               os.path.join(here, "portfolio"),
+               os.path.join(here, ".."),
+               os.path.join(here, "..", "portfolio"),
+               os.path.join(here, "..", ".."),
+               os.path.join(here, "..", "src")]:
         candidate = os.path.normpath(os.path.join(folder, "milestone6_complete.py"))
         if os.path.isfile(candidate):
             spec = importlib.util.spec_from_file_location("milestone6_complete", candidate)

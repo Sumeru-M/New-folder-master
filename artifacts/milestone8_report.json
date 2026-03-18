@@ -1,0 +1,719 @@
+{
+  "test_1": {
+    "recommendation_id": "6266c24b-90d",
+    "final_action": "INCREASE_EXPOSURE",
+    "fused_confidence": 0.4362,
+    "priority": "medium",
+    "portfolio_adjustments": {
+      "optimizer_params": {
+        "lam_return": 1.21,
+        "lam_vol": 0.72,
+        "lam_cvar": 0.65,
+        "lam_drawdown": 0.16,
+        "max_weight": 0.37,
+        "target_vol": 0.171
+      },
+      "leverage_scalar": 1.0,
+      "min_assets": 2,
+      "sector_cap": 0.4,
+      "confidence_blend": 0.7,
+      "regime_applied": "Low-Vol Bull",
+      "action_applied": "INCREASE_EXPOSURE",
+      "rebalance_urgency": "routine",
+      "notes": [
+        "BULL regime: return emphasis increased, risk constraints relaxed (max weight=37%)."
+      ]
+    },
+    "security_actions": {
+      "threat_composite": 0.07,
+      "security_tier": "CLEAR",
+      "security_action": "ALLOW \u2014 no security restrictions active",
+      "restrictions": [],
+      "large_tx_blocked": false,
+      "large_tx_threshold": 0.1,
+      "multi_step_required": false,
+      "max_trades_per_session": 10,
+      "account_flagged": false,
+      "key_rotation_required": false,
+      "overridden_action": null,
+      "action_was_overridden": false,
+      "reasoning": [
+        "PQC threat level: low (score=0.10, anomaly=0.20)",
+        "Bayesian threat probability: 4.0% [SAFE] (effective score=0.05)",
+        "Composite threat score T = 0.070 \u2192 tier = CLEAR"
+      ]
+    },
+    "explanation": {
+      "summary": "Decision: INCREASE_EXPOSURE \u2014 Increase portfolio exposure \u2014 conditions are favourable. [MEDIUM priority, confidence=45%]",
+      "action_rationale": "Market is in a calm bull phase (P=82%). Conditions favour equity exposure.",
+      "factors": [
+        {
+          "factor": "Market Regime",
+          "contribution": 0.222,
+          "direction": "\u2191 bullish",
+          "tier": "primary driver",
+          "current_value": "Low-Vol Bull (P=82%)"
+        },
+        {
+          "factor": "Expected Return",
+          "contribution": 0.1,
+          "direction": "\u2191 bullish",
+          "tier": "contributing factor",
+          "current_value": "18.0% expected annual return"
+        },
+        {
+          "factor": "Sharpe Ratio",
+          "contribution": 0.1,
+          "direction": "\u2191 bullish",
+          "tier": "contributing factor",
+          "current_value": "1.10 Sharpe ratio"
+        },
+        {
+          "factor": "Portfolio Volatility",
+          "contribution": 0.07,
+          "direction": "\u2191 bullish",
+          "tier": "contributing factor",
+          "current_value": "13.0% annualised"
+        },
+        {
+          "factor": "Maximum Drawdown",
+          "contribution": -0.04,
+          "direction": "\u2193 bearish",
+          "tier": "minor factor",
+          "current_value": "6.0% max drawdown"
+        },
+        {
+          "factor": "Value at Risk (VaR)",
+          "contribution": 0.0,
+          "direction": "\u2192 neutral",
+          "tier": "minor factor",
+          "current_value": "1.80% daily at 95%"
+        },
+        {
+          "factor": "Conditional VaR (CVaR)",
+          "contribution": 0.0,
+          "direction": "\u2192 neutral",
+          "tier": "minor factor",
+          "current_value": "2.80% daily CVaR 95%"
+        }
+      ],
+      "narrative": "Market Environment: The portfolio is currently operating in a Low-Vol Bull regime (probability 82%). Market is in a calm bull phase (P=82%). Conditions favour equity exposure.\n\nRisk Snapshot: Portfolio volatility is 13.0% per year. In the worst 5% of trading days, the daily loss could reach 1.80% (VaR 95%) with an average of 2.80% on those bad days (CVaR 95%). The maximum historical drawdown in the analysis period was 6.0%.\n\n21-Day Outlook: The regime-weighted model expects 16.0% annualised return (gain) over the next month, with forward volatility of 13.0% and a forward CVaR of 2.50%. GARCH-estimated current volatility is 13.0% per year.\n\nStrategy Adaptation: The engine has calibrated optimization parameters for the Low-Vol Bull regime \u2014 variance penalty \u03bb_vol=0.72, CVaR penalty \u03bb_cvar=0.65, max weight per asset 37%, effective leverage 100%. Rebalance urgency is routine.\n\nSecurity Assessment: No active security threats detected. All transactions clear.\n\nFinal Recommendation: INCREASE_EXPOSURE \u2014 Increase portfolio exposure \u2014 conditions are favourable. This is a medium-priority signal with 45% confidence.",
+      "risk_assessment": "All risk metrics within normal bounds. No breaches detected.",
+      "security_summary": "PQC immune engine: low threat (anomaly score=0.20). Bayesian engine: 4.0% threat probability [SAFE]. Combined tier: CLEAR. Action: ALLOW \u2014 no security restrictions active.",
+      "confidence_statement": "Signal confidence is 45% (medium priority). The regime anchor was applied at 70% weight (remaining 30% blended toward neutral baseline). Higher confidence means the regime signal is clearer and the adapted parameters are closer to the pure regime anchor.",
+      "raw_signals": {
+        "regime": 0.222,
+        "vol": 0.07,
+        "var": 0.0,
+        "cvar": 0.0,
+        "dd": -0.04,
+        "ret": 0.1,
+        "sharpe": 0.1
+      },
+      "timestamp": 1773815758.80831
+    },
+    "decision_detail": {
+      "action": "INCREASE_EXPOSURE",
+      "confidence": 0.452,
+      "priority": "medium",
+      "composite_score": 0.452,
+      "signal_breakdown": {
+        "regime": 0.222,
+        "vol": 0.07,
+        "var": 0.0,
+        "cvar": 0.0,
+        "dd": -0.04,
+        "ret": 0.1,
+        "sharpe": 0.1
+      },
+      "regime_context": "Market is in a calm bull phase (P=82%). Conditions favour equity exposure.",
+      "triggered_rules": []
+    },
+    "processing_ms": 0.265,
+    "timestamp": 1773815758.80832,
+    "milestone": 8
+  },
+  "test_2": {
+    "recommendation_id": "5119ab16-d43",
+    "final_action": "REBALANCE",
+    "fused_confidence": 0.5468,
+    "priority": "medium",
+    "portfolio_adjustments": {
+      "optimizer_params": {
+        "lam_return": 0.79,
+        "lam_vol": 1.42,
+        "lam_cvar": 1.14,
+        "lam_drawdown": 0.37,
+        "max_weight": 0.265,
+        "target_vol": 0.129
+      },
+      "leverage_scalar": 0.2534,
+      "min_assets": 4,
+      "sector_cap": 0.3,
+      "confidence_blend": 0.7,
+      "regime_applied": "High-Vol Bear",
+      "action_applied": "REBALANCE",
+      "rebalance_urgency": "next_session",
+      "notes": [
+        "BEAR regime: risk penalties elevated (\u03bb_vol=1.42, \u03bb_cvar=1.14), max weight capped at 26%.",
+        "GARCH scaling: effective exposure reduced to 25% because current volatility exceeds the target.",
+        "Full rebalance triggered: portfolio weights should be realigned to the adapted target allocation."
+      ]
+    },
+    "security_actions": {
+      "threat_composite": 0.088,
+      "security_tier": "CLEAR",
+      "security_action": "ALLOW \u2014 no security restrictions active",
+      "restrictions": [],
+      "large_tx_blocked": false,
+      "large_tx_threshold": 0.1,
+      "multi_step_required": false,
+      "max_trades_per_session": 10,
+      "account_flagged": false,
+      "key_rotation_required": false,
+      "overridden_action": null,
+      "action_was_overridden": false,
+      "reasoning": [
+        "PQC threat level: low (score=0.10, anomaly=0.50)",
+        "Bayesian threat probability: 8.0% [SAFE] (effective score=0.08)",
+        "Composite threat score T = 0.088 \u2192 tier = CLEAR"
+      ]
+    },
+    "explanation": {
+      "summary": "Decision: REBALANCE \u2014 Full rebalance required \u2014 current allocation is misaligned with risk tolerance. [MEDIUM priority, confidence=57%]",
+      "action_rationale": "Bear market with elevated volatility (P=75%). Defensive positioning recommended. Key signals that drove this decision: REGIME_RISK: bear/crisis regime dominates; VOL_BREACH: vol=28.0% > threshold=20%; VAR_BREACH: VaR=3.80% > threshold=3.00%.",
+      "factors": [
+        {
+          "factor": "Market Regime",
+          "contribution": -0.156,
+          "direction": "\u2193 bearish",
+          "tier": "primary driver",
+          "current_value": "High-Vol Bear (P=75%)"
+        },
+        {
+          "factor": "Value at Risk (VaR)",
+          "contribution": -0.1,
+          "direction": "\u2193 bearish",
+          "tier": "contributing factor",
+          "current_value": "3.80% daily at 95%"
+        },
+        {
+          "factor": "Conditional VaR (CVaR)",
+          "contribution": -0.1,
+          "direction": "\u2193 bearish",
+          "tier": "contributing factor",
+          "current_value": "5.50% daily CVaR 95%"
+        },
+        {
+          "factor": "Maximum Drawdown",
+          "contribution": -0.1,
+          "direction": "\u2193 bearish",
+          "tier": "contributing factor",
+          "current_value": "22.0% max drawdown"
+        },
+        {
+          "factor": "Portfolio Volatility",
+          "contribution": -0.08,
+          "direction": "\u2193 bearish",
+          "tier": "contributing factor",
+          "current_value": "28.0% annualised"
+        },
+        {
+          "factor": "Expected Return",
+          "contribution": -0.05,
+          "direction": "\u2193 bearish",
+          "tier": "minor factor",
+          "current_value": "4.0% expected annual return"
+        },
+        {
+          "factor": "Sharpe Ratio",
+          "contribution": 0.014,
+          "direction": "\u2191 bullish",
+          "tier": "minor factor",
+          "current_value": "0.14 Sharpe ratio"
+        }
+      ],
+      "narrative": "Market Environment: The portfolio is currently operating in a High-Vol Bear regime (probability 75%). Bear market with elevated volatility (P=75%). Defensive positioning recommended.\n\nRisk Snapshot: Portfolio volatility is 28.0% per year. In the worst 5% of trading days, the daily loss could reach 3.80% (VaR 95%) with an average of 5.50% on those bad days (CVaR 95%). The maximum historical drawdown in the analysis period was 22.0%.\n\n21-Day Outlook: The regime-weighted model expects -8.0% annualised return (loss) over the next month, with forward volatility of 30.0% and a forward CVaR of 6.20%. GARCH-estimated current volatility is 28.0% per year.\n\nStrategy Adaptation: The engine has calibrated optimization parameters for the High-Vol Bear regime \u2014 variance penalty \u03bb_vol=1.42, CVaR penalty \u03bb_cvar=1.14, max weight per asset 26%, effective leverage 25%. Rebalance urgency is next_session.\n\nSecurity Assessment: No active security threats detected. All transactions clear.\n\nFinal Recommendation: REBALANCE \u2014 Full rebalance required \u2014 current allocation is misaligned with risk tolerance. This is a medium-priority signal with 57% confidence.",
+      "risk_assessment": "Risk alerts: Volatility 28.0% exceeds threshold 20%; VaR 3.80% exceeds threshold 3.00%; CVaR 5.50% exceeds threshold 5.00%; Drawdown 22.0% exceeds threshold 15%.",
+      "security_summary": "PQC immune engine: low threat (anomaly score=0.50). Bayesian engine: 8.0% threat probability [SAFE]. Combined tier: CLEAR. Action: ALLOW \u2014 no security restrictions active.",
+      "confidence_statement": "Signal confidence is 57% (medium priority). The regime anchor was applied at 70% weight (remaining 30% blended toward neutral baseline). Higher confidence means the regime signal is clearer and the adapted parameters are closer to the pure regime anchor.",
+      "raw_signals": {
+        "regime": -0.156,
+        "vol": -0.08,
+        "var": -0.1,
+        "cvar": -0.1,
+        "dd": -0.1,
+        "ret": -0.05,
+        "sharpe": 0.014
+      },
+      "timestamp": 1773815758.8086112
+    },
+    "decision_detail": {
+      "action": "REBALANCE",
+      "confidence": 0.572,
+      "priority": "medium",
+      "composite_score": -0.572,
+      "signal_breakdown": {
+        "regime": -0.156,
+        "vol": -0.08,
+        "var": -0.1,
+        "cvar": -0.1,
+        "dd": -0.1,
+        "ret": -0.05,
+        "sharpe": 0.014
+      },
+      "regime_context": "Bear market with elevated volatility (P=75%). Defensive positioning recommended.",
+      "triggered_rules": [
+        "REGIME_RISK: bear/crisis regime dominates",
+        "VOL_BREACH: vol=28.0% > threshold=20%",
+        "VAR_BREACH: VaR=3.80% > threshold=3.00%",
+        "CVAR_BREACH: CVaR=5.50% > threshold=5.00%",
+        "DRAWDOWN_BREACH: dd=22.0% > threshold=15%"
+      ]
+    },
+    "processing_ms": 0.164,
+    "timestamp": 1773815758.80862,
+    "milestone": 8
+  },
+  "test_3": {
+    "recommendation_id": "0e7ab075-b31",
+    "final_action": "HOLD",
+    "fused_confidence": 0.4918,
+    "priority": "high",
+    "portfolio_adjustments": {
+      "optimizer_params": {
+        "lam_return": 0.3,
+        "lam_vol": 2.5,
+        "lam_cvar": 2.0,
+        "lam_drawdown": 0.8,
+        "max_weight": 0.15,
+        "target_vol": 0.08
+      },
+      "leverage_scalar": 0.1,
+      "min_assets": 5,
+      "sector_cap": 0.25,
+      "confidence_blend": 1.0,
+      "regime_applied": "Crisis",
+      "action_applied": "REBALANCE",
+      "rebalance_urgency": "immediate",
+      "notes": [
+        "CRISIS regime: variance penalty raised to 2.50, CVaR penalty raised to 2.00, max weight tightened to 15%.",
+        "GARCH scaling: effective exposure reduced to 10% because current volatility exceeds the target.",
+        "Full rebalance triggered: portfolio weights should be realigned to the adapted target allocation."
+      ]
+    },
+    "security_actions": {
+      "threat_composite": 0.97,
+      "security_tier": "CRITICAL",
+      "security_action": "FULL_QUARANTINE \u2014 all transactions suspended pending investigation",
+      "restrictions": [
+        "FULL_QUARANTINE: all new transactions blocked",
+        "KEY_ROTATION: cryptographic key rotation triggered",
+        "ACCOUNT_INVESTIGATION: account flagged for review",
+        "MULTI_STEP_VERIFICATION: secondary confirmation required"
+      ],
+      "large_tx_blocked": true,
+      "large_tx_threshold": 0.1,
+      "multi_step_required": true,
+      "max_trades_per_session": 0,
+      "account_flagged": true,
+      "key_rotation_required": true,
+      "overridden_action": "HOLD",
+      "action_was_overridden": true,
+      "reasoning": [
+        "PQC threat level: high (score=1.00, anomaly=12.50)",
+        "Bayesian threat probability: 91.0% [CRITICAL_THREAT] (effective score=0.95)",
+        "Composite threat score T = 0.970 \u2192 tier = CRITICAL",
+        "Existing quarantine flag detected \u2014 escalated to CRITICAL.",
+        "Financial action overridden: REBALANCE \u2192 HOLD due to security constraints."
+      ]
+    },
+    "explanation": {
+      "summary": "Decision: HOLD \u2014 Hold current positions \u2014 no significant change warranted. [HIGH priority, confidence=96%]",
+      "action_rationale": "Crisis regime detected (P=82%). Capital preservation is the primary objective. Key signals that drove this decision: REGIME_RISK: bear/crisis regime dominates; VOL_BREACH: vol=45.0% > threshold=20%; VAR_BREACH: VaR=6.20% > threshold=3.00%. Note: the financial analysis suggested REBALANCE, but this was overridden to HOLD due to an active security threat (tier: CRITICAL).",
+      "factors": [
+        {
+          "factor": "Market Regime",
+          "contribution": -0.27,
+          "direction": "\u2193 bearish",
+          "tier": "primary driver",
+          "current_value": "Crisis (P=82%)"
+        },
+        {
+          "factor": "Portfolio Volatility",
+          "contribution": -0.2,
+          "direction": "\u2193 bearish",
+          "tier": "primary driver",
+          "current_value": "45.0% annualised"
+        },
+        {
+          "factor": "Security Threat",
+          "contribution": -0.194,
+          "direction": "\u2193 bearish",
+          "tier": "primary driver",
+          "current_value": "T=0.97, tier=CRITICAL"
+        },
+        {
+          "factor": "Value at Risk (VaR)",
+          "contribution": -0.1,
+          "direction": "\u2193 bearish",
+          "tier": "contributing factor",
+          "current_value": "6.20% daily at 95%"
+        },
+        {
+          "factor": "Conditional VaR (CVaR)",
+          "contribution": -0.1,
+          "direction": "\u2193 bearish",
+          "tier": "contributing factor",
+          "current_value": "9.20% daily CVaR 95%"
+        },
+        {
+          "factor": "Maximum Drawdown",
+          "contribution": -0.1,
+          "direction": "\u2193 bearish",
+          "tier": "contributing factor",
+          "current_value": "38.0% max drawdown"
+        },
+        {
+          "factor": "Expected Return",
+          "contribution": -0.1,
+          "direction": "\u2193 bearish",
+          "tier": "contributing factor",
+          "current_value": "-15.0% expected annual return"
+        },
+        {
+          "factor": "Sharpe Ratio",
+          "contribution": -0.085,
+          "direction": "\u2193 bearish",
+          "tier": "contributing factor",
+          "current_value": "-0.85 Sharpe ratio"
+        }
+      ],
+      "narrative": "Market Environment: The portfolio is currently operating in a Crisis regime (probability 82%). Crisis regime detected (P=82%). Capital preservation is the primary objective.\n\nRisk Snapshot: Portfolio volatility is 45.0% per year. In the worst 5% of trading days, the daily loss could reach 6.20% (VaR 95%) with an average of 9.20% on those bad days (CVaR 95%). The maximum historical drawdown in the analysis period was 38.0%.\n\n21-Day Outlook: The regime-weighted model expects -22.0% annualised return (loss) over the next month, with forward volatility of 48.0% and a forward CVaR of 10.00%. GARCH-estimated current volatility is 45.0% per year.\n\nStrategy Adaptation: The engine has calibrated optimization parameters for the Crisis regime \u2014 variance penalty \u03bb_vol=2.50, CVaR penalty \u03bb_cvar=2.00, max weight per asset 15%, effective leverage 10%. Rebalance urgency is immediate.\n\nSecurity Assessment: The security layer detected a threat composite score of 0.97 (CRITICAL tier). Active restrictions: FULL_QUARANTINE: all new transactions blocked; KEY_ROTATION: cryptographic key rotation triggered.\n\nAs a result, the financial action was overridden from REBALANCE to HOLD.\n\nFinal Recommendation: HOLD \u2014 Hold current positions \u2014 no significant change warranted. This is a high-priority signal with 96% confidence.",
+      "risk_assessment": "Risk alerts: Volatility 45.0% exceeds threshold 20%; VaR 6.20% exceeds threshold 3.00%; CVaR 9.20% exceeds threshold 5.00%; Drawdown 38.0% exceeds threshold 15%.",
+      "security_summary": "PQC immune engine: high threat (anomaly score=12.50). Bayesian engine: 91.0% threat probability [CRITICAL_THREAT]. Combined tier: CRITICAL. Action: FULL_QUARANTINE \u2014 all transactions suspended pending investigation. Account has been flagged for investigation. Cryptographic key rotation is required.",
+      "confidence_statement": "Signal confidence is 96% (high priority). The regime anchor was applied at 100% weight (remaining 0% blended toward neutral baseline). Higher confidence means the regime signal is clearer and the adapted parameters are closer to the pure regime anchor.",
+      "raw_signals": {
+        "regime": -0.27,
+        "vol": -0.2,
+        "var": -0.1,
+        "cvar": -0.1,
+        "dd": -0.1,
+        "ret": -0.1,
+        "sharpe": -0.085
+      },
+      "timestamp": 1773815758.8088698
+    },
+    "decision_detail": {
+      "action": "REBALANCE",
+      "confidence": 0.955,
+      "priority": "high",
+      "composite_score": -0.955,
+      "signal_breakdown": {
+        "regime": -0.27,
+        "vol": -0.2,
+        "var": -0.1,
+        "cvar": -0.1,
+        "dd": -0.1,
+        "ret": -0.1,
+        "sharpe": -0.085
+      },
+      "regime_context": "Crisis regime detected (P=82%). Capital preservation is the primary objective.",
+      "triggered_rules": [
+        "REGIME_RISK: bear/crisis regime dominates",
+        "VOL_BREACH: vol=45.0% > threshold=20%",
+        "VAR_BREACH: VaR=6.20% > threshold=3.00%",
+        "CVAR_BREACH: CVaR=9.20% > threshold=5.00%",
+        "DRAWDOWN_BREACH: dd=38.0% > threshold=15%",
+        "NEGATIVE_SHARPE: Sharpe=-0.85",
+        "NEGATIVE_EXPECTED_RETURN: E[r]=-15.00%"
+      ]
+    },
+    "processing_ms": 0.162,
+    "timestamp": 1773815758.808877,
+    "milestone": 8
+  },
+  "test_4": {
+    "recommendation_id": "5c850fef-021",
+    "final_action": "HOLD",
+    "fused_confidence": 0.0325,
+    "priority": "low",
+    "portfolio_adjustments": {
+      "optimizer_params": {
+        "lam_return": 1.0,
+        "lam_vol": 1.0,
+        "lam_cvar": 1.0,
+        "lam_drawdown": 0.3,
+        "max_weight": 0.3,
+        "target_vol": 0.146
+      },
+      "leverage_scalar": 0.657,
+      "min_assets": 3,
+      "sector_cap": 0.4,
+      "confidence_blend": 0.4,
+      "regime_applied": "Transitional",
+      "action_applied": "HOLD",
+      "rebalance_urgency": "routine",
+      "notes": [
+        "GARCH scaling: effective exposure reduced to 66% because current volatility exceeds the target.",
+        "Low signal confidence (blend=40%): parameters partially shrunk toward neutral baseline."
+      ]
+    },
+    "security_actions": {
+      "threat_composite": 0.41,
+      "security_tier": "ELEVATED",
+      "security_action": "RESTRICT \u2014 reduced frequency, secondary confirmation recommended",
+      "restrictions": [
+        "AUDIT_FLAG: all transactions logged for review",
+        "REDUCED_FREQUENCY: trading frequency capped"
+      ],
+      "large_tx_blocked": false,
+      "large_tx_threshold": 0.1,
+      "multi_step_required": false,
+      "max_trades_per_session": 5,
+      "account_flagged": false,
+      "key_rotation_required": false,
+      "overridden_action": null,
+      "action_was_overridden": false,
+      "reasoning": [
+        "PQC threat level: medium (score=0.50, anomaly=2.80)",
+        "Bayesian threat probability: 35.0% [MONITOR] (effective score=0.35)",
+        "Composite threat score T = 0.410 \u2192 tier = ELEVATED"
+      ]
+    },
+    "explanation": {
+      "summary": "Decision: HOLD \u2014 Hold current positions \u2014 no significant change warranted. [LOW priority, confidence=4%]",
+      "action_rationale": "Market is in a transitional phase (P=30%). Mixed signals \u2014 balanced approach advised.",
+      "factors": [
+        {
+          "factor": "Security Threat",
+          "contribution": -0.082,
+          "direction": "\u2193 bearish",
+          "tier": "contributing factor",
+          "current_value": "T=0.41, tier=ELEVATED"
+        },
+        {
+          "factor": "Maximum Drawdown",
+          "contribution": -0.0733,
+          "direction": "\u2193 bearish",
+          "tier": "contributing factor",
+          "current_value": "11.0% max drawdown"
+        },
+        {
+          "factor": "Sharpe Ratio",
+          "contribution": 0.052,
+          "direction": "\u2191 bullish",
+          "tier": "minor factor",
+          "current_value": "0.52 Sharpe ratio"
+        },
+        {
+          "factor": "Market Regime",
+          "contribution": -0.042,
+          "direction": "\u2193 bearish",
+          "tier": "minor factor",
+          "current_value": "Transitional (P=30%)"
+        },
+        {
+          "factor": "Expected Return",
+          "contribution": 0.0125,
+          "direction": "\u2191 bullish",
+          "tier": "minor factor",
+          "current_value": "9.0% expected annual return"
+        },
+        {
+          "factor": "Portfolio Volatility",
+          "contribution": 0.01,
+          "direction": "\u2191 bullish",
+          "tier": "minor factor",
+          "current_value": "19.0% annualised"
+        },
+        {
+          "factor": "Value at Risk (VaR)",
+          "contribution": 0.0,
+          "direction": "\u2192 neutral",
+          "tier": "minor factor",
+          "current_value": "2.60% daily at 95%"
+        },
+        {
+          "factor": "Conditional VaR (CVaR)",
+          "contribution": 0.0,
+          "direction": "\u2192 neutral",
+          "tier": "minor factor",
+          "current_value": "4.00% daily CVaR 95%"
+        }
+      ],
+      "narrative": "Market Environment: The portfolio is currently operating in a Transitional regime (probability 30%). Market is in a transitional phase (P=30%). Mixed signals \u2014 balanced approach advised.\n\nRisk Snapshot: Portfolio volatility is 19.0% per year. In the worst 5% of trading days, the daily loss could reach 2.60% (VaR 95%) with an average of 4.00% on those bad days (CVaR 95%). The maximum historical drawdown in the analysis period was 11.0%.\n\n21-Day Outlook: The regime-weighted model expects 4.0% annualised return (gain) over the next month, with forward volatility of 21.0% and a forward CVaR of 4.30%. GARCH-estimated current volatility is 20.0% per year.\n\nStrategy Adaptation: The engine has calibrated optimization parameters for the Transitional regime \u2014 variance penalty \u03bb_vol=1.00, CVaR penalty \u03bb_cvar=1.00, max weight per asset 30%, effective leverage 66%. Rebalance urgency is routine.\n\nSecurity Assessment: The security layer detected a threat composite score of 0.41 (ELEVATED tier). Active restrictions: AUDIT_FLAG: all transactions logged for review; REDUCED_FREQUENCY: trading frequency capped.\n\nFinal Recommendation: HOLD \u2014 Hold current positions \u2014 no significant change warranted. This is a low-priority signal with 4% confidence.",
+      "risk_assessment": "All risk metrics within normal bounds. No breaches detected.",
+      "security_summary": "PQC immune engine: medium threat (anomaly score=2.80). Bayesian engine: 35.0% threat probability [MONITOR]. Combined tier: ELEVATED. Action: RESTRICT \u2014 reduced frequency, secondary confirmation recommended.",
+      "confidence_statement": "Signal confidence is 4% (low priority). The regime anchor was applied at 40% weight (remaining 60% blended toward neutral baseline). Higher confidence means the regime signal is clearer and the adapted parameters are closer to the pure regime anchor.",
+      "raw_signals": {
+        "regime": -0.042,
+        "vol": 0.01,
+        "var": 0.0,
+        "cvar": 0.0,
+        "dd": -0.0733,
+        "ret": 0.0125,
+        "sharpe": 0.052
+      },
+      "timestamp": 1773815758.809102
+    },
+    "decision_detail": {
+      "action": "HOLD",
+      "confidence": 0.0408,
+      "priority": "low",
+      "composite_score": -0.0408,
+      "signal_breakdown": {
+        "regime": -0.042,
+        "vol": 0.01,
+        "var": 0.0,
+        "cvar": 0.0,
+        "dd": -0.0733,
+        "ret": 0.0125,
+        "sharpe": 0.052
+      },
+      "regime_context": "Market is in a transitional phase (P=30%). Mixed signals \u2014 balanced approach advised.",
+      "triggered_rules": []
+    },
+    "processing_ms": 0.141,
+    "timestamp": 1773815758.809111,
+    "milestone": 8
+  },
+  "test_5": {
+    "recommendation_id": "b033aae3-430",
+    "final_action": "REBALANCE",
+    "fused_confidence": 0.5308,
+    "priority": "medium",
+    "portfolio_adjustments": {
+      "optimizer_params": {
+        "lam_return": 1.21,
+        "lam_vol": 0.72,
+        "lam_cvar": 0.65,
+        "lam_drawdown": 0.16,
+        "max_weight": 0.37,
+        "target_vol": 0.171
+      },
+      "leverage_scalar": 0.55,
+      "min_assets": 2,
+      "sector_cap": 0.4,
+      "confidence_blend": 0.7,
+      "regime_applied": "Low-Vol Bull",
+      "action_applied": "REBALANCE",
+      "rebalance_urgency": "next_session",
+      "notes": [
+        "BULL regime: return emphasis increased, risk constraints relaxed (max weight=37%).",
+        "Full rebalance triggered: portfolio weights should be realigned to the adapted target allocation."
+      ]
+    },
+    "security_actions": {
+      "threat_composite": 0.07,
+      "security_tier": "CLEAR",
+      "security_action": "ALLOW \u2014 no security restrictions active",
+      "restrictions": [],
+      "large_tx_blocked": false,
+      "large_tx_threshold": 0.1,
+      "multi_step_required": false,
+      "max_trades_per_session": 10,
+      "account_flagged": false,
+      "key_rotation_required": false,
+      "overridden_action": null,
+      "action_was_overridden": false,
+      "reasoning": [
+        "PQC threat level: low (score=0.10, anomaly=0.20)",
+        "Bayesian threat probability: 4.0% [SAFE] (effective score=0.05)",
+        "Composite threat score T = 0.070 \u2192 tier = CLEAR"
+      ]
+    },
+    "explanation": {
+      "summary": "Decision: REBALANCE \u2014 Full rebalance required \u2014 current allocation is misaligned with risk tolerance. [MEDIUM priority, confidence=55%]",
+      "action_rationale": "Market is in a calm bull phase (P=82%). Conditions favour equity exposure. Key signals that drove this decision: REGIME_RISK: bear/crisis regime dominates; SCENARIO_OVERRIDE: market_crash.",
+      "factors": [
+        {
+          "factor": "Market Regime",
+          "contribution": -0.27,
+          "direction": "\u2193 bearish",
+          "tier": "primary driver",
+          "current_value": "Low-Vol Bull (P=82%)"
+        },
+        {
+          "factor": "Portfolio Volatility",
+          "contribution": -0.18,
+          "direction": "\u2193 bearish",
+          "tier": "primary driver",
+          "current_value": "13.0% annualised"
+        },
+        {
+          "factor": "Value at Risk (VaR)",
+          "contribution": -0.1,
+          "direction": "\u2193 bearish",
+          "tier": "contributing factor",
+          "current_value": "1.80% daily at 95%"
+        },
+        {
+          "factor": "Conditional VaR (CVaR)",
+          "contribution": -0.1,
+          "direction": "\u2193 bearish",
+          "tier": "contributing factor",
+          "current_value": "2.80% daily CVaR 95%"
+        },
+        {
+          "factor": "Maximum Drawdown",
+          "contribution": -0.1,
+          "direction": "\u2193 bearish",
+          "tier": "contributing factor",
+          "current_value": "6.0% max drawdown"
+        },
+        {
+          "factor": "Expected Return",
+          "contribution": 0.1,
+          "direction": "\u2191 bullish",
+          "tier": "contributing factor",
+          "current_value": "18.0% expected annual return"
+        },
+        {
+          "factor": "Sharpe Ratio",
+          "contribution": 0.1,
+          "direction": "\u2191 bullish",
+          "tier": "contributing factor",
+          "current_value": "1.10 Sharpe ratio"
+        }
+      ],
+      "narrative": "Market Environment: The portfolio is currently operating in a Low-Vol Bull regime (probability 82%). Market is in a calm bull phase (P=82%). Conditions favour equity exposure.\n\nRisk Snapshot: Portfolio volatility is 13.0% per year. In the worst 5% of trading days, the daily loss could reach 1.80% (VaR 95%) with an average of 2.80% on those bad days (CVaR 95%). The maximum historical drawdown in the analysis period was 6.0%.\n\n21-Day Outlook: The regime-weighted model expects 16.0% annualised return (gain) over the next month, with forward volatility of 13.0% and a forward CVaR of 2.50%. GARCH-estimated current volatility is 13.0% per year.\n\nStrategy Adaptation: The engine has calibrated optimization parameters for the Low-Vol Bull regime \u2014 variance penalty \u03bb_vol=0.72, CVaR penalty \u03bb_cvar=0.65, max weight per asset 37%, effective leverage 55%. Rebalance urgency is next_session.\n\nSecurity Assessment: No active security threats detected. All transactions clear.\n\nFinal Recommendation: REBALANCE \u2014 Full rebalance required \u2014 current allocation is misaligned with risk tolerance. This is a medium-priority signal with 55% confidence.",
+      "risk_assessment": "All risk metrics within normal bounds. No breaches detected.",
+      "security_summary": "PQC immune engine: low threat (anomaly score=0.20). Bayesian engine: 4.0% threat probability [SAFE]. Combined tier: CLEAR. Action: ALLOW \u2014 no security restrictions active.",
+      "confidence_statement": "Signal confidence is 55% (medium priority). The regime anchor was applied at 70% weight (remaining 30% blended toward neutral baseline). Higher confidence means the regime signal is clearer and the adapted parameters are closer to the pure regime anchor.",
+      "raw_signals": {
+        "regime": -0.27,
+        "vol": -0.18,
+        "var": -0.1,
+        "cvar": -0.1,
+        "dd": -0.1,
+        "ret": 0.1,
+        "sharpe": 0.1
+      },
+      "timestamp": 1773815758.809328
+    },
+    "decision_detail": {
+      "action": "REBALANCE",
+      "confidence": 0.55,
+      "priority": "medium",
+      "composite_score": -0.55,
+      "signal_breakdown": {
+        "regime": -0.27,
+        "vol": -0.18,
+        "var": -0.1,
+        "cvar": -0.1,
+        "dd": -0.1,
+        "ret": 0.1,
+        "sharpe": 0.1
+      },
+      "regime_context": "Market is in a calm bull phase (P=82%). Conditions favour equity exposure.",
+      "triggered_rules": [
+        "REGIME_RISK: bear/crisis regime dominates",
+        "SCENARIO_OVERRIDE: market_crash"
+      ]
+    },
+    "processing_ms": 0.138,
+    "timestamp": 1773815758.809336,
+    "milestone": 8
+  }
+}

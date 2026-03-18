@@ -1,14 +1,14 @@
 Metric,Value,What This Means
-Expected Annual Return (Standard),8.16%,How much your portfolio is expected to grow per year
-Expected Annual Return (Robust),8.16%,How much your portfolio is expected to grow per year (more reliable estimate)
-Risk Level - Volatility (Standard),8.67%,How much your portfolio price can swing up or down
-Risk Level - Volatility (Robust),8.67%,How much your portfolio price can swing (more stable estimate)
-Risk-Adjusted Performance - Sharpe (Standard),0.13,How good your returns are relative to risk taken
-Risk-Adjusted Performance - Sharpe (Robust),0.13,How good your returns are relative to risk (more accurate)
-Number of Effective Assets (Standard),4.5,How many different investments you effectively have
-Number of Effective Assets (Robust),4.5,How many different investments you effectively have (more balanced)
+Expected Annual Return (Standard),-12.09%,How much your portfolio is expected to grow per year
+Expected Annual Return (Robust),-12.09%,How much your portfolio is expected to grow per year (more reliable estimate)
+Risk Level - Volatility (Standard),15.58%,How much your portfolio price can swing up or down
+Risk Level - Volatility (Robust),15.55%,How much your portfolio price can swing (more stable estimate)
+Risk-Adjusted Performance - Sharpe (Standard),-1.23,How good your returns are relative to risk taken
+Risk-Adjusted Performance - Sharpe (Robust),-1.23,How good your returns are relative to risk (more accurate)
+Number of Effective Assets (Standard),2.8,How many different investments you effectively have
+Number of Effective Assets (Robust),2.8,How many different investments you effectively have (more balanced)
 Diversification Level (Standard),Highly Diversified,How spread out your investments are
 Diversification Level (Robust),Highly Diversified,How spread out your investments are (better balanced)
-Change in Risk (Robust vs Standard),+0.00%,Lower is better - shows if robust method reduces risk
-Change in Performance (Robust vs Standard),+0.00,Higher is better - shows if robust method improves performance
+Change in Risk (Robust vs Standard),-0.03%,Lower is better - shows if robust method reduces risk
+Change in Performance (Robust vs Standard),-0.00,Higher is better - shows if robust method improves performance
 Change in Diversification (Robust vs Standard),+0.0 assets,Higher is better - shows if robust method improves diversification
