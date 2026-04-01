@@ -1,0 +1,34 @@
+{
+  "tx_id": "9166f5abcea93bb49fc2e3362817b4d3",
+  "sha3_hash": "b9c9536d07a67293e0d59fe391156ae49874b279f4d9111659b2952dc569939d",
+  "verification_status": true,
+  "signed_at": 1775026253.149106,
+  "payload": {
+    "trade_id": "9d1d8f7a-5d53-47be-aa92-b5b5969b077e",
+    "ticker": "WIPRO.NS",
+    "quantity": 15.0,
+    "price": 3440.0,
+    "trade_value": 51600.0,
+    "timestamp": 1775026253.004425,
+    "note": "Virtual buy: 15.0 x WIPRO.NS @ Rs.3,440.00",
+    "type": "VIRTUAL_BUY",
+    "virtual_portfolio_snapshot_id": "161a068e-0f2e-4b09-a1ce-f5f656d73645",
+    "virtual_total_value": 112239.0,
+    "virtual_return": -0.103062,
+    "virtual_volatility": 0.156468,
+    "virtual_sharpe": -1.1061,
+    "weight_fingerprint": "ecfd037e9a44a74bb51ff9a8a3c1c42bf96fb17760b6010edf9d69b6fd55283e",
+    "n_assets": 4,
+    "new_ticker_added": true
+  },
+  "signature": {
+    "scheme": "ML-DSA-III-simulated",
+    "c_tilde_hex": "f98eeb745f13a6c20d1511c81c6ef6c90f3d1f4c4f8760e1b4dac97b1d0e4287",
+    "nonce": 58,
+    "z_infinity_norm": 130820,
+    "packed_length_bytes": 22564,
+    "acceptance_bound": 130876,
+    "valid_norm": true
+  },
+  "saved_at": 1775026253.445369
+}

@@ -40,19 +40,18 @@ import numpy as np
 # Add parent directory to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from portfolio.data_loader import load_price_data
-from portfolio.optimizer import (
+from portfolio.portfolio_complete import (
+    load_price_data,
     PortfolioOptimizer,
     compute_daily_returns,
     compute_expected_returns,
-    compute_covariance_matrix
-)
-from portfolio.scenario_engine import ScenarioEngine, MarketShock
-from portfolio.risk_metrics import (
+    compute_covariance_matrix,
+    ScenarioEngine,
+    MarketShock,
     compute_parametric_var,
     compute_historical_var,
     compute_cvar,
-    compute_component_var
+    compute_component_var,
 )
 
 

@@ -1,0 +1,226 @@
+[
+  {
+    "record_id": "acfaadf6-536",
+    "transaction_sig_vector": [
+      0.043197,
+      0.228305,
+      0.216849,
+      0.686689,
+      0.065055,
+      0.650548
+    ],
+    "raw_vector": [
+      0.059761,
+      0.315849,
+      0.3,
+      0.95,
+      0.09,
+      0.9
+    ],
+    "posterior_probability": 0.999667,
+    "threat_classification": "CRITICAL_THREAT",
+    "mitigation_action": "LOG, AUDIT_FLAG, ENHANCED_VALIDATION, SECONDARY_VALIDATION, QUARANTINE, KEY_ROTATION_SIGNAL, ACCOUNT_INVESTIGATION",
+    "timestamp": 1775026295.36181,
+    "last_seen": 1775026295.36181,
+    "occurrence_count": 1,
+    "tx_id_ref": "9166f5abcea93bb49fc2e3362817b4d3",
+    "age_days": 0.0,
+    "recency_weight": 1.0
+  },
+  {
+    "record_id": "dba33532-38e",
+    "transaction_sig_vector": [
+      0.057911,
+      0.290053,
+      0.301476,
+      0.0,
+      0.060295,
+      0.904429
+    ],
+    "raw_vector": [
+      0.057628,
+      0.288632,
+      0.3,
+      0.0,
+      0.06,
+      0.9
+    ],
+    "posterior_probability": 0.152775,
+    "threat_classification": "MONITOR",
+    "mitigation_action": "LOG, AUDIT_FLAG",
+    "timestamp": 1775026316.866807,
+    "last_seen": 1775026316.866807,
+    "occurrence_count": 1,
+    "tx_id_ref": "SYBIL_001_9166f5ab",
+    "age_days": 0.0,
+    "recency_weight": 1.0
+  },
+  {
+    "record_id": "0bc2b347-b2f",
+    "transaction_sig_vector": [
+      0.057712,
+      0.255806,
+      0.304553,
+      0.0,
+      0.060911,
+      0.913658
+    ],
+    "raw_vector": [
+      0.05685,
+      0.251982,
+      0.3,
+      0.0,
+      0.06,
+      0.9
+    ],
+    "posterior_probability": 0.212775,
+    "threat_classification": "MONITOR",
+    "mitigation_action": "LOG, AUDIT_FLAG",
+    "timestamp": 1775026316.8685179,
+    "last_seen": 1775026316.8685179,
+    "occurrence_count": 1,
+    "tx_id_ref": "SYBIL_002_9166f5ab",
+    "age_days": 0.0,
+    "recency_weight": 1.0
+  },
+  {
+    "record_id": "d0b4dcb5-afd",
+    "transaction_sig_vector": [
+      0.05739,
+      0.234307,
+      0.306277,
+      0.0,
+      0.061255,
+      0.91883
+    ],
+    "raw_vector": [
+      0.056214,
+      0.229505,
+      0.3,
+      0.0,
+      0.06,
+      0.9
+    ],
+    "posterior_probability": 0.208585,
+    "threat_classification": "MONITOR",
+    "mitigation_action": "LOG, AUDIT_FLAG",
+    "timestamp": 1775026316.870191,
+    "last_seen": 1775026316.870191,
+    "occurrence_count": 1,
+    "tx_id_ref": "SYBIL_003_9166f5ab",
+    "age_days": 0.0,
+    "recency_weight": 1.0
+  },
+  {
+    "record_id": "0f48ee65-787",
+    "transaction_sig_vector": [
+      0.057056,
+      0.219306,
+      0.307387,
+      0.0,
+      0.061477,
+      0.922162
+    ],
+    "raw_vector": [
+      0.055685,
+      0.214035,
+      0.3,
+      0.0,
+      0.06,
+      0.9
+    ],
+    "posterior_probability": 0.205509,
+    "threat_classification": "MONITOR",
+    "mitigation_action": "LOG, AUDIT_FLAG",
+    "timestamp": 1775026316.871435,
+    "last_seen": 1775026316.871435,
+    "occurrence_count": 1,
+    "tx_id_ref": "SYBIL_004_9166f5ab",
+    "age_days": 0.0,
+    "recency_weight": 1.0
+  },
+  {
+    "record_id": "7c44861b-aa9",
+    "transaction_sig_vector": [
+      0.056741,
+      0.208123,
+      0.308167,
+      0.0,
+      0.061633,
+      0.9245
+    ],
+    "raw_vector": [
+      0.055237,
+      0.202607,
+      0.3,
+      0.0,
+      0.06,
+      0.9
+    ],
+    "posterior_probability": 0.20313,
+    "threat_classification": "MONITOR",
+    "mitigation_action": "LOG, AUDIT_FLAG",
+    "timestamp": 1775026316.873417,
+    "last_seen": 1775026316.873417,
+    "occurrence_count": 1,
+    "tx_id_ref": "SYBIL_005_9166f5ab",
+    "age_days": 0.0,
+    "recency_weight": 1.0
+  },
+  {
+    "record_id": "aac3011a-5e1",
+    "transaction_sig_vector": [
+      0.113213,
+      0.121958,
+      0.311387,
+      0.0,
+      0.051898,
+      0.93416
+    ],
+    "raw_vector": [
+      0.109073,
+      0.117498,
+      0.3,
+      0.0,
+      0.05,
+      0.9
+    ],
+    "posterior_probability": 0.181288,
+    "threat_classification": "MONITOR",
+    "mitigation_action": "LOG, AUDIT_FLAG",
+    "timestamp": 1775026327.079217,
+    "last_seen": 1775026327.079217,
+    "occurrence_count": 1,
+    "tx_id_ref": "MODEL_000_9166f5ab",
+    "age_days": 0.0,
+    "recency_weight": 1.0
+  },
+  {
+    "record_id": "c46de97d-587",
+    "transaction_sig_vector": [
+      0.054979,
+      0.098007,
+      3e-06,
+      0.573798,
+      0.602186,
+      0.543598
+    ],
+    "raw_vector": [
+      0.091024,
+      0.162263,
+      5e-06,
+      0.95,
+      0.997,
+      0.9
+    ],
+    "posterior_probability": 0.999987,
+    "threat_classification": "CRITICAL_THREAT",
+    "mitigation_action": "LOG, AUDIT_FLAG, ENHANCED_VALIDATION, SECONDARY_VALIDATION, QUARANTINE, KEY_ROTATION_SIGNAL, ACCOUNT_INVESTIGATION",
+    "timestamp": 1775026341.1702662,
+    "last_seen": 1775026341.1702662,
+    "occurrence_count": 1,
+    "tx_id_ref": "9166f5abcea93bb49fc2e3362817b4d3",
+    "age_days": 0.0,
+    "recency_weight": 1.0
+  }
+]

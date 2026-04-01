@@ -49,8 +49,8 @@ import numpy as np
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 # Existing modules (M1–M4)
-from portfolio.data_loader import load_price_data
-from portfolio.optimizer import (
+from portfolio.portfolio_complete import (
+    load_price_data,
     compute_daily_returns,
 )
 # (scenario_engine and risk_metrics are used internally by M5 modules)
@@ -179,55 +179,8 @@ Examples:
 # Sector map for NSE stocks (covers most common tickers)
 # ---------------------------------------------------------------------------
 
-NSE_SECTOR_MAP = {
-    "RELIANCE.NS":    "Energy",
-    "ONGC.NS":        "Energy",
-    "POWERGRID.NS":   "Energy",
-    "NTPC.NS":        "Energy",
-    "TCS.NS":         "Technology",
-    "INFY.NS":        "Technology",
-    "WIPRO.NS":       "Technology",
-    "HCLTECH.NS":     "Technology",
-    "TECHM.NS":       "Technology",
-    "HDFCBANK.NS":    "Financials",
-    "ICICIBANK.NS":   "Financials",
-    "AXISBANK.NS":    "Financials",
-    "KOTAKBANK.NS":   "Financials",
-    "SBIN.NS":        "Financials",
-    "BAJFINANCE.NS":  "Financials",
-    "BAJAJFINSV.NS":  "Financials",
-    "HINDUNILVR.NS":  "Consumer Staples",
-    "ITC.NS":         "Consumer Staples",
-    "NESTLEIND.NS":   "Consumer Staples",
-    "BRITANNIA.NS":   "Consumer Staples",
-    "MARUTI.NS":      "Consumer Discretionary",
-    "TATAMOTORS.NS":  "Consumer Discretionary",
-    "M&M.NS":         "Consumer Discretionary",
-    "TATASTEEL.NS":   "Materials",
-    "JSWSTEEL.NS":    "Materials",
-    "HINDALCO.NS":    "Materials",
-    "SUNPHARMA.NS":   "Healthcare",
-    "DRREDDY.NS":     "Healthcare",
-    "CIPLA.NS":       "Healthcare",
-    "DIVISLAB.NS":    "Healthcare",
-    "ASIANPAINT.NS":  "Consumer Discretionary",
-    "ULTRACEMCO.NS":  "Materials",
-    "TITAN.NS":       "Consumer Discretionary",
-    "LT.NS":          "Industrials",
-    "ADANIPORTS.NS":  "Industrials",
-    "BHARTIARTL.NS":  "Communication",
-    "BAJAJ-AUTO.NS":  "Consumer Discretionary",
-    "EICHERMOT.NS":   "Consumer Discretionary",
-    "GRASIM.NS":      "Materials",
-    "HEROMOTOCO.NS":  "Consumer Discretionary",
-    "INDUSINDBK.NS":  "Financials",
-    "APOLLOHOSP.NS":  "Healthcare",
-    "LTIM.NS":        "Technology",
-}
-
-
-def get_sector(ticker: str) -> str:
-    return NSE_SECTOR_MAP.get(ticker, "Other")
+# NSE_SECTOR_MAP and get_sector are now in portfolio.portfolio_complete
+from portfolio.portfolio_complete import NSE_SECTOR_MAP, get_sector
 
 
 # ---------------------------------------------------------------------------

@@ -17,20 +17,18 @@ import numpy as np
 # Add parent directory to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from portfolio.data_loader import load_price_data
-from portfolio.optimizer import (
+from portfolio.portfolio_complete import (
+    load_price_data,
     PortfolioOptimizer,
     compute_daily_returns,
     compute_expected_returns,
     compute_covariance_matrix,
-    compare_covariance_methods
-)
-from portfolio.plotting import plot_efficient_frontier
-from portfolio.investor_guide import (
+    compare_covariance_methods,
+    plot_efficient_frontier,
     format_portfolio_summary,
     format_comparison_summary,
     create_investor_friendly_csv,
-    create_simple_weights_csv
+    create_simple_weights_csv,
 )
 
 
@@ -480,7 +478,7 @@ def main():
         print()
         
         # Get dispersion metrics for investor-friendly output
-        from portfolio.optimizer import compute_weight_dispersion
+        from portfolio.portfolio_complete import compute_weight_dispersion
         minvar_dispersion = compute_weight_dispersion(min_var_result.weights)
         
         # Print investor-friendly summary
@@ -510,7 +508,7 @@ def main():
         print()
         
         # Get dispersion metrics for investor-friendly output
-        from portfolio.optimizer import compute_weight_dispersion
+        from portfolio.portfolio_complete import compute_weight_dispersion
         maxsharpe_dispersion = compute_weight_dispersion(max_sharpe_result.weights)
         
         # Print investor-friendly summary
@@ -796,14 +794,15 @@ def main():
     try:
         # Import new modules here (or at top)
         # Assuming imports are added at top, but for safety in this block:
-        from portfolio.factor_model import FactorModel
-        from portfolio.risk_metrics import (
-            compute_portfolio_risk_metrics, 
-            compute_max_drawdown, 
+        from portfolio.portfolio_complete import (
+            FactorModel,
+            compute_portfolio_risk_metrics,
+            compute_max_drawdown,
             compute_ulcer_index,
-            detect_market_regime
+            detect_market_regime,
+            plot_correlation_heatmap,
+            plot_drawdown_chart,
         )
-        from portfolio.plotting import plot_correlation_heatmap, plot_drawdown_chart
 
         print("[OK] Analyzing Maximum Sharpe Portfolio for institutional metrics...")
         
