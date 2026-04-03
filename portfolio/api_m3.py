@@ -66,8 +66,8 @@ def get_portfolio_construction(
     """
 
     # ── Imports from existing M3 modules ─────────────────────────────────────
-    from portfolio.data_loader  import load_price_data
-    from portfolio.optimizer    import (
+    from portfolio.portfolio_complete  import load_price_data
+    from portfolio.portfolio_complete    import (
         PortfolioOptimizer,
         compute_daily_returns,
         compute_expected_returns,
@@ -208,7 +208,7 @@ def get_portfolio_construction(
 
         # ── Risk metrics (VaR, CVaR, drawdown) on max-Sharpe portfolio ────────
         try:
-            from portfolio.risk_metrics import (
+            from portfolio.portfolio_complete import (
                 compute_portfolio_risk_metrics,
                 compute_max_drawdown,
                 compute_ulcer_index,
@@ -233,8 +233,8 @@ def get_portfolio_construction(
 
         # ── Factor analysis vs Nifty ──────────────────────────────────────────
         try:
-            from portfolio.factor_model import FactorModel
-            from portfolio.risk_metrics import detect_market_regime
+            from portfolio.portfolio_complete import FactorModel
+            from portfolio.portfolio_complete import detect_market_regime
 
             idx_data   = load_price_data(["^NSEI"], period=period)
             idx_ret    = compute_daily_returns(idx_data)

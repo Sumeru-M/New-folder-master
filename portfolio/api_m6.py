@@ -22,8 +22,176 @@ import os
 import time
 import types
 import importlib.util
+from datetime import datetime, timezone
+from typing import Any
+
+import numpy as np
+
+try:
+    from pymongo import MongoClient
+except Exception:  # pragma: no cover
+    MongoClient = None
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+
+
+DEFAULT_BASE_PRIOR = 0.05
+MEMORY_LOOKBACK_DAYS = 30
+MEMORY_REPLAY_LIMIT = 400
+
+
+class MongoBayesianMemory:
+    """
+    Optional Mongo-backed persistent memory for the Bayesian immune layer.
+
+    If MongoDB is not configured or unreachable, this class becomes a no-op
+    and the API continues working with in-memory behavior.
+    """
+
+    def __init__(self):
+        self._enabled = False
+        self._reason = ""
+        self._memory_col = None
+        self._events_col = None
+
+        uri = os.getenv("MONGODB_URI", "").strip()
+        db_name = os.getenv("MONGODB_DB", "clearview_analytics").strip()
+        memory_collection = os.getenv("MONGODB_MEMORY_COLLECTION", "bayesian_immune_memory").strip()
+        events_collection = os.getenv("MONGODB_EVENTS_COLLECTION", "bayesian_security_events").strip()
+
+        if not uri:
+            self._reason = "MONGODB_URI is not set"
+            return
+        if MongoClient is None:
+            self._reason = "pymongo is not installed"
+            return
+
+        try:
+            client = MongoClient(uri, serverSelectionTimeoutMS=1500)
+            client.admin.command("ping")
+            db = client[db_name]
+            self._memory_col = db[memory_collection]
+            self._events_col = db[events_collection]
+            self._memory_col.create_index("record_id", unique=True)
+            self._memory_col.create_index("last_seen")
+            self._events_col.create_index("timestamp")
+            self._events_col.create_index("threat_level")
+            self._enabled = True
+        except Exception as exc:  # pragma: no cover
+            self._reason = f"Mongo unavailable: {exc}"
+
+    @property
+    def enabled(self) -> bool:
+        return self._enabled
+
+    def estimate_prior(self, default_prior: float = DEFAULT_BASE_PRIOR) -> float:
+        """Estimate prior risk from recent event history."""
+        if not self._enabled:
+            return default_prior
+        try:
+            cutoff = time.time() - (MEMORY_LOOKBACK_DAYS * 86400)
+            total = self._events_col.count_documents({"timestamp": {"$gte": cutoff}})
+            if total <= 0:
+                return default_prior
+            risky = self._events_col.count_documents({
+                "timestamp": {"$gte": cutoff},
+                "threat_level": {"$in": ["MONITOR", "ELEVATED_RISK", "CRITICAL_THREAT", "HIGH", "MEDIUM"]},
+            })
+            prior = risky / total
+            return float(np.clip(prior, 0.02, 0.35))
+        except Exception:  # pragma: no cover
+            return default_prior
+
+    def seed_pipeline_memory(self, bayesian_pipeline: Any) -> int:
+        """Replay stored patterns into the in-memory Bayesian immune system."""
+        if not self._enabled:
+            return 0
+        try:
+            records = list(
+                self._memory_col.find({})
+                .sort("last_seen", -1)
+                .limit(MEMORY_REPLAY_LIMIT)
+            )
+            loaded = 0
+            for rec in reversed(records):
+                raw = rec.get("raw_vector") or rec.get("transaction_sig_vector")
+                if not isinstance(raw, list) or len(raw) < 6:
+                    continue
+                try:
+                    bayesian_pipeline._immune_memory.record(  # noqa: SLF001
+                        tx_id=str(rec.get("tx_id_ref") or rec.get("record_id") or f"mongo_{loaded}"),
+                        signal_vector=np.array(raw[:6], dtype=float),
+                        posterior=float(rec.get("posterior_probability", 0.5)),
+                        threat_level=str(rec.get("threat_classification", "MONITOR")),
+                        mitigation_action=str(rec.get("mitigation_action", "LOG")),
+                    )
+                    loaded += 1
+                except Exception:
+                    continue
+            return loaded
+        except Exception:  # pragma: no cover
+            return 0
+
+    def sync_pipeline_memory(self, bayesian_pipeline: Any) -> int:
+        """Persist current in-memory immune records to MongoDB."""
+        if not self._enabled:
+            return 0
+        try:
+            records = bayesian_pipeline.get_memory_records()
+            upserts = 0
+            now_iso = datetime.now(timezone.utc).isoformat()
+            for rec in records:
+                record_id = rec.get("record_id")
+                if not record_id:
+                    continue
+                doc = {
+                    "record_id": record_id,
+                    "transaction_sig_vector": rec.get("transaction_sig_vector", []),
+                    "raw_vector": rec.get("raw_vector", []),
+                    "posterior_probability": rec.get("posterior_probability"),
+                    "threat_classification": rec.get("threat_classification"),
+                    "mitigation_action": rec.get("mitigation_action"),
+                    "timestamp": rec.get("timestamp", time.time()),
+                    "last_seen": rec.get("last_seen", time.time()),
+                    "occurrence_count": rec.get("occurrence_count", 1),
+                    "tx_id_ref": rec.get("tx_id_ref", ""),
+                    "updated_at": now_iso,
+                }
+                self._memory_col.update_one({"record_id": record_id}, {"$set": doc}, upsert=True)
+                upserts += 1
+            return upserts
+        except Exception:  # pragma: no cover
+            return 0
+
+    def log_event(self, source: str, attack_type: str | None, bayesian_result: dict, tx_id: str = "") -> None:
+        if not self._enabled:
+            return
+        try:
+            self._events_col.insert_one({
+                "source": source,
+                "attack_type": attack_type,
+                "tx_id": tx_id,
+                "timestamp": time.time(),
+                "threat_level": bayesian_result.get("threat_level"),
+                "posterior_probability": bayesian_result.get("posterior_probability"),
+                "memory_similarity": bayesian_result.get("memory_similarity"),
+                "memory_boosted_prior": bayesian_result.get("memory_boosted_prior"),
+                "quarantine_status": bayesian_result.get("quarantine_status"),
+            })
+        except Exception:  # pragma: no cover
+            return
+
+    def status(self) -> dict:
+        if not self._enabled:
+            return {"enabled": False, "reason": self._reason}
+        try:
+            return {
+                "enabled": True,
+                "patterns_stored": int(self._memory_col.count_documents({})),
+                "events_stored": int(self._events_col.count_documents({})),
+            }
+        except Exception as exc:  # pragma: no cover
+            return {"enabled": False, "reason": f"Mongo read failed: {exc}"}
 
 
 def _load_m6():
@@ -132,6 +300,7 @@ def get_virtual_trade_and_security(
         "security_pqc":       None,
         "security_bayesian":  None,
         "security_summary":   None,
+        "bayesian_memory":    None,
         "error":              None,
     }
 
@@ -141,8 +310,8 @@ def get_virtual_trade_and_security(
         # ── Run the full virtual trade simulation pipeline ─────────────────────
         import numpy as np
         import pandas as pd
-        from portfolio.data_loader import load_price_data
-        from portfolio.optimizer   import compute_daily_returns
+        from portfolio.portfolio_complete import load_price_data
+        from portfolio.portfolio_complete   import compute_daily_returns
 
         # Fetch historical returns for all tickers (existing + new)
         all_tickers = list(set(list(holdings.keys()) + [ticker]))
@@ -216,8 +385,11 @@ def get_virtual_trade_and_security(
         result["risk_summary"] = str(sim.get("risk_summary", ""))
 
         # ── Security assessment on the actual transaction ─────────────────────
+        memory_store = MongoBayesianMemory()
+        dynamic_prior = memory_store.estimate_prior()
         sec = m6.SecurityEngine()
-        bay = m6.BayesianSecurityPipeline(base_prior=0.05)
+        bay = m6.BayesianSecurityPipeline(base_prior=dynamic_prior)
+        memory_seeded = memory_store.seed_pipeline_memory(bay)
 
         pqc_r = sec.process_transaction_security(tx)
         bay_r = bay.process_transaction_security(tx)
@@ -247,12 +419,25 @@ def get_virtual_trade_and_security(
 
         ps = sec.system_status()
         bs = bay.system_status()
+        memory_synced = memory_store.sync_pipeline_memory(bay)
+        memory_store.log_event(
+            source="simulate",
+            attack_type=None,
+            bayesian_result=bay_r.to_dict(),
+            tx_id=str(tx.get("tx_id", "")),
+        )
         result["security_summary"] = {
             "pqc_transactions_processed":      int(ps["transactions_processed"]),
             "pqc_quarantined":                 int(ps["response_engine"]["total_quarantined"]),
             "bayesian_transactions_processed": int(bs["transactions_processed"]),
             "bayesian_quarantined":            int(bs["quarantine_ledger"]["size"]),
             "threat_patterns_learned":         int(bs["memory_summary"]["total_patterns"]),
+        }
+        result["bayesian_memory"] = {
+            "dynamic_base_prior": round(float(dynamic_prior), 4),
+            "memory_seeded_records": int(memory_seeded),
+            "memory_synced_records": int(memory_synced),
+            **memory_store.status(),
         }
 
     except Exception as e:
@@ -291,6 +476,7 @@ def get_security_attack_test(
         "attack_type": attack_type,
         "pqc":         None,
         "bayesian":    None,
+        "bayesian_memory": None,
         "error":       None,
     }
 
@@ -322,8 +508,11 @@ def get_security_attack_test(
             atk_tx["sha3_hash"]                = "00" * 32
             atk_tx["_entropy_composite_score"] = 0.003
 
+        memory_store = MongoBayesianMemory()
+        dynamic_prior = memory_store.estimate_prior()
         sec   = m6.SecurityEngine()
-        bay   = m6.BayesianSecurityPipeline(base_prior=0.05)
+        bay   = m6.BayesianSecurityPipeline(base_prior=dynamic_prior)
+        memory_seeded = memory_store.seed_pipeline_memory(bay)
 
         # Seed with the benign original first (replay needs this)
         if attack_type == "replay":
@@ -332,6 +521,14 @@ def get_security_attack_test(
 
         pqc_r = sec.process_transaction_security(atk_tx)
         bay_r = bay.process_transaction_security(atk_tx)
+
+        memory_synced = memory_store.sync_pipeline_memory(bay)
+        memory_store.log_event(
+            source="security_test",
+            attack_type=attack_type,
+            bayesian_result=bay_r.to_dict(),
+            tx_id=str(atk_tx.get("tx_id", "")),
+        )
 
         result["pqc"] = {
             "threat_level":      pqc_r.threat_level,
@@ -347,6 +544,12 @@ def get_security_attack_test(
             "quarantine_status":     bay_r.quarantine_status,
             "memory_boosted_prior":  bool(bay_r.memory_boosted_prior),
             "key_rotation_signal":   bool(bay_r.key_rotation_signal),
+        }
+        result["bayesian_memory"] = {
+            "dynamic_base_prior": round(float(dynamic_prior), 4),
+            "memory_seeded_records": int(memory_seeded),
+            "memory_synced_records": int(memory_synced),
+            **memory_store.status(),
         }
 
     except Exception as e:

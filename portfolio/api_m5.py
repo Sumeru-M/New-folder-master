@@ -96,26 +96,31 @@ def get_institutional_optimisation(
     """
 
     # ── Imports from existing M5 modules ─────────────────────────────────────
-    from portfolio.data_loader         import load_price_data
-    from portfolio.optimizer           import compute_daily_returns
+    from portfolio.portfolio_complete import load_price_data, compute_daily_returns
+    from portfolio.constraints import build_institutional_constraints
     from portfolio.optimization_engine import (
-        optimize_mean_variance, optimize_minimum_variance, optimize_cvar,
-        optimize_risk_parity, optimize_max_diversification,
-        optimize_multi_objective, compute_efficient_frontier,
+        optimize_mean_variance,
+        optimize_minimum_variance,
+        optimize_cvar,
+        optimize_risk_parity,
+        optimize_max_diversification,
+        optimize_multi_objective,
+        compute_efficient_frontier,
     )
-    from portfolio.robust_optimizer    import (
-        compute_ledoit_wolf_shrinkage_fixed, optimize_worst_case,
-        build_stress_scenarios_from_engine, optimize_scenario_weighted,
+    from portfolio.robust_optimizer import (
+        compute_ledoit_wolf_shrinkage_fixed,
+        optimize_worst_case,
+        build_stress_scenarios_from_engine,
+        optimize_scenario_weighted,
     )
-    from portfolio.constraints         import build_institutional_constraints
-    from portfolio.allocation_scorer   import enrich_allocation_result
-    from portfolio.risk_contribution   import build_risk_attribution_report
+    from portfolio.allocation_scorer import enrich_allocation_result
+    from portfolio.risk_contribution import build_risk_attribution_report
 
     # Import sector mapping from M5 run file
     _examples = os.path.join(os.path.dirname(__file__), "..", "examples")
     if _examples not in sys.path:
         sys.path.insert(0, _examples)
-    from run_milestone5 import get_sector
+    from examples.run_milestone5 import get_sector
 
     result = {
         "tickers":               tickers,

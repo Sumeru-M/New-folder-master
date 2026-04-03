@@ -1,0 +1,2345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ClearView Analytics</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&family=Source+Serif+4:wght@600;700&display=swap" rel="stylesheet" />
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.8.0/Recharts.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#081020;--bg2:#0e182a;--bg3:#132138;--bg4:#1a2a45;
+  --border:#273954;--border2:#35527a;
+  --text:#edf2fa;--text2:#a6b8d1;--text3:#7486a3;
+  --accent:#2f7de1;--accent2:#4a94f4;--accent3:#2260b3;
+  --green:#22d984;--red:#ff4d6d;--amber:#ffb347;--cyan:#00d4ff;
+  --bull:#22d984;--bear:#ffb347;--crisis:#ff4d6d;--trans:#9096b0;
+  font-size:16px;
+}
+html,body,#root{height:100%;background:var(--bg);color:var(--text)}
+body{font-family:'IBM Plex Sans',sans-serif;font-size:14px;line-height:1.6;overflow-x:hidden}
+h1,h2,h3,h4,h5{font-family:'Source Serif 4',serif;font-weight:700;letter-spacing:-0.01em}
+.mono{font-family:'IBM Plex Mono',monospace}
+
+/* Layout */
+.shell{display:flex;height:100vh;overflow:hidden}
+.sidebar{width:220px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:20px 0;transition:width .2s}
+.sidebar-logo{padding:0 20px 24px;display:flex;align-items:center;gap:10px}
+.logo-mark{width:32px;height:32px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Source Serif 4',serif;font-size:14px;font-weight:700;color:#fff}
+.logo-text{font-family:'Source Serif 4',serif;font-size:16px;font-weight:700;color:var(--text)}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;cursor:pointer;transition:background .15s;position:relative;border-left:3px solid transparent;color:var(--text2);font-size:13px;font-weight:500}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{background:var(--bg3);color:var(--text);border-left-color:var(--accent)}
+.nav-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-left:auto}
+.nav-dot.idle{background:var(--border2)}
+.nav-dot.loading{background:var(--amber);animation:pulse 1s infinite}
+.nav-dot.success{background:var(--green)}
+.nav-dot.error{background:var(--red)}
+.nav-icon{font-size:16px;width:18px;text-align:center}
+.nav-section{padding:8px 20px 4px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-top:8px}
+
+.main{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+.topbar{height:56px;flex-shrink:0;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 24px;gap:16px;position:sticky;top:0;z-index:10}
+.topbar-title{font-family:'Source Serif 4',serif;font-size:18px;font-weight:700;color:var(--text)}
+.topbar-tickers{display:flex;gap:6px;flex-wrap:wrap;flex:1;justify-content:center}
+.ticker-pill{background:var(--bg4);border:1px solid var(--border);border-radius:100px;padding:3px 10px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2)}
+.backend-badge{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text3)}
+.backend-dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
+.backend-dot.offline{background:var(--red)}
+.offline-banner{background:var(--red);color:#fff;padding:8px 24px;font-size:13px;text-align:center;display:flex;align-items:center;justify-content:center;gap:8px}
+
+.page{flex:1;padding:28px 32px;max-width:1200px;width:100%}
+@media(max-width:768px){.sidebar{display:none}.page{padding:16px}}
+
+/* Cards */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:24px}
+.card-sm{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px}
+.card-accent{background:var(--bg3);border:1px solid var(--border2);border-radius:14px;padding:24px}
+
+/* Grid */
+.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media(max-width:900px){.grid-4{grid-template-columns:repeat(2,1fr)}.grid-3{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.grid-2,.grid-3,.grid-4{grid-template-columns:1fr}}
+
+/* Metric cards */
+.metric{background:var(--bg3);border-radius:10px;padding:16px}
+.metric-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.metric-value{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:500;color:var(--text);line-height:1.2}
+.metric-sub{font-size:12px;color:var(--text3);margin-top:4px}
+.metric-value.pos{color:var(--green)}
+.metric-value.neg{color:var(--red)}
+
+/* Inputs */
+input,select,textarea{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px 12px;color:var(--text);font-family:'IBM Plex Sans',sans-serif;font-size:13px;outline:none;transition:border .15s;width:100%}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+label{font-size:12px;color:var(--text3);margin-bottom:4px;display:block}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 18px;border-radius:8px;font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .15s}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent2)}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed}
+.btn-outline{background:transparent;border:1px solid var(--border2);color:var(--text2)}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.btn-sm{padding:5px 12px;font-size:12px;border-radius:6px}
+.btn-full{width:100%}
+
+/* Tabs */
+.tabs{display:flex;gap:2px;background:var(--bg3);border-radius:10px;padding:4px;margin-bottom:20px;flex-wrap:wrap}
+.tab{padding:7px 14px;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;color:var(--text3);transition:all .15s;border:none;background:transparent}
+.tab.active{background:var(--bg2);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,.3)}
+
+/* Tables */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:8px 12px;color:var(--text3);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border)}
+td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text2)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--bg3)}
+.td-right{text-align:right}
+.td-mono{font-family:'IBM Plex Mono',monospace}
+
+/* Badges */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:600}
+.badge-green{background:rgba(34,217,132,.12);color:var(--green)}
+.badge-red{background:rgba(255,77,109,.12);color:var(--red)}
+.badge-amber{background:rgba(255,179,71,.12);color:var(--amber)}
+.badge-blue{background:rgba(108,99,255,.12);color:var(--accent2)}
+.badge-gray{background:var(--bg4);color:var(--text3)}
+.badge-cyan{background:rgba(0,212,255,.1);color:var(--cyan)}
+
+/* Regime badges */
+.regime-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:100px;font-size:12px;font-weight:700}
+.regime-bull{background:rgba(34,217,132,.12);color:var(--bull)}
+.regime-bear{background:rgba(255,179,71,.12);color:var(--bear)}
+.regime-crisis{background:rgba(255,77,109,.12);color:var(--crisis)}
+.regime-trans{background:rgba(144,150,176,.1);color:var(--trans)}
+
+/* Progress bars */
+.pbar{height:6px;background:var(--bg4);border-radius:100px;overflow:hidden}
+.pbar-fill{height:100%;border-radius:100px;transition:width .4s}
+
+/* Divider */
+.divider{height:1px;background:var(--border);margin:20px 0}
+
+/* Loading */
+.spinner{width:32px;height:32px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+.loading-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:60px;color:var(--text3);font-size:13px;text-align:center}
+.error-wrap{background:rgba(255,77,109,.08);border:1px solid rgba(255,77,109,.25);border-radius:10px;padding:20px;display:flex;align-items:flex-start;gap:12px}
+.error-icon{color:var(--red);font-size:18px;flex-shrink:0}
+.error-text{font-size:13px;color:var(--text2)}
+
+/* Form groups */
+.form-row{display:flex;gap:12px;flex-wrap:wrap}
+.form-field{flex:1;min-width:140px}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+
+/* Section headers */
+.section-header{margin-bottom:20px}
+.section-title{font-size:22px;color:var(--text);margin-bottom:4px}
+.section-sub{font-size:13px;color:var(--text3)}
+.section-line{width:32px;height:2px;background:var(--accent);border-radius:2px;margin-top:8px}
+
+/* Stacked items */
+.stack{display:flex;flex-direction:column;gap:12px}
+.stack-sm{display:flex;flex-direction:column;gap:8px}
+
+/* Highlight row */
+.row-best td{color:var(--text)!important;background:rgba(108,99,255,.06)!important}
+.row-best td:first-child{border-left:2px solid var(--accent)}
+
+/* Corr heatmap */
+.corr-cell{text-align:center;font-family:'IBM Plex Mono',monospace;font-size:11px;padding:6px 8px}
+
+/* PQC meter */
+.entropy-bar{height:8px;border-radius:100px;overflow:hidden;background:var(--bg4)}
+.entropy-fill{height:100%;border-radius:100px}
+
+/* Signal bar */
+.signal-row{display:flex;align-items:center;gap:10px;padding:6px 0}
+.signal-label{font-size:11px;color:var(--text3);width:130px;flex-shrink:0}
+.signal-bar{flex:1;height:5px;background:var(--bg4);border-radius:100px;overflow:hidden}
+.signal-fill{height:100%;border-radius:100px}
+.signal-val{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text3);width:38px;text-align:right}
+
+/* Horizon cards */
+.horizon-card{background:var(--bg3);border-radius:10px;padding:16px}
+.horizon-title{font-size:12px;color:var(--text3);margin-bottom:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.horizon-row{display:flex;justify-content:space-between;align-items:center;padding:3px 0;font-size:12px}
+
+/* Ticker input */
+.ticker-input-wrap{display:flex;flex-wrap:wrap;gap:6px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:6px 10px;min-height:40px;align-items:center}
+.ticker-input-wrap:focus-within{border-color:var(--accent)}
+.ticker-tag{display:flex;align-items:center;gap:4px;background:var(--bg4);border:1px solid var(--border2);border-radius:6px;padding:2px 8px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text2)}
+.ticker-tag button{background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;line-height:1;padding:0 2px}
+.ticker-tag button:hover{color:var(--red)}
+.ticker-inline-input{background:none;border:none;outline:none;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text);width:100px;padding:0;min-width:80px}
+
+/* Weight donut placeholder */
+.donut-wrap{display:flex;flex-direction:column;align-items:center;gap:12px}
+
+/* Animations */
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .3s ease}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* Select none on labels */
+.nav-item,.tab,.btn{user-select:none}
+
+/* Toggle buttons */
+.toggle-group{display:flex;gap:4px;background:var(--bg3);border-radius:8px;padding:3px}
+.toggle-btn{padding:5px 12px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;border:none;background:transparent;color:var(--text3);transition:all .15s}
+.toggle-btn.active{background:var(--bg2);color:var(--text)}
+
+/* Regime table */
+.regime-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border)}
+.regime-row:last-child{border-bottom:none}
+.regime-name{font-size:12px;color:var(--text2);width:120px;flex-shrink:0}
+.regime-pbar{flex:1}
+.regime-pct{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--text);width:42px;text-align:right}
+
+/* Attack card */
+.attack-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:16px;transition:border .2s}
+.attack-card.tested{border-color:var(--accent)}
+
+/* Transition matrix */
+.tm-cell{font-family:'IBM Plex Mono',monospace;font-size:11px;text-align:center;padding:7px 6px}
+.tm-head{font-size:10px;color:var(--text3);text-align:center;padding:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80px}
+
+/* Auth + onboarding */
+.auth-shell{min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at top right,rgba(47,125,225,.2),transparent 40%),radial-gradient(circle at bottom left,rgba(34,217,132,.1),transparent 35%),var(--bg)}
+.auth-wrap{width:min(940px,100%);display:grid;grid-template-columns:1.1fr .9fr;gap:18px}
+.auth-panel{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:24px}
+.auth-title{font-size:30px;line-height:1.2;margin-bottom:8px}
+.auth-sub{font-size:14px;color:var(--text2);margin-bottom:14px}
+.auth-disclaimer{border-left:3px solid var(--amber);background:rgba(255,179,71,.08);border-radius:8px;padding:12px 14px;font-size:13px;color:var(--text2);line-height:1.55}
+.auth-meta{margin-top:16px;font-size:12px;color:var(--text3)}
+.auth-form{display:flex;flex-direction:column;gap:12px}
+.auth-error{font-size:12px;color:var(--red)}
+.auth-note{font-size:12px;color:var(--text3);line-height:1.5}
+
+/* CSV import */
+.import-wrap{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px}
+.import-row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+.import-hint{font-size:11px;color:var(--text3);margin-top:6px;line-height:1.5}
+.import-status{margin-top:8px;font-size:12px}
+.import-status.ok{color:var(--green)}
+.import-status.err{color:var(--red)}
+.input-xs{max-width:360px}
+
+@media(max-width:900px){.auth-wrap{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useCallback, useRef, useMemo } = React;
+
+// ─── API ──────────────────────────────────────────────────────────────────────
+const BASE = (
+  window.__VITE_API_BASE_URL ||
+  (window.location.protocol.startsWith("http") ? window.location.origin : "http://localhost:8000")
+);
+
+async function apiPost(path, body) {
+  const res = await fetch(`${BASE}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+  if (!res.ok || data.error) throw new Error(data.error || `HTTP ${res.status}`);
+  return data;
+}
+
+async function apiGet(path) {
+  const res = await fetch(`${BASE}${path}`);
+  const data = await res.json();
+  if (!res.ok || data.error) throw new Error(data.error || `HTTP ${res.status}`);
+  return data;
+}
+
+const MAX_PORTFOLIO_ENTRIES = 15;
+const AUTH_STORAGE_KEY = "clearview-auth-user";
+const AUTH_CREDENTIALS = { email: "analyst@clearviewanalytics.com", password: "ClearView123!" };
+const DEFAULT_PORTFOLIO_ENTRIES = [
+  { ticker: "RELIANCE.NS", shares: 10, price: 2850, weight: 0.34 },
+  { ticker: "TCS.NS", shares: 5, price: 3900, weight: 0.33 },
+  { ticker: "INFY.NS", shares: 12, price: 1650, weight: 0.33 },
+];
+
+function normalizeTicker(raw) {
+  const t = (raw || "").trim().toUpperCase();
+  if (!t) return "";
+  return t.includes(".") ? t : `${t}.NS`;
+}
+
+function alignEntriesToTickers(tickers, existingEntries) {
+  const byTicker = {};
+  (existingEntries || []).forEach(entry => {
+    const ticker = normalizeTicker(entry?.ticker);
+    if (!ticker || byTicker[ticker]) return;
+    byTicker[ticker] = {
+      ticker,
+      shares: Number.isFinite(entry.shares) ? entry.shares : null,
+      price: Number.isFinite(entry.price) ? entry.price : null,
+      weight: Number.isFinite(entry.weight) ? entry.weight : null,
+    };
+  });
+  return (tickers || []).slice(0, MAX_PORTFOLIO_ENTRIES).map(ticker => {
+    const normalized = normalizeTicker(ticker);
+    return byTicker[normalized] || { ticker: normalized, shares: null, price: null, weight: null };
+  });
+}
+
+function parseOptionalNumber(raw) {
+  if (raw === undefined || raw === null || String(raw).trim() === "") return null;
+  const num = Number(String(raw).replace(/,/g, "").trim());
+  return Number.isFinite(num) ? num : null;
+}
+
+function parseCsvRow(line) {
+  const out = [];
+  let cur = "";
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i += 1) {
+    const ch = line[i];
+    if (ch === '"') {
+      if (inQuotes && line[i + 1] === '"') {
+        cur += '"';
+        i += 1;
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (ch === "," && !inQuotes) {
+      out.push(cur.trim());
+      cur = "";
+    } else {
+      cur += ch;
+    }
+  }
+  out.push(cur.trim());
+  return out;
+}
+
+function parsePortfolioCsv(text) {
+  const lines = (text || "").split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+  if (lines.length < 1) throw new Error("CSV file is empty.");
+  const firstRow = parseCsvRow(lines[0]).map(h => h.trim().toLowerCase());
+  const headerMap = {
+    ticker: ["ticker", "symbol", "stock", "asset"],
+    shares: ["shares", "qty", "quantity", "units"],
+    price: ["price", "avg_price", "average_price", "cost"],
+    weight: ["weight", "allocation", "weight_pct", "allocation_pct"],
+  };
+  const hasHeader = firstRow.some(h => [...headerMap.ticker, ...headerMap.shares, ...headerMap.price, ...headerMap.weight].includes(h));
+  const header = hasHeader ? firstRow : ["ticker", "shares", "price", "weight"];
+  const idxOf = aliases => header.findIndex(h => aliases.includes(h));
+  const tickerIdx = idxOf(headerMap.ticker);
+  const sharesIdx = idxOf(headerMap.shares);
+  const priceIdx = idxOf(headerMap.price);
+  const weightIdx = idxOf(headerMap.weight);
+  if (tickerIdx === -1 && header.length < 1) {
+    throw new Error("CSV must include a ticker or symbol column.");
+  }
+
+  const bodyLines = hasHeader ? lines.slice(1) : lines;
+  if (bodyLines.length === 0) {
+    throw new Error("CSV must contain at least one portfolio entry.");
+  }
+  if (bodyLines.length > MAX_PORTFOLIO_ENTRIES) {
+    throw new Error(`CSV supports up to ${MAX_PORTFOLIO_ENTRIES} entries. Remove extra rows and upload again.`);
+  }
+
+  const entries = [];
+  bodyLines.forEach(line => {
+    const row = parseCsvRow(line);
+    const ticker = normalizeTicker(row[tickerIdx >= 0 ? tickerIdx : 0]);
+    if (!ticker) return;
+    entries.push({
+      ticker,
+      shares: parseOptionalNumber(sharesIdx >= 0 ? row[sharesIdx] : null),
+      price: parseOptionalNumber(priceIdx >= 0 ? row[priceIdx] : null),
+      weight: parseOptionalNumber(weightIdx >= 0 ? row[weightIdx] : null),
+    });
+  });
+
+  if (entries.length === 0) throw new Error("No valid portfolio rows found in the uploaded CSV.");
+
+  const seen = new Set();
+  const deduped = [];
+  entries.forEach(entry => {
+    if (!seen.has(entry.ticker) && deduped.length < MAX_PORTFOLIO_ENTRIES) {
+      seen.add(entry.ticker);
+      deduped.push(entry);
+    }
+  });
+
+  return {
+    entries: deduped,
+    tickers: deduped.map(entry => entry.ticker),
+  };
+}
+
+function weightsFromEntries(entries, tickers) {
+  const input = entries || [];
+  const list = tickers || [];
+  const weightMap = {};
+  input.forEach(entry => {
+    if (entry?.ticker && Number.isFinite(entry.weight)) {
+      weightMap[entry.ticker] = entry.weight > 1 ? entry.weight / 100 : entry.weight;
+    }
+  });
+  const series = list.map(ticker => weightMap[ticker] || 0);
+  const total = series.reduce((sum, v) => sum + v, 0);
+  if (total <= 0) return list.map(() => (100 / Math.max(list.length, 1)));
+  return series.map(v => (v / total) * 100);
+}
+
+function holdingsFromEntries(entries) {
+  return (entries || [])
+    .filter(entry => entry?.ticker)
+    .slice(0, MAX_PORTFOLIO_ENTRIES)
+    .map(entry => ({
+      ticker: entry.ticker,
+      shares: Number.isFinite(entry.shares) ? Math.max(0, entry.shares) : 0,
+      price: Number.isFinite(entry.price) ? Math.max(0, entry.price) : 0,
+    }));
+}
+
+// ─── Global State ─────────────────────────────────────────────────────────────
+const useStore = (() => {
+  let listeners = [];
+  let state = {
+    tickers: ["RELIANCE.NS", "TCS.NS", "INFY.NS"],
+    portfolioEntries: DEFAULT_PORTFOLIO_ENTRIES,
+    riskFreeRate: 0.07,
+    portfolioValue: 1000000,
+    backendOnline: true,
+    m3: { result: null, status: "idle" },
+    m4: { result: null, status: "idle" },
+    m5: { result: null, status: "idle" },
+    m6: { result: null, status: "idle" },
+    m7: { result: null, status: "idle" },
+  };
+  function setState(patch) {
+    state = { ...state, ...patch };
+    listeners.forEach(fn => fn(state));
+  }
+  function setModule(key, result) {
+    setState({ [key]: { result, status: "success" } });
+  }
+  function setStatus(key, status) {
+    setState({ [key]: { ...state[key], status } });
+  }
+  return function() {
+    const [s, setS] = useState(state);
+    useEffect(() => {
+      listeners.push(setS);
+      return () => { listeners = listeners.filter(f => f !== setS); };
+    }, []);
+    return [s, setState, setModule, setStatus];
+  };
+})();
+
+// ─── Utilities ────────────────────────────────────────────────────────────────
+const fmt = n => isNaN(n) ? "—" : n.toLocaleString("en-IN");
+const fmtPct = (n, d = 2) => isNaN(n) ? "—" : (n * 100).toFixed(d) + "%";
+const fmtMono = (n, d = 3) => isNaN(n) ? "—" : Number(n).toFixed(d);
+const fmtINR = n => isNaN(n) ? "—" : "₹" + Math.abs(n).toLocaleString("en-IN", { maximumFractionDigits: 0 });
+const sign = n => n >= 0 ? "+" : "";
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+function regimeColor(r) {
+  if (r === "Low-Vol Bull") return "var(--bull)";
+  if (r === "High-Vol Bear") return "var(--bear)";
+  if (r === "Crisis") return "var(--crisis)";
+  return "var(--trans)";
+}
+function regimeBadgeClass(r) {
+  if (r === "Low-Vol Bull") return "regime-bull";
+  if (r === "High-Vol Bear") return "regime-bear";
+  if (r === "Crisis") return "regime-crisis";
+  return "regime-trans";
+}
+function regimeIcon(r) {
+  if (r === "Low-Vol Bull") return "📈";
+  if (r === "High-Vol Bear") return "📉";
+  if (r === "Crisis") return "🚨";
+  return "🔄";
+}
+function threatBadge(level) {
+  if (!level) return <span className="badge badge-gray">—</span>;
+  const l = level.toUpperCase();
+  if (l === "HIGH" || l === "CRITICAL_THREAT") return <span className="badge badge-red">● {level}</span>;
+  if (l === "MEDIUM" || l === "ELEVATED_RISK") return <span className="badge badge-amber">● {level}</span>;
+  if (l === "MONITOR") return <span className="badge badge-amber">● MONITOR</span>;
+  return <span className="badge badge-green">● {l === "SAFE" ? "SAFE" : level}</span>;
+}
+
+// ─── Shared Components ────────────────────────────────────────────────────────
+function Spinner({ msg = "" }) {
+  return (
+    <div className="loading-wrap">
+      <div className="spinner" />
+      <p>{msg || "Loading…"}</p>
+    </div>
+  );
+}
+
+function ErrorCard({ msg, onRetry }) {
+  return (
+    <div className="error-wrap">
+      <span className="error-icon">⚠</span>
+      <div className="flex-1">
+        <p className="error-text">{msg}</p>
+        {onRetry && <button className="btn btn-sm btn-outline" style={{ marginTop: 10 }} onClick={onRetry}>Retry</button>}
+      </div>
+    </div>
+  );
+}
+
+function Metric({ label, value, suffix = "", sub, color }) {
+  const cls = color === "green" ? "pos" : color === "red" ? "neg" : "";
+  return (
+    <div className="metric">
+      <div className="metric-label">{label}</div>
+      <div className={`metric-value ${cls}`}>{value}{suffix && <span style={{ fontSize: 14, marginLeft: 3, color: "var(--text3)" }}>{suffix}</span>}</div>
+      {sub && <div className="metric-sub">{sub}</div>}
+    </div>
+  );
+}
+
+function TickerInput({ tickers, onChange }) {
+  const [val, setVal] = useState("");
+  const inputRef = useRef();
+  function add() {
+    const normalized = normalizeTicker(val);
+    if (!normalized) return;
+    if (tickers.length >= MAX_PORTFOLIO_ENTRIES) return;
+    if (!tickers.includes(normalized)) onChange([...tickers, normalized]);
+    setVal("");
+  }
+  function remove(t) { onChange(tickers.filter(x => x !== t)); }
+  function onKey(e) {
+    if (e.key === "Enter" || e.key === ",") { e.preventDefault(); add(); }
+    if (e.key === "Backspace" && !val && tickers.length > 0) onChange(tickers.slice(0, -1));
+  }
+  return (
+    <div className="ticker-input-wrap" onClick={() => inputRef.current?.focus()}>
+      {tickers.map(t => (
+        <span key={t} className="ticker-tag">
+          {t}
+          <button onClick={() => remove(t)}>×</button>
+        </span>
+      ))}
+      {tickers.length < MAX_PORTFOLIO_ENTRIES && (
+        <input
+          ref={inputRef}
+          className="ticker-inline-input"
+          placeholder={tickers.length === 0 ? "Type ticker…" : "Add more…"}
+          value={val}
+          onChange={e => setVal(e.target.value)}
+          onKeyDown={onKey}
+          onBlur={add}
+        />
+      )}
+      <span style={{ marginLeft: "auto", fontSize: 11, color: "var(--text3)" }}>{tickers.length}/{MAX_PORTFOLIO_ENTRIES}</span>
+    </div>
+  );
+}
+
+function PortfolioCsvImport({ onImport }) {
+  const [status, setStatus] = useState("");
+  const [statusKind, setStatusKind] = useState("");
+
+  async function handleFileUpload(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.name.toLowerCase().endsWith(".csv")) {
+      setStatusKind("err");
+      setStatus("Please upload a valid .csv file.");
+      event.target.value = "";
+      return;
+    }
+
+    try {
+      const text = await file.text();
+      const parsed = parsePortfolioCsv(text);
+      onImport(parsed);
+      setStatusKind("ok");
+      setStatus(`Imported ${parsed.entries.length} entries from ${file.name}.`);
+    } catch (err) {
+      setStatusKind("err");
+      setStatus(err?.message || "CSV import failed.");
+    }
+    event.target.value = "";
+  }
+
+  return (
+    <div className="import-wrap">
+      <label>Portfolio CSV Import</label>
+      <div className="import-row">
+        <input className="input-xs" type="file" accept=".csv,text/csv" onChange={handleFileUpload} />
+      </div>
+      <p className="import-hint">
+        Include a header row with <span className="mono">ticker</span> or <span className="mono">symbol</span> when available (headerless files are also accepted).
+        Optional columns: <span className="mono">shares</span>, <span className="mono">price</span>, <span className="mono">weight</span>.
+        Maximum {MAX_PORTFOLIO_ENTRIES} entries per file.
+      </p>
+      {status && <p className={`import-status ${statusKind}`}>{status}</p>}
+    </div>
+  );
+}
+
+function LoginGate({ onLogin }) {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+
+  function submit(event) {
+    event.preventDefault();
+    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedPassword = password.trim();
+    if (normalizedEmail !== AUTH_CREDENTIALS.email || normalizedPassword !== AUTH_CREDENTIALS.password) {
+      setError("Invalid credentials. Use the demo credentials shown below.");
+      return;
+    }
+    setError("");
+    onLogin(normalizedEmail);
+  }
+
+  return (
+    <div className="auth-shell">
+      <div className="auth-wrap">
+        <section className="auth-panel">
+          <h1 className="auth-title">ClearView Analytics</h1>
+          <p className="auth-sub">Institutional-quality portfolio analytics in a single workspace.</p>
+          <div className="auth-disclaimer">
+            Disclaimer: This website does not provide financial advice. It provides portfolio analytics only.
+            Any investment decision you make is your own responsibility.
+          </div>
+          <p className="auth-meta">
+            By signing in, you confirm you understand and accept this disclaimer.
+          </p>
+        </section>
+        <section className="auth-panel">
+          <h2 style={{ marginBottom: 10 }}>Sign In</h2>
+          <form className="auth-form" onSubmit={submit}>
+            <div>
+              <label>Email</label>
+              <input value={email} onChange={e => setEmail(e.target.value)} placeholder="name@domain.com" autoComplete="username" />
+            </div>
+            <div>
+              <label>Password</label>
+              <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Enter password" autoComplete="current-password" />
+            </div>
+            {error && <p className="auth-error">{error}</p>}
+            <button className="btn btn-primary btn-full" type="submit">Authenticate</button>
+            <p className="auth-note">Demo email: <span className="mono">{AUTH_CREDENTIALS.email}</span></p>
+            <p className="auth-note">Demo password: <span className="mono">{AUTH_CREDENTIALS.password}</span></p>
+          </form>
+        </section>
+      </div>
+    </div>
+  );
+}
+
+function Tabs({ tabs, active, onChange }) {
+  return (
+    <div className="tabs">
+      {tabs.map(t => (
+        <button key={t.id} className={`tab${active === t.id ? " active" : ""}`} onClick={() => onChange(t.id)}>
+          {t.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function WeightDonut({ weights, title }) {
+  const entries = Object.entries(weights || {}).sort((a, b) => b[1] - a[1]);
+  const colors = ["#6c63ff","#22d984","#00d4ff","#ffb347","#ff4d6d","#8b84ff","#a3ffd4","#ffe083"];
+  const total = entries.reduce((s, [, v]) => s + v, 0);
+  // Simple SVG donut
+  const r = 56, cx = 70, cy = 70, stroke = 18;
+  const circ = 2 * Math.PI * r;
+  let offset = 0;
+  const slices = entries.map(([k, v], i) => {
+    const pct = total > 0 ? v / total : 0;
+    const dash = pct * circ;
+    const gap = circ - dash;
+    const sl = (
+      <circle
+        key={k}
+        cx={cx} cy={cy} r={r}
+        fill="none"
+        stroke={colors[i % colors.length]}
+        strokeWidth={stroke}
+        strokeDasharray={`${dash} ${gap}`}
+        strokeDashoffset={-offset}
+        style={{ transition: "stroke-dasharray .4s" }}
+      />
+    );
+    offset += dash;
+    return sl;
+  });
+
+  return (
+    <div className="donut-wrap">
+      {title && <p style={{ fontSize: 12, color: "var(--text3)", fontWeight: 600, textTransform: "uppercase", letterSpacing: ".06em" }}>{title}</p>}
+      <svg width="140" height="140" style={{ transform: "rotate(-90deg)" }}>
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--bg4)" strokeWidth={stroke} />
+        {slices}
+      </svg>
+      <div className="stack-sm" style={{ width: "100%" }}>
+        {entries.slice(0, 8).map(([k, v], i) => (
+          <div key={k} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12 }}>
+            <div style={{ width: 8, height: 8, borderRadius: 2, background: colors[i % colors.length], flexShrink: 0 }} />
+            <span style={{ flex: 1, color: "var(--text2)", fontFamily: "IBM Plex Mono, monospace" }}>{k.replace(".NS", "")}</span>
+            <span style={{ color: "var(--text)", fontFamily: "IBM Plex Mono, monospace" }}>{fmtPct(v)}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function FrontierChart({ frontier, specialPoints }) {
+  if (!frontier || frontier.length === 0) return <p style={{ color: "var(--text3)", fontSize: 13 }}>No frontier data.</p>;
+  const allX = [...frontier.map(p => p.volatility * 100), ...(specialPoints || []).map(p => p.x)];
+  const allY = [...frontier.map(p => p.return * 100), ...(specialPoints || []).map(p => p.y)];
+  const xMin = Math.min(...allX) * 0.92, xMax = Math.max(...allX) * 1.08;
+  const yMin = Math.min(...allY) * 0.9, yMax = Math.max(...allY) * 1.1;
+  const W = 480, H = 260, PAD = { t: 20, r: 20, b: 40, l: 50 };
+  const cW = W - PAD.l - PAD.r, cH = H - PAD.t - PAD.b;
+  const px = v => PAD.l + ((v - xMin) / (xMax - xMin)) * cW;
+  const py = v => PAD.t + (1 - (v - yMin) / (yMax - yMin)) * cH;
+  const path = frontier.map((p, i) => `${i === 0 ? "M" : "L"}${px(p.volatility * 100).toFixed(1)},${py(p.return * 100).toFixed(1)}`).join(" ");
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto", maxHeight: 280 }}>
+      {/* Grid lines */}
+      {[0.25, 0.5, 0.75].map(t => (
+        <line key={t} x1={PAD.l} x2={W - PAD.r} y1={PAD.t + t * cH} y2={PAD.t + t * cH} stroke="var(--border)" strokeDasharray="4 4" />
+      ))}
+      {/* Axes */}
+      <line x1={PAD.l} x2={PAD.l} y1={PAD.t} y2={H - PAD.b} stroke="var(--border2)" />
+      <line x1={PAD.l} x2={W - PAD.r} y1={H - PAD.b} y2={H - PAD.b} stroke="var(--border2)" />
+      {/* Axis labels */}
+      <text x={PAD.l - 6} y={PAD.t + cH * 0.1} textAnchor="end" fontSize={10} fill="var(--text3)">{((yMin + (yMax - yMin) * 0.9)).toFixed(1)}%</text>
+      <text x={PAD.l - 6} y={PAD.t + cH * 0.9} textAnchor="end" fontSize={10} fill="var(--text3)">{((yMin + (yMax - yMin) * 0.1)).toFixed(1)}%</text>
+      <text x={PAD.l} y={H - 8} textAnchor="start" fontSize={10} fill="var(--text3)">{xMin.toFixed(1)}%</text>
+      <text x={W - PAD.r} y={H - 8} textAnchor="end" fontSize={10} fill="var(--text3)">{xMax.toFixed(1)}%</text>
+      <text x={W / 2} y={H - 4} textAnchor="middle" fontSize={10} fill="var(--text3)">Volatility</text>
+      <text x={10} y={H / 2} textAnchor="middle" fontSize={10} fill="var(--text3)" transform={`rotate(-90,10,${H / 2})`}>Return</text>
+      {/* Frontier curve */}
+      <path d={path} fill="none" stroke="var(--accent)" strokeWidth={2.5} strokeLinecap="round" />
+      {/* Special points */}
+      {(specialPoints || []).map((sp, i) => (
+        <g key={i}>
+          <circle cx={px(sp.x)} cy={py(sp.y)} r={6} fill={sp.fill} stroke="var(--bg2)" strokeWidth={2} />
+          <text x={px(sp.x) + 9} y={py(sp.y) + 4} fontSize={10} fill={sp.fill}>{sp.label}</text>
+        </g>
+      ))}
+    </svg>
+  );
+}
+
+// ─── Pages ────────────────────────────────────────────────────────────────────
+
+// DASHBOARD
+function Dashboard({ setPage }) {
+  const [store, setState, setModule, setStatus] = useStore();
+  const [tickers, setTickers] = useState(store.tickers);
+  const [rf, setRf] = useState(store.riskFreeRate * 100);
+  const [pv, setPv] = useState(store.portfolioValue);
+
+  useEffect(() => {
+    let interval;
+    async function check() {
+      try {
+        await apiGet("/api/health");
+        setState({ backendOnline: true });
+      } catch { setState({ backendOnline: false }); }
+    }
+    check();
+    interval = setInterval(check, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  function update() {
+    setState({
+      tickers,
+      portfolioEntries: alignEntriesToTickers(tickers, store.portfolioEntries),
+      riskFreeRate: rf / 100,
+      portfolioValue: pv,
+    });
+  }
+
+  function importPortfolioCsv(parsed) {
+    const importedTickers = parsed.tickers;
+    const importedValue = parsed.entries.reduce((sum, entry) => {
+      const shares = Number.isFinite(entry.shares) ? entry.shares : 0;
+      const price = Number.isFinite(entry.price) ? entry.price : 0;
+      return sum + shares * price;
+    }, 0);
+    setTickers(importedTickers);
+    if (importedValue > 0) setPv(Math.round(importedValue));
+    setState({
+      tickers: importedTickers,
+      portfolioEntries: parsed.entries,
+      portfolioValue: importedValue > 0 ? Math.round(importedValue) : store.portfolioValue,
+    });
+  }
+
+  const modules = [
+    { key: "m3", label: "Portfolio Analytics", icon: "◎", page: "portfolio", color: "var(--accent)",
+      getMetrics: r => r ? [
+        { l: "Expected Return", v: fmtPct(r.max_sharpe_portfolio?.expected_return) },
+        { l: "Sharpe Ratio", v: fmtMono(r.max_sharpe_portfolio?.sharpe_ratio) },
+        { l: "Volatility", v: fmtPct(r.max_sharpe_portfolio?.volatility) },
+      ] : [] },
+    { key: "m4", label: "Stress Analytics", icon: "⚡", page: "stress", color: "var(--amber)",
+      getMetrics: r => r ? [
+        { l: "Risk Level", v: r.summary?.risk_level || "—" },
+        { l: "Worst Loss", v: fmtINR(r.summary?.worst_loss?.pnl_inr) },
+        { l: "VaR 95%", v: fmtINR(r.risk_metrics?.var_parametric_inr) },
+      ] : [] },
+    { key: "m5", label: "Allocation Analytics", icon: "⬡", page: "optimisation", color: "var(--green)",
+      getMetrics: r => r ? [
+        { l: "Best Method", v: (r.best_method || "—").replace(/_/g, " ") },
+        { l: "Sharpe", v: fmtMono(r.recommendation?.sharpe_ratio) },
+        { l: "Health Score", v: r.recommendation?.health_score || "—" },
+      ] : [] },
+    { key: "m6", label: "Trade Analytics", icon: "⬡", page: "trade", color: "var(--cyan)",
+      getMetrics: r => r ? [
+        { l: "PQC Threat", v: r.security_pqc?.threat_level || "—" },
+        { l: "Bayesian P", v: r.security_bayesian?.posterior_probability !== undefined ? fmtPct(r.security_bayesian.posterior_probability) : "—" },
+        { l: "Status", v: r.transaction?.verified ? "Verified ✓" : "Unverified" },
+      ] : [] },
+    { key: "m7", label: "Regime Analytics", icon: "◉", page: "regime", color: "var(--accent2)",
+      getMetrics: r => r ? [
+        { l: "Regime", v: r.current_regime || "—" },
+        { l: "GARCH Vol", v: fmtPct(r.garch_current_vol) },
+        { l: "30d Forecast", v: fmtPct(r.garch_30d_forecast) },
+      ] : [] },
+  ];
+
+  const insights = [];
+  if (store.m7.result) {
+    const r = store.m7.result;
+    const p = r.regime_probabilities?.[r.current_regime] || 0;
+    insights.push({ text: `Regime Analytics detected a ${r.current_regime} market regime with ${(p * 100).toFixed(0)}% probability.`, color: "var(--accent2)" });
+  }
+  if (store.m5.result) {
+    const r = store.m5.result;
+    insights.push({ text: `Allocation Analytics highlights ${(r.best_method || "").replace(/_/g, " ")} with Sharpe ${fmtMono(r.recommendation?.sharpe_ratio)}.`, color: "var(--green)" });
+  }
+  if (store.m3.result) {
+    const r = store.m3.result;
+    insights.push({ text: `Portfolio Analytics reports max-Sharpe return ${fmtPct(r.max_sharpe_portfolio?.expected_return)} at volatility ${fmtPct(r.max_sharpe_portfolio?.volatility)}.`, color: "var(--accent)" });
+  }
+
+  return (
+    <div className="page fade-in">
+      <div className="section-header">
+        <h1 className="section-title">Analytics Overview</h1>
+        <p className="section-sub">Track your portfolio health in one place.</p>
+        <div className="section-line" />
+      </div>
+
+      {/* Context panel */}
+      <div className="card" style={{ marginBottom: 20 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+          <span style={{ fontSize: 11, color: "var(--text3)", textTransform: "uppercase", letterSpacing: ".06em", fontWeight: 600 }}>Portfolio Context</span>
+        </div>
+        <div style={{ marginBottom: 14 }}>
+          <PortfolioCsvImport onImport={importPortfolioCsv} />
+        </div>
+        <div className="form-grid" style={{ marginBottom: 14 }}>
+          <div className="form-field">
+            <label>Active Tickers</label>
+            <TickerInput tickers={tickers} onChange={setTickers} />
+          </div>
+          <div className="form-field">
+            <label>Risk-Free Rate (%)</label>
+            <input type="number" value={rf} onChange={e => setRf(+e.target.value)} step="0.5" min="0" max="20" />
+          </div>
+          <div className="form-field">
+            <label>Portfolio Value (₹)</label>
+            <input type="number" value={pv} onChange={e => setPv(+e.target.value)} step="100000" />
+          </div>
+        </div>
+        <p style={{ fontSize: 12, color: "var(--text3)", marginBottom: 10 }}>
+          Tip: Upload a CSV first for faster setup, then fine-tune tickers manually if needed.
+        </p>
+        <button className="btn btn-primary btn-sm" onClick={update}>Update Context</button>
+      </div>
+
+      {/* Module grid */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: 14, marginBottom: 24 }}>
+        {modules.map(mod => {
+          const ms = store[mod.key];
+          const metrics = mod.getMetrics(ms.result);
+          return (
+            <div key={mod.key}
+              className="card"
+              style={{ cursor: "pointer", borderLeft: `3px solid ${mod.color}`, transition: "background .15s" }}
+              onClick={() => setPage(mod.page)}
+              onMouseEnter={e => e.currentTarget.style.background = "var(--bg3)"}
+              onMouseLeave={e => e.currentTarget.style.background = "var(--bg2)"}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text)", fontFamily: "Source Serif 4, serif" }}>{mod.label}</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
+                    <div className={`nav-dot ${ms.status}`} />
+                    <span style={{ fontSize: 11, color: ms.status === "success" ? "var(--green)" : ms.status === "error" ? "var(--red)" : ms.status === "loading" ? "var(--amber)" : "var(--text3)" }}>
+                      {ms.status === "idle" ? "Not yet run" : ms.status === "loading" ? "Processing…" : ms.status === "success" ? "Ready" : "Error"}
+                    </span>
+                  </div>
+                </div>
+                <span style={{ fontSize: 18, color: mod.color, opacity: .7 }}>→</span>
+              </div>
+              {metrics.length > 0 ? (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8, marginTop: 8 }}>
+                  {metrics.map(m => (
+                    <div key={m.l}>
+                      <p style={{ fontSize: 10, color: "var(--text3)", marginBottom: 2 }}>{m.l}</p>
+                      <p style={{ fontFamily: "IBM Plex Mono, monospace", fontSize: 12, color: "var(--text)", fontWeight: 500 }}>{m.v}</p>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p style={{ fontSize: 12, color: "var(--text3)", fontStyle: "italic", marginTop: 8 }}>Run module to see results</p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Insights */}
+      {insights.length > 0 && (
+        <div>
+          <p style={{ fontSize: 11, color: "var(--text3)", textTransform: "uppercase", letterSpacing: ".06em", fontWeight: 600, marginBottom: 10 }}>Insights</p>
+          <div style={{ display: "flex", gap: 12, overflowX: "auto", paddingBottom: 4 }}>
+            {insights.map((ins, i) => (
+              <div key={i} className="card-sm" style={{ minWidth: 260, borderLeft: `3px solid ${ins.color}`, flexShrink: 0 }}>
+                <p style={{ fontSize: 13, color: "var(--text2)", lineHeight: 1.5 }}>{ins.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// PORTFOLIO (M3)
+function Portfolio() {
+  const [store, setState, setModule, setStatus] = useStore();
+  const [tickers, setTickers] = useState(store.tickers);
+  const [period, setPeriod] = useState("2y");
+  const [rf, setRf] = useState(store.riskFreeRate * 100);
+  const [weights, setWeights] = useState(weightsFromEntries(store.portfolioEntries, store.tickers));
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [tab, setTab] = useState("frontier");
+  const ms = store.m3;
+
+  function syncTickers(nextTickers) {
+    const normalized = nextTickers.slice(0, MAX_PORTFOLIO_ENTRIES);
+    setTickers(normalized);
+    setWeights(weightsFromEntries(store.portfolioEntries, normalized));
+    setState({ tickers: normalized, portfolioEntries: alignEntriesToTickers(normalized, store.portfolioEntries) });
+  }
+
+  function importPortfolioCsv(parsed) {
+    setTickers(parsed.tickers);
+    setWeights(weightsFromEntries(parsed.entries, parsed.tickers));
+    setState({ tickers: parsed.tickers, portfolioEntries: parsed.entries });
+  }
+
+  async function run() {
+    setLoading(true); setError(null); setStatus("m3", "loading");
+    try {
+      const total = weights.reduce((a, b) => a + b, 0);
+      const norm = weights.map(w => w / total);
+      const res = await apiPost("/api/m3/optimize", { tickers, current_weights: norm, period, risk_free_rate: rf / 100 });
+      setModule("m3", res);
+    } catch (e) { setError(e.message); setStatus("m3", "error"); }
+    setLoading(false);
+  }
+
+  const d = ms.result;
+  const PERIODS = ["6mo", "1y", "2y", "5y"];
+
+  return (
+    <div className="page fade-in">
+      <div className="section-header">
+        <h1 className="section-title">Portfolio Analytics</h1>
+        <p className="section-sub">See expected return, risk, and suggested weights.</p>
+        <div className="section-line" />
+      </div>
+
+      <div className="card" style={{ marginBottom: 20 }}>
+        <div style={{ marginBottom: 14 }}>
+          <PortfolioCsvImport onImport={importPortfolioCsv} />
+        </div>
+        <div className="form-grid" style={{ marginBottom: 16 }}>
+          <div className="form-field" style={{ gridColumn: "1 / -1" }}>
+            <label>Tickers</label>
+            <TickerInput tickers={tickers} onChange={syncTickers} />
+          </div>
+          <div className="form-field">
+            <label>Period</label>
+            <div className="toggle-group">
+              {PERIODS.map(p => <button key={p} className={`toggle-btn${period === p ? " active" : ""}`} onClick={() => setPeriod(p)}>{p}</button>)}
+            </div>
+          </div>
+          <div className="form-field">
+            <label>Risk-Free Rate: {rf.toFixed(1)}%</label>
+            <input type="range" min="0" max="15" step="0.5" value={rf} onChange={e => setRf(+e.target.value)} style={{ width: "100%" }} />
+          </div>
+        </div>
+        <div className="stack-sm" style={{ marginBottom: 16 }}>
+          <label>Current Weights</label>
+          {tickers.map((t, i) => (
+            <div key={t} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <span className="mono" style={{ width: 120, fontSize: 12, color: "var(--text2)", flexShrink: 0 }}>{t}</span>
+              <input type="number" value={(weights[i] || 0).toFixed(1)} onChange={e => { const w = [...weights]; w[i] = +e.target.value; setWeights(w); }} style={{ width: 80 }} min={0} max={100} />
+              <span style={{ fontSize: 12, color: "var(--text3)" }}>%</span>
+            </div>
+          ))}
+        </div>
+        <p style={{ fontSize: 12, color: "var(--text3)", marginBottom: 8 }}>
+          Keep the list focused for clearer results. Maximum supported entries: {MAX_PORTFOLIO_ENTRIES}.
+        </p>
+        <button className="btn btn-primary btn-full" onClick={run} disabled={loading || tickers.length < 2}>
+          {loading ? "Running…" : "Run Analysis"}
+        </button>
+      </div>
+
+      {loading && <Spinner msg="Optimising portfolio — analysing historical returns and covariance…" />}
+      {error && <ErrorCard msg={error} onRetry={run} />}
+      {d && !loading && (
+        <div className="fade-in">
+          <Tabs
+            tabs={[{ id: "frontier", label: "Efficient Frontier" }, { id: "allocations", label: "Allocations" }, { id: "risk", label: "Risk Metrics" }, { id: "correlation", label: "Correlation" }]}
+            active={tab} onChange={setTab}
+          />
+          {tab === "frontier" && (
+            <div className="card">
+              <h3 style={{ marginBottom: 16 }}>Efficient Frontier</h3>
+              <FrontierChart
+                frontier={d.efficient_frontier}
+                specialPoints={[
+                  { x: d.min_variance_portfolio.volatility * 100, y: d.min_variance_portfolio.expected_return * 100, label: "Min Variance", fill: "#6c63ff" },
+                  { x: d.max_sharpe_portfolio.volatility * 100, y: d.max_sharpe_portfolio.expected_return * 100, label: "Max Sharpe", fill: "#22d984" },
+                  { x: d.current_portfolio.volatility * 100, y: d.current_portfolio.expected_return * 100, label: "Your Portfolio", fill: "#ff4d6d" },
+                ]}
+              />
+              <div className="divider" />
+              <table>
+                <thead><tr><th>Metric</th><th className="td-right">Your Portfolio</th><th className="td-right">Min Variance</th><th className="td-right">Max Sharpe</th></tr></thead>
+                <tbody>
+                  {[["Expected Return", "expected_return", fmtPct], ["Volatility", "volatility", fmtPct], ["Sharpe Ratio", "sharpe_ratio", v => fmtMono(v)]].map(([l, k, f]) => (
+                    <tr key={k}><td>{l}</td><td className="td-right td-mono">{f(d.current_portfolio[k])}</td><td className="td-right td-mono">{f(d.min_variance_portfolio[k])}</td><td className="td-right td-mono">{f(d.max_sharpe_portfolio[k])}</td></tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          {tab === "allocations" && (
+            <div className="card">
+              <div className="grid-2" style={{ marginBottom: 24 }}>
+                <WeightDonut weights={d.min_variance_portfolio.weights} title="Min Variance" />
+                <WeightDonut weights={d.max_sharpe_portfolio.weights} title="Max Sharpe" />
+              </div>
+              <table>
+                <thead><tr><th>Ticker</th><th className="td-right">Min-Var</th><th className="td-right">Max-Sharpe</th><th className="td-right">Difference</th></tr></thead>
+                <tbody>
+                  {d.tickers.map(t => {
+                    const mv = (d.min_variance_portfolio.weights[t] || 0) * 100;
+                    const ms2 = (d.max_sharpe_portfolio.weights[t] || 0) * 100;
+                    return <tr key={t}><td className="td-mono">{t}</td><td className="td-right td-mono">{mv.toFixed(1)}%</td><td className="td-right td-mono">{ms2.toFixed(1)}%</td><td className="td-right td-mono" style={{ color: ms2 - mv >= 0 ? "var(--green)" : "var(--red)" }}>{sign(ms2 - mv)}{(ms2 - mv).toFixed(1)}%</td></tr>;
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+          {tab === "risk" && (
+            <div className="stack">
+              <div className="grid-4">
+                <Metric label="VaR 95%" value={fmtPct(d.risk_metrics?.var_95_pct)} color="red" />
+                <Metric label="CVaR 95%" value={fmtPct(d.risk_metrics?.cvar_95_pct)} color="red" />
+                <Metric label="Max Drawdown" value={fmtPct(d.risk_metrics?.max_drawdown)} color="amber" />
+                <Metric label="Ulcer Index" value={fmtMono(d.risk_metrics?.ulcer_index, 4)} />
+              </div>
+              {d.risk_metrics?.recovery_days > 0 && <p style={{ fontSize: 13, color: "var(--text3)" }}>Recovery time: ~{d.risk_metrics.recovery_days} trading days</p>}
+              {d.factor_analysis && (
+                <div className="card">
+                  <p style={{ fontSize: 12, color: "var(--text3)", marginBottom: 10, fontWeight: 600, textTransform: "uppercase", letterSpacing: ".06em" }}>Factor Decomposition</p>
+                  <div className="pbar" style={{ height: 10, marginBottom: 8 }}>
+                    <div className="pbar-fill" style={{ width: `${(d.factor_analysis.r_squared * 100).toFixed(0)}%`, background: "var(--accent)" }} />
+                  </div>
+                  <p style={{ fontSize: 13, color: "var(--text2)" }}>
+                    <strong style={{ color: "var(--text)" }}>{(d.factor_analysis.r_squared * 100).toFixed(0)}%</strong> of your portfolio moves with the overall market.
+                    The remaining <strong style={{ color: "var(--text)" }}>{((1 - d.factor_analysis.r_squared) * 100).toFixed(0)}%</strong> is driven by your specific stock selection.
+                  </p>
+                  <div className="grid-3" style={{ marginTop: 12 }}>
+                    <Metric label="Systematic Vol" value={fmtPct(d.factor_analysis.systematic_volatility)} />
+                    <Metric label="Idiosyncratic Vol" value={fmtPct(d.factor_analysis.idiosyncratic_volatility)} />
+                    <Metric label="R-Squared" value={fmtMono(d.factor_analysis.r_squared)} />
+                  </div>
+                </div>
+              )}
+              {d.market_regime && (
+                <div className="card-sm">
+                  <p style={{ fontSize: 12, color: "var(--text3)", marginBottom: 6 }}>Simple Market Regime</p>
+                  <span className={`regime-badge ${regimeBadgeClass(d.market_regime.regime)}`}>{regimeIcon(d.market_regime.regime)} {d.market_regime.regime}</span>
+                  <p style={{ fontSize: 12, color: "var(--text3)", marginTop: 6 }}>Current annualised vol: {fmtPct(d.market_regime.current_vol_annualized)}</p>
+                </div>
+              )}
+            </div>
+          )}
+          {tab === "correlation" && (
+            <div className="card" style={{ overflowX: "auto" }}>
+              <h3 style={{ marginBottom: 16 }}>Correlation Matrix</h3>
+              <table>
+                <thead>
+                  <tr>
+                    <th></th>
+                    {d.tickers.map(t => <th key={t} className="td-right" style={{ fontFamily: "IBM Plex Mono,monospace", fontSize: 10 }}>{t.replace(".NS", "")}</th>)}
+                  </tr>
+                </thead>
+                <tbody>
+                  {d.tickers.map(row => (
+                    <tr key={row}>
+                      <td style={{ fontFamily: "IBM Plex Mono,monospace", fontSize: 11 }}>{row.replace(".NS", "")}</td>
+                      {d.tickers.map(col => {
+                        const val = d.correlation_matrix[row]?.[col] ?? 0;
+                        const isDiag = row === col;
+                        return (
+                          <td key={col} className="corr-cell"
+                            style={{ background: isDiag ? "rgba(108,99,255,.15)" : `rgba(255,77,109,${val * 0.35})`, color: "var(--text)" }}>
+                            {val.toFixed(2)}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// STRESS TEST (M4)
+function StressTest() {
+  const [store, setState, setModule, setStatus] = useStore();
+  const [tickers, setTickers] = useState(store.tickers);
+  const [pv, setPv] = useState(store.portfolioValue);
+  const [rf, setRf] = useState(store.riskFreeRate * 100);
+  const [mode, setMode] = useState("ALL");
+  const [custom, setCustom] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [expanded, setExpanded] = useState(null);
+  const ms = store.m4;
+
+  const CODES = ["CRISIS_1","CRISIS_2","MOD_1","MOD_2","MOD_3","MILD_1","MILD_2","MILD_3","MILD_4","GEOPOLITICAL","INFLATION","RATE_SHOCK","LIQUIDITY"];
+
+  async function run() {
+    setLoading(true); setError(null); setStatus("m4", "loading");
+    try {
+      const scenarios = mode === "CUSTOM" ? custom.join(",") : mode;
+      const res = await apiPost("/api/m4/scenarios", { tickers, portfolio_value: pv, risk_free_rate: rf / 100, scenarios });
+      setModule("m4", res);
+    } catch (e) { setError(e.message); setStatus("m4", "error"); }
+    setLoading(false);
+  }
+
+  const d = ms.result;
+  const riskColor = { HIGH: "var(--red)", MODERATE: "var(--amber)", ACCEPTABLE: "var(--green)", high: "var(--red)", moderate: "var(--amber)", acceptable: "var(--green)" };
+
+  return (
+    <div className="page fade-in">
+      <div className="section-header">
+        <h1 className="section-title">Stress Analytics</h1>
+        <p className="section-sub">Check how your portfolio behaves in difficult market events.</p>
+        <div className="section-line" />
+      </div>
+
+      <div className="card" style={{ marginBottom: 20 }}>
+        <div className="form-grid" style={{ marginBottom: 16 }}>
+          <div style={{ gridColumn: "1 / -1" }}>
+            <label>Tickers</label>
+            <TickerInput tickers={tickers} onChange={setTickers} />
+          </div>
+          <div><label>Portfolio Value (₹)</label><input type="number" value={pv} onChange={e => setPv(+e.target.value)} /></div>
+          <div><label>Risk-Free Rate (%)</label><input type="number" value={rf} onChange={e => setRf(+e.target.value)} step="0.5" /></div>
+        </div>
+        <div style={{ marginBottom: 16 }}>
+          <label>Scenarios</label>
+          <div className="toggle-group" style={{ marginTop: 6 }}>
+            {["ALL", "SEVERE", "CUSTOM"].map(m => <button key={m} className={`toggle-btn${mode === m ? " active" : ""}`} onClick={() => setMode(m)}>{m === "ALL" ? "All" : m === "SEVERE" ? "Severe Only" : "Custom"}</button>)}
+          </div>
+          {mode === "CUSTOM" && (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 12 }}>
+              {CODES.map(c => (
+                <label key={c} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, cursor: "pointer", color: "var(--text2)" }}>
+                  <input type="checkbox" checked={custom.includes(c)} onChange={e => setCustom(e.target.checked ? [...custom, c] : custom.filter(x => x !== c))} style={{ width: "auto" }} />
+                  {c.replace(/_/g, " ")}
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+        <button className="btn btn-primary btn-full" onClick={run} disabled={loading || tickers.length < 2}>
+          {loading ? "Running…" : "Run Stress Test"}
+        </button>
+      </div>
+
+      {loading && <Spinner msg="Running scenarios against live market data…" />}
+      {error && <ErrorCard msg={error} onRetry={run} />}
+      {d && !loading && (
+        <div className="fade-in stack">
+          {/* Summary */}
+          <div className="grid-3">
+            <div className="metric">
+              <div className="metric-label">Worst Loss</div>
+              <div className="metric-value neg">{fmtINR(d.summary?.worst_loss?.pnl_inr)}</div>
+              <div className="metric-sub">{d.summary?.worst_loss?.scenario}</div>
+            </div>
+            <div className="metric">
+              <div className="metric-label">Best Gain</div>
+              <div className="metric-value pos">{fmtINR(d.summary?.best_gain?.pnl_inr)}</div>
+              <div className="metric-sub">{d.summary?.best_gain?.scenario}</div>
+            </div>
+            <div className="metric">
+              <div className="metric-label">Risk Level</div>
+              <div className="metric-value" style={{ fontSize: 16, color: riskColor[d.summary?.risk_level] || "var(--text)" }}>{d.summary?.risk_level}</div>
+              <div className="metric-sub">{d.summary?.risk_message}</div>
+            </div>
+          </div>
+
+          {/* Base stats */}
+          <div className="grid-4">
+            <Metric label="Expected Return" value={fmtPct(d.optimal_portfolio?.expected_return)} />
+            <Metric label="Volatility" value={fmtPct(d.optimal_portfolio?.volatility)} />
+            <Metric label="Sharpe" value={fmtMono(d.optimal_portfolio?.sharpe_ratio)} />
+            <Metric label="VaR 95% (₹)" value={fmtINR(d.risk_metrics?.var_parametric_inr)} color="red" />
+          </div>
+
+          {/* Scenario cards */}
+          <div className="grid-2">
+            {(d.scenarios_tested || []).map(s => {
+              const isLoss = s.pnl_inr < 0;
+              const isExpanded = expanded === s.code;
+              return (
+                <div key={s.code} className="card-sm" style={{ cursor: "pointer", borderLeft: `3px solid ${isLoss ? "var(--red)" : "var(--green)"}` }}
+                  onClick={() => setExpanded(isExpanded ? null : s.code)}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
+                    <div>
+                      <p style={{ fontWeight: 600, fontSize: 13, color: "var(--text)" }}>{s.name}</p>
+                      <span className="badge badge-gray" style={{ marginTop: 3 }}>{s.category}</span>
+                    </div>
+                    <span style={{ fontSize: 11, color: "var(--text3)" }}>{s.likelihood}</span>
+                  </div>
+                  <p style={{ fontFamily: "IBM Plex Mono,monospace", fontSize: 20, fontWeight: 500, color: isLoss ? "var(--red)" : "var(--green)" }}>
+                    {isLoss ? "" : "+"}{fmtINR(s.pnl_inr)}
+                  </p>
+                  <p style={{ fontSize: 12, color: isLoss ? "var(--red)" : "var(--green)" }}>{sign(s.pnl_pct * 100)}{(s.pnl_pct * 100).toFixed(2)}%</p>
+                  <div className="pbar" style={{ marginTop: 8 }}>
+                    <div className="pbar-fill" style={{ width: `${Math.min(Math.abs(s.pnl_pct) * 200, 100)}%`, background: isLoss ? "var(--red)" : "var(--green)" }} />
+                  </div>
+                  <div style={{ marginTop: 6, display: "flex", gap: 6 }}>
+                    <span className={`badge ${s.sharpe_change < 0 ? "badge-red" : "badge-green"}`}>Sharpe {sign(s.sharpe_change)}{s.sharpe_change.toFixed(3)}</span>
+                  </div>
+                  {isExpanded && (
+                    <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid var(--border)", fontSize: 12, color: "var(--text3)" }}>
+                      <p>Base Vol: {fmtPct(s.base_vol)} → Stressed: {fmtPct(s.stressed_vol)}</p>
+                      <p>Base Return: {fmtPct(s.base_return)} → Stressed: {fmtPct(s.stressed_return)}</p>
+                      {s.duration && <p>Duration: {s.duration}</p>}
+                      {s.recovery && <p>Recovery: {s.recovery}</p>}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Risk Contribution */}
+          {d.risk_metrics?.risk_contribution && (
+            <div className="card">
+              <h3 style={{ marginBottom: 14 }}>Risk Contribution by Stock</h3>
+              {Object.entries(d.risk_metrics.risk_contribution).map(([k, v]) => (
+                <div key={k} className="signal-row">
+                  <span className="signal-label mono">{k.replace(".NS", "")}</span>
+                  <div className="signal-bar">
+                    <div className="signal-fill" style={{ width: `${(v * 100).toFixed(1)}%`, background: "var(--accent)" }} />
+                  </div>
+                  <span className="signal-val">{(v * 100).toFixed(1)}%</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// OPTIMISATION (M5)
+function Optimisation() {
+  const [store, setState, setModule, setStatus] = useStore();
+  const [tickers, setTickers] = useState(store.tickers);
+  const [pv, setPv] = useState(store.portfolioValue);
+  const [rf, setRf] = useState(store.riskFreeRate * 100);
+  const [maxW, setMaxW] = useState(40);
+  const [weights, setWeights] = useState(store.tickers.map(() => 100 / store.tickers.length));
+  const [methods, setMethods] = useState(["mean_variance", "min_variance", "cvar", "risk_parity", "max_diversification", "multi_objective"]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [tab, setTab] = useState("comparison");
+  const [selMethod, setSelMethod] = useState(null);
+  const ms = store.m5;
+
+  const METHOD_OPTIONS = [
+    { key: "mean_variance", label: "Mean Variance" }, { key: "min_variance", label: "Min Variance" },
+    { key: "cvar", label: "CVaR" }, { key: "risk_parity", label: "Risk Parity" },
+    { key: "max_diversification", label: "Max Diversification" }, { key: "multi_objective", label: "Multi-Objective" },
+  ];
+
+  async function run() {
+    setLoading(true); setError(null); setStatus("m5", "loading");
+    try {
+      const total = weights.reduce((a, b) => a + b, 0);
+      const res = await apiPost("/api/m5/institutional", {
+        tickers,
+        current_weights: weights.map(w => w / total),
+        portfolio_value: pv,
+        risk_free_rate: rf / 100,
+        max_weight: maxW / 100,
+        methods: methods.length === 6 ? "all" : methods.join(","),
+      });
+      setModule("m5", res);
+      setSelMethod(res.best_method);
+    } catch (e) { setError(e.message); setStatus("m5", "error"); }
+    setLoading(false);
+  }
+
+  const d = ms.result;
+
+  return (
+    <div className="page fade-in">
+      <div className="section-header">
+        <h1 className="section-title">Allocation Analytics</h1>
+        <p className="section-sub">Compare methods and get clear rebalance actions.</p>
+        <div className="section-line" />
+      </div>
+
+      <div className="card" style={{ marginBottom: 20 }}>
+        <div className="form-grid" style={{ marginBottom: 16 }}>
+          <div style={{ gridColumn: "1 / -1" }}>
+            <label>Tickers</label>
+            <TickerInput tickers={tickers} onChange={t => { setTickers(t); setWeights(t.map(() => 100 / t.length)); }} />
+          </div>
+          <div><label>Portfolio Value (₹)</label><input type="number" value={pv} onChange={e => setPv(+e.target.value)} /></div>
+          <div><label>Risk-Free Rate (%)</label><input type="number" value={rf} onChange={e => setRf(+e.target.value)} step="0.5" /></div>
+          <div><label>Max Weight per Stock: {maxW}%</label><input type="range" min="10" max="60" step="5" value={maxW} onChange={e => setMaxW(+e.target.value)} /></div>
+        </div>
+        <div style={{ marginBottom: 14 }}>
+          <label>Current Weights</label>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 6 }}>
+            {tickers.map((t, i) => (
+              <div key={t} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span className="mono" style={{ fontSize: 11, color: "var(--text3)", width: 100 }}>{t}</span>
+                <input type="number" value={(weights[i] || 0).toFixed(0)} onChange={e => { const w = [...weights]; w[i] = +e.target.value; setWeights(w); }} style={{ width: 64 }} />
+                <span style={{ fontSize: 11, color: "var(--text3)" }}>%</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div style={{ marginBottom: 14 }}>
+          <label>Methods</label>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 6 }}>
+            {METHOD_OPTIONS.map(m => (
+              <label key={m.key} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, cursor: "pointer", color: "var(--text2)" }}>
+                <input type="checkbox" checked={methods.includes(m.key)} onChange={e => setMethods(e.target.checked ? [...methods, m.key] : methods.filter(x => x !== m.key))} style={{ width: "auto" }} />
+                {m.label}
+              </label>
+            ))}
+          </div>
+        </div>
+        <button className="btn btn-primary btn-full" onClick={run} disabled={loading || tickers.length < 2}>
+          {loading ? "Running…" : "Run Analysis"}
+        </button>
+      </div>
+
+      {loading && <Spinner msg="Running institutional-grade optimisation across methods…" />}
+      {error && <ErrorCard msg={error} onRetry={run} />}
+      {d && !loading && (
+        <div className="fade-in">
+          <Tabs
+            tabs={[{ id: "comparison", label: "Method Comparison" }, { id: "frontier", label: "Frontier" }, { id: "weights", label: "Weights & Rebalance" }, { id: "risk", label: "Risk Attribution" }]}
+            active={tab} onChange={setTab}
+          />
+          {tab === "comparison" && (
+            <div className="stack">
+              <div className="card" style={{ overflowX: "auto" }}>
+                <table>
+                  <thead>
+                    <tr><th>Method</th><th className="td-right">Return</th><th className="td-right">Vol</th><th className="td-right">Sharpe</th><th className="td-right">CVaR 95%</th><th className="td-right">Health</th></tr>
+                  </thead>
+                  <tbody>
+                    {(d.method_comparison || []).map(mc => (
+                      <tr key={mc.method} className={mc.method === d.best_method ? "row-best" : ""}>
+                        <td style={{ fontWeight: mc.method === d.best_method ? 600 : 400 }}>{mc.method.replace(/_/g, " ")} {mc.method === d.best_method && "★"}</td>
+                        <td className="td-right td-mono">{fmtPct(mc.expected_return)}</td>
+                        <td className="td-right td-mono">{fmtPct(mc.volatility)}</td>
+                        <td className="td-right td-mono">{fmtMono(mc.sharpe_ratio)}</td>
+                        <td className="td-right td-mono">{fmtPct(mc.cvar_95)}</td>
+                        <td className="td-right td-mono">{mc.health_score}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="grid-3">
+                <Metric label="Return Δ vs Current" value={(d.improvement_vs_current?.return_delta * 100 || 0).toFixed(2)} suffix="%" color={d.improvement_vs_current?.return_delta >= 0 ? "green" : "red"} />
+                <Metric label="Volatility Δ" value={(d.improvement_vs_current?.vol_delta * 100 || 0).toFixed(2)} suffix="%" color={d.improvement_vs_current?.vol_delta <= 0 ? "green" : "red"} />
+                <Metric label="Sharpe Δ" value={fmtMono(d.improvement_vs_current?.sharpe_delta)} color={d.improvement_vs_current?.sharpe_delta >= 0 ? "green" : "red"} />
+              </div>
+              <div className="card-sm">
+                <span style={{ fontSize: 12, color: "var(--text3)" }}>Ledoit-Wolf δ = </span>
+                <span className="mono" style={{ fontSize: 13, color: "var(--accent)" }}>{fmtMono(d.ledoit_wolf_delta, 4)}</span>
+                <p style={{ fontSize: 12, color: "var(--text3)", marginTop: 4 }}>
+                  0 = raw covariance · 1 = maximum shrinkage. Your value indicates {d.ledoit_wolf_delta < 0.3 ? "mild" : d.ledoit_wolf_delta < 0.6 ? "moderate" : "strong"} shrinkage toward a stable estimate.
+                </p>
+              </div>
+            </div>
+          )}
+          {tab === "frontier" && (
+            <div className="card">
+              <FrontierChart
+                frontier={d.efficient_frontier}
+                specialPoints={Object.entries(d.methods || {}).map(([m, r], i) => ({ x: r.volatility * 100, y: r.expected_return * 100, label: m.replace(/_/g, " "), fill: m === d.best_method ? "var(--green)" : "var(--accent)" }))}
+              />
+            </div>
+          )}
+          {tab === "weights" && (
+            <div className="stack">
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {Object.keys(d.methods || {}).map(m => (
+                  <button key={m} className={`btn btn-sm ${selMethod === m ? "btn-primary" : "btn-outline"}`} onClick={() => setSelMethod(m)}>{m.replace(/_/g, " ")}</button>
+                ))}
+              </div>
+              {selMethod && d.methods?.[selMethod] && (
+                <div className="card"><WeightDonut weights={d.methods[selMethod].weights} title={selMethod.replace(/_/g, " ")} /></div>
+              )}
+              <div className="card" style={{ overflowX: "auto" }}>
+                <h3 style={{ marginBottom: 14 }}>Rebalance Actions</h3>
+                <table>
+                  <thead><tr><th>Ticker</th><th className="td-right">Current</th><th className="td-right">Target</th><th className="td-right">Action</th><th className="td-right">₹ Delta</th></tr></thead>
+                  <tbody>
+                    {(d.rebalance_actions || []).map(ra => (
+                      <tr key={ra.ticker} style={{ background: ra.action === "BUY" ? "rgba(34,217,132,.04)" : ra.action === "SELL" ? "rgba(255,77,109,.04)" : "" }}>
+                        <td className="td-mono">{ra.ticker}</td>
+                        <td className="td-right td-mono">{(ra.current_pct * 100).toFixed(1)}%</td>
+                        <td className="td-right td-mono">{(ra.target_pct * 100).toFixed(1)}%</td>
+                        <td className="td-right"><span className={`badge ${ra.action === "BUY" ? "badge-green" : ra.action === "SELL" ? "badge-red" : "badge-gray"}`}>{ra.action}</span></td>
+                        <td className="td-right td-mono">{fmtINR(ra.rupees_delta)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+          {tab === "risk" && (
+            <div className="stack">
+              <div className="grid-3">
+                <Metric label="Diversification Ratio" value={fmtMono(d.risk_attribution?.diversification_ratio)} />
+                <Metric label="Effective Positions" value={`${fmtMono(d.risk_attribution?.effective_n, 1)} / ${tickers.length}`} />
+                <Metric label="HHI Concentration" value={fmtMono(d.risk_attribution?.hhi || 0, 4)} />
+              </div>
+              <div className="card">
+                <h3 style={{ marginBottom: 14 }}>Risk Contribution</h3>
+                {Object.entries(d.risk_attribution?.risk_contribution || {}).map(([k, v]) => (
+                  <div key={k} className="signal-row">
+                    <span className="signal-label mono">{k.replace(".NS", "")}</span>
+                    <div className="signal-bar">
+                      <div className="signal-fill" style={{ width: `${(v * 100).toFixed(1)}%`, background: "var(--accent)" }} />
+                    </div>
+                    <span className="signal-val">{(v * 100).toFixed(1)}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// TRADE (M6)
+function Trade() {
+  const [store, setState, setModule, setStatus] = useStore();
+  const [holdings, setHoldings] = useState(() => {
+    const imported = holdingsFromEntries(store.portfolioEntries);
+    if (imported.length > 0) return imported;
+    return [
+      { ticker: "RELIANCE.NS", shares: 10, price: 2850 },
+      { ticker: "TCS.NS", shares: 5, price: 3900 },
+    ];
+  });
+  const [tradeTicker, setTradeTicker] = useState("RELIANCE.NS");
+  const [tradeQty, setTradeQty] = useState(10);
+  const [tradePrice, setTradePrice] = useState(2850);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [showSecurity, setShowSecurity] = useState(false);
+  const [securityTab, setSecurityTab] = useState("testing");
+  const [attackResults, setAttackResults] = useState({});
+  const [attackLoading, setAttackLoading] = useState({});
+  const ms = store.m6;
+
+  useEffect(() => {
+    const imported = holdingsFromEntries(store.portfolioEntries);
+    if (imported.length > 0) setHoldings(imported);
+  }, [store.portfolioEntries]);
+
+  const totalValue = holdings.reduce((s, h) => s + h.shares * h.price, 0);
+
+  async function run() {
+    setLoading(true); setError(null); setStatus("m6", "loading");
+    try {
+      const holdingsMap = {}, pricesMap = {};
+      holdings.forEach(h => { holdingsMap[h.ticker] = h.shares; pricesMap[h.ticker] = h.price; });
+      const res = await apiPost("/api/m6/simulate", {
+        ticker: tradeTicker.includes(".") ? tradeTicker : tradeTicker + ".NS",
+        quantity: tradeQty, price: tradePrice,
+        holdings: holdingsMap, current_prices: pricesMap,
+        total_value: totalValue, risk_free_rate: store.riskFreeRate,
+      });
+      setModule("m6", res);
+      setAttackResults({});
+    } catch (e) { setError(e.message); setStatus("m6", "error"); }
+    setLoading(false);
+  }
+
+  const ATTACKS = [
+    {
+      type: "adversarial_evasion",
+      name: "Adversarial Evasion",
+      desc: "A tampered transaction tries to look normal and slip past checks.",
+      protect: "PQC signature checks and anomaly signals catch hidden tampering quickly.",
+    },
+    {
+      type: "sybil_trust_poisoning",
+      name: "Sybil Trust Poisoning",
+      desc: "Many fake identities are used to trick trust and reputation systems.",
+      protect: "Pattern matching and behavior scoring flag repeated fake identity activity.",
+    },
+    {
+      type: "model_extraction",
+      name: "Model Extraction",
+      desc: "An attacker probes the system to learn how detection rules work.",
+      protect: "The system tracks suspicious probing patterns and raises risk levels.",
+    },
+    {
+      type: "side_channel_timing_leaks",
+      name: "Side Channel Timing Leaks",
+      desc: "Timing differences are used to guess internal security decisions.",
+      protect: "Timing anomalies are monitored and high-risk patterns are quarantined.",
+    },
+    {
+      type: "fault_injection",
+      name: "Fault Injection",
+      desc: "Hardware or process faults are forced to break validation steps.",
+      protect: "Cross-checks across PQC and Bayesian layers reduce single-point failure risk.",
+    },
+    {
+      type: "triangular_fraud",
+      name: "Triangular Fraud",
+      desc: "Three linked transactions are used to hide fraudulent value movement.",
+      protect: "Linked pattern analysis spots unusual circular movement and flags it.",
+    },
+    {
+      type: "price_oracle_manipulation",
+      name: "Price Oracle Manipulation",
+      desc: "A fake price feed is used to push bad pricing into the system.",
+      protect: "Price outlier detection and integrity checks block abnormal price shocks.",
+    },
+    {
+      type: "front_running_sandwich_attack",
+      name: "Front Running (Sandwich Attack)",
+      desc: "Trades are inserted before and after a target order to exploit it.",
+      protect: "Sequence and replay signals help detect this pattern and trigger controls.",
+    },
+  ];
+
+  async function runAttack(type) {
+    if (!ms.result?.transaction) return;
+    setAttackLoading(prev => ({ ...prev, [type]: true }));
+    try {
+      const res = await apiPost("/api/m6/security/test", { transaction: ms.result.transaction, attack_type: type });
+      setAttackResults(prev => ({ ...prev, [type]: res }));
+    } catch (e) {
+      setAttackResults(prev => ({ ...prev, [type]: { error: e.message } }));
+    }
+    setAttackLoading(prev => ({ ...prev, [type]: false }));
+  }
+
+  async function runAll() {
+    ATTACKS.forEach(a => runAttack(a.type));
+  }
+
+  const d = ms.result;
+
+  return (
+    <div className="page fade-in">
+      <div className="section-header">
+        <h1 className="section-title">Trade Analytics</h1>
+        <p className="section-sub">Simulate a trade and run security checks.</p>
+        <div className="section-line" />
+      </div>
+
+      <div className="card" style={{ marginBottom: 20 }}>
+        <p style={{ fontSize: 12, fontWeight: 600, color: "var(--text3)", textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 14 }}>Current Holdings</p>
+        <div className="stack-sm" style={{ marginBottom: 14 }}>
+          {holdings.map((h, i) => (
+            <div key={i} style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <input value={h.ticker} onChange={e => { const n = [...holdings]; n[i] = { ...h, ticker: e.target.value }; setHoldings(n); }} placeholder="TICKER.NS" style={{ width: 130, fontFamily: "IBM Plex Mono,monospace" }} />
+              <input type="number" value={h.shares} onChange={e => { const n = [...holdings]; n[i] = { ...h, shares: +e.target.value }; setHoldings(n); }} placeholder="Shares" style={{ width: 80 }} />
+              <input type="number" value={h.price} onChange={e => { const n = [...holdings]; n[i] = { ...h, price: +e.target.value }; setHoldings(n); }} placeholder="Price ₹" style={{ width: 100 }} />
+              <span style={{ fontSize: 12, color: "var(--text3)", width: 100, fontFamily: "IBM Plex Mono,monospace" }}>{fmtINR(h.shares * h.price)}</span>
+              <button className="btn btn-sm btn-outline" style={{ padding: "4px 8px" }} onClick={() => setHoldings(holdings.filter((_, j) => j !== i))}>✕</button>
+            </div>
+          ))}
+        </div>
+        <button className="btn btn-sm btn-outline" style={{ marginBottom: 14 }} onClick={() => setHoldings([...holdings, { ticker: "", shares: 0, price: 0 }])}>+ Add Stock</button>
+        <p style={{ fontSize: 12, color: "var(--text3)", marginBottom: 16, fontFamily: "IBM Plex Mono,monospace" }}>Total: {fmtINR(totalValue)}</p>
+        <div className="divider" />
+        <p style={{ fontSize: 12, fontWeight: 600, color: "var(--text3)", textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 12 }}>The Trade</p>
+        <div className="form-grid" style={{ marginBottom: 16 }}>
+          <div><label>Ticker to Buy</label><input value={tradeTicker} onChange={e => setTradeTicker(e.target.value)} style={{ fontFamily: "IBM Plex Mono,monospace" }} /></div>
+          <div><label>Quantity</label><input type="number" value={tradeQty} onChange={e => setTradeQty(+e.target.value)} /></div>
+          <div><label>Price per Share (₹)</label><input type="number" value={tradePrice} onChange={e => setTradePrice(+e.target.value)} /></div>
+        </div>
+        <p style={{ fontSize: 12, color: "var(--text3)", fontFamily: "IBM Plex Mono,monospace", marginBottom: 14 }}>Trade cost: {fmtINR(tradeQty * tradePrice)}</p>
+        <button className="btn btn-primary btn-full" onClick={run} disabled={loading}>
+          {loading ? "Simulating…" : "Simulate Trade"}
+        </button>
+      </div>
+
+      {loading && <Spinner msg="Running 1,000 Monte Carlo simulation paths…" />}
+      {error && <ErrorCard msg={error} onRetry={run} />}
+      {d && !loading && (
+        <div className="fade-in stack">
+          {/* Transaction receipt */}
+          <div className="card">
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+              <span style={{ fontSize: 16 }}>🔐</span>
+              <h3>Transaction Receipt</h3>
+            </div>
+            <div className="grid-2">
+              <div><p style={{ fontSize: 11, color: "var(--text3)", marginBottom: 3 }}>TX ID</p><p className="mono" style={{ fontSize: 11, wordBreak: "break-all" }}>{d.transaction?.tx_id}</p></div>
+              <div><p style={{ fontSize: 11, color: "var(--text3)", marginBottom: 3 }}>SHA-3 Hash</p><p className="mono" style={{ fontSize: 11 }}>{(d.transaction?.sha3_hash || "").slice(0, 32)}…</p></div>
+              <div><p style={{ fontSize: 11, color: "var(--text3)", marginBottom: 3 }}>Scheme</p><span className="badge badge-blue">{d.transaction?.scheme}</span></div>
+              <div><p style={{ fontSize: 11, color: "var(--text3)", marginBottom: 3 }}>Verified</p><span className={`badge ${d.transaction?.verified ? "badge-green" : "badge-red"}`}>{d.transaction?.verified ? "✓ Authentic" : "✗ Not Verified"}</span></div>
+            </div>
+            <p style={{ fontSize: 12, color: "var(--text3)", marginTop: 12, fontStyle: "italic" }}>
+              This transaction is sealed with post-quantum ML-DSA-III cryptography. Even future quantum computers cannot forge this signature.
+            </p>
+          </div>
+
+          {/* Portfolio impact */}
+          <div className="grid-4">
+            <Metric label="Return Δ" value={fmtPct(d.portfolio_impact?.expected_return_change)} color={d.portfolio_impact?.expected_return_change >= 0 ? "green" : "red"} />
+            <Metric label="Volatility Δ" value={fmtPct(d.portfolio_impact?.volatility_change)} color={d.portfolio_impact?.volatility_change <= 0 ? "green" : "red"} />
+            <Metric label="Sharpe Δ" value={fmtMono(d.portfolio_impact?.sharpe_change)} color={d.portfolio_impact?.sharpe_change >= 0 ? "green" : "red"} />
+            <Metric label="CVaR Δ" value={fmtPct(d.portfolio_impact?.cvar_change)} color={d.portfolio_impact?.cvar_change <= 0 ? "green" : "red"} />
+          </div>
+
+          {/* Monte Carlo */}
+          <div>
+            {d.monte_carlo && (
+              <div style={{ textAlign: "center", marginBottom: 14 }}>
+                <span className={`badge ${d.monte_carlo.overall_verdict === "POSITIVE" ? "badge-green" : d.monte_carlo.overall_verdict === "NEGATIVE" ? "badge-red" : "badge-amber"}`} style={{ fontSize: 13, padding: "6px 16px" }}>
+                  {d.monte_carlo.overall_verdict} — Best horizon: {d.monte_carlo.best_horizon}
+                </span>
+              </div>
+            )}
+            <div className="grid-3">
+              {Object.entries(d.monte_carlo?.horizons || {}).map(([h, hz]) => (
+                <div key={h} className="horizon-card">
+                  <div className="horizon-title">{h}</div>
+                  <div className="horizon-row"><span style={{ color: "var(--text3)" }}>Without trade</span><span className="mono">{fmtINR(hz.real_value)}</span></div>
+                  <div className="horizon-row"><span style={{ color: "var(--text3)" }}>With trade</span><span className="mono" style={{ color: hz.delta >= 0 ? "var(--green)" : "var(--red)", fontWeight: 600 }}>{fmtINR(hz.virtual_value)}</span></div>
+                  <div className="horizon-row"><span style={{ color: "var(--text3)" }}>Delta</span><span className="mono" style={{ color: hz.delta >= 0 ? "var(--green)" : "var(--red)" }}>{sign(hz.delta)}{fmtINR(hz.delta)}</span></div>
+                  <div className="pbar" style={{ marginTop: 8 }}>
+                    <div className="pbar-fill" style={{ width: `${((hz.virtual_value - hz.p5_value) / (hz.p95_value - hz.p5_value + 0.01)) * 100}%`, background: "var(--accent)" }} />
+                  </div>
+                  <p style={{ fontSize: 11, color: "var(--text3)", marginTop: 4 }}>P5–P95: {fmtINR(hz.p5_value)} — {fmtINR(hz.p95_value)}</p>
+                  <p style={{ fontSize: 11, color: "var(--text3)" }}>Probability of loss: {fmtPct(hz.prob_loss)}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Risk summary */}
+          <div className="card" style={{ borderLeft: "3px solid var(--accent)" }}>
+            <p style={{ fontSize: 13, color: "var(--text2)", fontStyle: "italic", lineHeight: 1.6 }}>{d.risk_summary}</p>
+          </div>
+
+          {/* Security testing */}
+          <div className="card">
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14, cursor: "pointer" }} onClick={() => setShowSecurity(!showSecurity)}>
+              <div>
+                <h3>Security Attack Testing</h3>
+                <p style={{ fontSize: 12, color: "var(--text3)", marginTop: 2 }}>Test this transaction against 8 attack patterns and learn how protection works.</p>
+              </div>
+              <span style={{ color: "var(--text3)", fontSize: 18 }}>{showSecurity ? "▲" : "▼"}</span>
+            </div>
+            {showSecurity && (
+              <div className="fade-in">
+                <Tabs
+                  tabs={[
+                    { id: "testing", label: "Attack Testing" },
+                    { id: "guide", label: "Attack Guide" },
+                  ]}
+                  active={securityTab}
+                  onChange={setSecurityTab}
+                />
+                {securityTab === "testing" && (
+                  <>
+                    <button className="btn btn-outline btn-full" style={{ marginBottom: 16 }} onClick={runAll}>Test All 8 Attacks</button>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: 12 }}>
+                      {ATTACKS.map(a => {
+                        const res = attackResults[a.type];
+                        const isLoading = attackLoading[a.type];
+                        return (
+                          <div key={a.type} className={`attack-card${res ? " tested" : ""}`}>
+                            <p style={{ fontWeight: 600, fontSize: 13, color: "var(--text)", marginBottom: 4 }}>{a.name}</p>
+                            <p style={{ fontSize: 12, color: "var(--text3)", marginBottom: 10, lineHeight: 1.5 }}>{a.desc}</p>
+                            {!res && !isLoading && (
+                              <button className="btn btn-sm btn-outline" onClick={() => runAttack(a.type)}>Run this test</button>
+                            )}
+                            {isLoading && <div className="spinner" style={{ width: 20, height: 20, borderWidth: 2 }} />}
+                            {res && !isLoading && (
+                              <div className="stack-sm" style={{ fontSize: 12 }}>
+                                {res.error ? <p style={{ color: "var(--red)" }}>{res.error}</p> : (
+                                  <>
+                                    <div>
+                                      <p style={{ color: "var(--text3)", fontSize: 11, marginBottom: 3 }}>PQC Layer</p>
+                                      <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+                                        {threatBadge(res.pqc?.threat_level)}
+                                        <span style={{ color: "var(--text3)", fontSize: 11 }}>entropy={fmtMono(res.pqc?.entropy_score, 4)}</span>
+                                        <span className={`badge ${res.pqc?.quarantine_status === "QUARANTINED" ? "badge-red" : "badge-green"}`} style={{ fontSize: 10 }}>{res.pqc?.quarantine_status}</span>
+                                      </div>
+                                    </div>
+                                    <div>
+                                      <p style={{ color: "var(--text3)", fontSize: 11, marginBottom: 3 }}>Bayesian Immune Layer</p>
+                                      <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+                                        {threatBadge(res.bayesian?.threat_level)}
+                                        <span className="mono" style={{ fontWeight: 600, color: "var(--text)" }}>{fmtPct(res.bayesian?.posterior_probability)}</span>
+                                        {res.bayesian?.memory_boosted_prior && <span className="badge badge-amber">Memory used</span>}
+                                        {res.bayesian?.key_rotation_signal && <span className="badge badge-red">Rotate keys</span>}
+                                      </div>
+                                    </div>
+                                  </>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+                {securityTab === "guide" && (
+                  <div className="stack">
+                    <div className="card-sm" style={{ borderLeft: "3px solid var(--accent)" }}>
+                      <p style={{ fontSize: 13, color: "var(--text2)", lineHeight: 1.6 }}>
+                        Our hybrid protection uses two layers: a Post-Quantum Cryptography (PQC) layer for integrity checks,
+                        and a Bayesian immune layer that learns from past attacks. This means known patterns are recognized faster over time.
+                      </p>
+                    </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: 12 }}>
+                      {ATTACKS.map(a => (
+                        <div key={`${a.type}-guide`} className="attack-card">
+                          <p style={{ fontWeight: 600, fontSize: 13, color: "var(--text)", marginBottom: 6 }}>{a.name}</p>
+                          <p style={{ fontSize: 12, color: "var(--text3)", marginBottom: 8, lineHeight: 1.5 }}>
+                            <strong style={{ color: "var(--text2)" }}>What it means:</strong> {a.desc}
+                          </p>
+                          <p style={{ fontSize: 12, color: "var(--text3)", lineHeight: 1.5 }}>
+                            <strong style={{ color: "var(--text2)" }}>How we protect you:</strong> {a.protect}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {Object.keys(attackResults).length > 0 && d.security_summary && (
+                  <div className="grid-4" style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid var(--border)" }}>
+                    <Metric label="PQC Checked" value={d.security_summary.pqc_transactions_processed} />
+                    <Metric label="PQC Quarantined" value={d.security_summary.pqc_quarantined} color={d.security_summary.pqc_quarantined > 0 ? "red" : "green"} />
+                    <Metric label="Bayesian Quarantined" value={d.security_summary.bayesian_quarantined} color={d.security_summary.bayesian_quarantined > 0 ? "red" : "green"} />
+                    <Metric label="Patterns Learned" value={d.security_summary.threat_patterns_learned} />
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// REGIME (M7)
+function Regime() {
+  const [store, setState, setModule, setStatus] = useStore();
+  const [tickers, setTickers] = useState(store.tickers);
+  const [rf, setRf] = useState(store.riskFreeRate * 100);
+  const [h1, setH1] = useState(21);
+  const [h2, setH2] = useState(63);
+  const [appetite, setAppetite] = useState("balanced");
+  const [showAdv, setShowAdv] = useState(false);
+  const [restarts, setRestarts] = useState(3);
+  const [maxIter, setMaxIter] = useState(150);
+  const [garchBoot, setGarchBoot] = useState(300);
+  const [uncBoot, setUncBoot] = useState(200);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [tab, setTab] = useState("status");
+  const ms = store.m7;
+
+  async function run() {
+    setLoading(true); setError(null); setStatus("m7", "loading");
+    try {
+      const res = await apiPost("/api/m7/regime", {
+        tickers, risk_free_rate: rf / 100, horizons: [h1, h2], risk_appetite: appetite,
+        hmm_restarts: restarts, hmm_max_iter: maxIter, garch_n_sim: garchBoot, uncertainty_n_boot: uncBoot,
+      });
+      setModule("m7", res);
+    } catch (e) { setError(e.message); setStatus("m7", "error"); }
+    setLoading(false);
+  }
+
+  const REGIME_DESC = {
+    "Low-Vol Bull": "The market is calm and trending upward. Conditions favour equity exposure.",
+    "High-Vol Bear": "The market is falling with elevated volatility. Defensive positioning recommended.",
+    "Crisis": "Severe stress detected. Capital preservation is the primary objective.",
+    "Transitional": "Mixed signals. The market is between phases — balanced caution advised.",
+  };
+
+  const d = ms.result;
+
+  return (
+    <div className="page fade-in">
+      <div className="section-header">
+        <h1 className="section-title">Regime Analytics</h1>
+        <p className="section-sub">Understand market mood and possible near-term risk.</p>
+        <div className="section-line" />
+      </div>
+
+      <div className="card" style={{ marginBottom: 20 }}>
+        <div className="form-grid" style={{ marginBottom: 14 }}>
+          <div style={{ gridColumn: "1 / -1" }}>
+            <label>Tickers</label>
+            <TickerInput tickers={tickers} onChange={setTickers} />
+          </div>
+          <div><label>Risk-Free Rate (%)</label><input type="number" value={rf} onChange={e => setRf(+e.target.value)} step="0.5" /></div>
+          <div><label>Horizon 1 (days)</label><input type="number" value={h1} onChange={e => setH1(+e.target.value)} /></div>
+          <div><label>Horizon 2 (days)</label><input type="number" value={h2} onChange={e => setH2(+e.target.value)} /></div>
+        </div>
+        <div style={{ marginBottom: 14 }}>
+          <label>Risk Appetite</label>
+          <div className="toggle-group" style={{ marginTop: 6 }}>
+            {["conservative", "balanced", "aggressive"].map(a => (
+              <button key={a} className={`toggle-btn${appetite === a ? " active" : ""}`} onClick={() => setAppetite(a)} style={{ textTransform: "capitalize" }}>{a}</button>
+            ))}
+          </div>
+        </div>
+        <button className="btn btn-sm btn-outline" style={{ marginBottom: 14 }} onClick={() => setShowAdv(!showAdv)}>
+          {showAdv ? "▲" : "▼"} Advanced Settings
+        </button>
+        {showAdv && (
+          <div className="form-grid" style={{ marginBottom: 14 }}>
+            <div><label>HMM Restarts</label><input type="number" value={restarts} onChange={e => setRestarts(+e.target.value)} min={1} max={10} /></div>
+            <div><label>Max Iterations</label><input type="number" value={maxIter} onChange={e => setMaxIter(+e.target.value)} min={50} max={1000} /></div>
+            <div><label>GARCH Bootstrap</label><input type="number" value={garchBoot} onChange={e => setGarchBoot(+e.target.value)} min={50} max={2000} /></div>
+            <div><label>Uncertainty Bootstrap</label><input type="number" value={uncBoot} onChange={e => setUncBoot(+e.target.value)} min={50} max={2000} /></div>
+          </div>
+        )}
+        <button className="btn btn-primary btn-full" onClick={run} disabled={loading || tickers.length < 2}>
+          {loading ? "Analysing…" : "Run Analysis"}
+        </button>
+        <p style={{ fontSize: 12, color: "var(--amber)", marginTop: 8 }}>⚠ This analysis takes 15–30 seconds.</p>
+      </div>
+
+      {loading && <Spinner msg="Fitting Hidden Markov Model to live price data — please wait…" />}
+      {error && <ErrorCard msg={error} onRetry={run} />}
+      {d && !loading && (
+        <div className="fade-in">
+          <Tabs
+            tabs={[
+              { id: "status", label: "Regime Status" }, { id: "transition", label: "Transitions" },
+              { id: "garch", label: "GARCH Forecast" }, { id: "forward", label: "Forward Returns" },
+              { id: "params", label: "Parameters" }, { id: "weights", label: "Weights & Uncertainty" },
+            ]}
+            active={tab} onChange={setTab}
+          />
+
+          {tab === "status" && (
+            <div className="card" style={{ textAlign: "center" }}>
+              <div style={{ marginBottom: 20 }}>
+                <span className={`regime-badge ${regimeBadgeClass(d.current_regime)}`} style={{ fontSize: 20, padding: "10px 24px" }}>
+                  {regimeIcon(d.current_regime)} {d.current_regime}
+                </span>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))", gap: 12, marginBottom: 20, textAlign: "left" }}>
+                {Object.entries(d.regime_probabilities || {}).map(([r, p]) => (
+                  <div key={r} className="regime-row" style={{ border: "none", padding: "8px 0" }}>
+                    <div style={{ width: 8, height: 8, borderRadius: 2, background: regimeColor(r), flexShrink: 0 }} />
+                    <span className="regime-name">{r}</span>
+                    <div className="regime-pbar">
+                      <div className="pbar"><div className="pbar-fill" style={{ width: `${(p * 100).toFixed(1)}%`, background: regimeColor(r) }} /></div>
+                    </div>
+                    <span className="regime-pct">{(p * 100).toFixed(1)}%</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{ display: "flex", justifyContent: "center", gap: 12, marginBottom: 14, flexWrap: "wrap" }}>
+                <span className="badge badge-gray">Log-likelihood: {fmtMono(d.log_likelihood, 1)}</span>
+                <span className="badge badge-gray">{d.log_likelihood > 5000 ? "Excellent fit" : d.log_likelihood > 3000 ? "Good fit" : "Acceptable fit"}</span>
+                <span className="badge badge-gray">ESS: {d.uncertainty?.effective_sample_size}</span>
+              </div>
+              <p style={{ fontSize: 13, color: "var(--text2)", maxWidth: 500, margin: "0 auto", lineHeight: 1.6 }}>
+                {REGIME_DESC[d.current_regime] || REGIME_DESC["Transitional"]}
+              </p>
+            </div>
+          )}
+
+          {tab === "transition" && (
+            <div className="stack">
+              <div className="card" style={{ overflowX: "auto" }}>
+                <h3 style={{ marginBottom: 14 }}>Transition Probability Matrix</h3>
+                <table>
+                  <thead>
+                    <tr>
+                      <th></th>
+                      {Object.keys(d.transition_matrix || {}).map(r => <th key={r} className="tm-head">{r}</th>)}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(d.transition_matrix || {}).map(([from, row]) => (
+                      <tr key={from}>
+                        <td style={{ fontSize: 11, color: "var(--text3)", whiteSpace: "nowrap", paddingRight: 8 }}>{from}</td>
+                        {Object.entries(row).map(([to, val]) => (
+                          <td key={to} className="tm-cell" style={{
+                            background: from === to ? "rgba(108,99,255,.15)" : `rgba(255,77,109,${val * 0.5})`,
+                          }} title={`${from} → ${to}: ${(val * 100).toFixed(2)}%`}>
+                            {(val * 100).toFixed(1)}%
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 12 }}>
+                {Object.entries(d.expected_regime_duration_days || {}).map(([r, days]) => (
+                  <div key={r} className="metric" style={{ textAlign: "center" }}>
+                    <div className="metric-label">{r}</div>
+                    <div className="metric-value">{Math.round(days)} days</div>
+                    <div className="metric-sub">({(days / 21).toFixed(1)} months)</div>
+                  </div>
+                ))}
+              </div>
+              <div className="card">
+                <h3 style={{ marginBottom: 14 }}>Crisis Probability by Horizon</h3>
+                {Object.entries(d.crisis_probability_by_horizon || {}).map(([h, p]) => (
+                  <div key={h} className="signal-row">
+                    <span className="signal-label">{h}d horizon</span>
+                    <div className="signal-bar">
+                      <div className="signal-fill" style={{ width: `${(p * 100).toFixed(1)}%`, background: "var(--red)" }} />
+                    </div>
+                    <span className="signal-val">{(p * 100).toFixed(1)}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {tab === "garch" && (
+            <div className="card">
+              <h3 style={{ marginBottom: 14 }}>GARCH Volatility Forecast (30 Days)</h3>
+              <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
+                <span className="badge badge-blue">Current Vol: {fmtPct(d.garch_current_vol)}</span>
+                <span className="badge badge-blue">30d Forecast: {fmtPct(d.garch_30d_forecast)}</span>
+              </div>
+              {/* Simple SVG line chart */}
+              {(() => {
+                const pts = Object.entries(d.garch_forecast_path || {}).slice(0, 30);
+                if (pts.length === 0) return <p style={{ color: "var(--text3)" }}>No forecast data.</p>;
+                const W = 480, H = 200, PAD = { t: 20, r: 20, b: 30, l: 50 };
+                const vals = pts.map(([, v]) => v.vol_ann * 100);
+                const uppers = pts.map(([, v]) => v.ci_upper_95 * 100);
+                const lowers = pts.map(([, v]) => v.ci_lower_95 * 100);
+                const yMin = Math.min(...lowers) * 0.9, yMax = Math.max(...uppers) * 1.1;
+                const cW = W - PAD.l - PAD.r, cH = H - PAD.t - PAD.b;
+                const px = i => PAD.l + (i / (pts.length - 1)) * cW;
+                const py = v => PAD.t + (1 - (v - yMin) / (yMax - yMin)) * cH;
+                const linePath = pts.map(([, v], i) => `${i === 0 ? "M" : "L"}${px(i).toFixed(1)},${py(v.vol_ann * 100).toFixed(1)}`).join(" ");
+                const areaPath = [
+                  ...pts.map(([, v], i) => `${i === 0 ? "M" : "L"}${px(i).toFixed(1)},${py(v.ci_upper_95 * 100).toFixed(1)}`),
+                  ...pts.map(([, v], i) => `L${px(pts.length - 1 - i).toFixed(1)},${py(pts[pts.length - 1 - i][1].ci_lower_95 * 100).toFixed(1)}`),
+                  "Z",
+                ].join(" ");
+                return (
+                  <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto", maxHeight: 200 }}>
+                    <path d={areaPath} fill="rgba(108,99,255,.1)" />
+                    <path d={linePath} fill="none" stroke="var(--accent)" strokeWidth={2} />
+                    <text x={PAD.l - 4} y={PAD.t + 4} textAnchor="end" fontSize={10} fill="var(--text3)">{yMax.toFixed(1)}%</text>
+                    <text x={PAD.l - 4} y={H - PAD.b} textAnchor="end" fontSize={10} fill="var(--text3)">{yMin.toFixed(1)}%</text>
+                    <text x={PAD.l} y={H - 6} textAnchor="start" fontSize={10} fill="var(--text3)">Day 1</text>
+                    <text x={W - PAD.r} y={H - 6} textAnchor="end" fontSize={10} fill="var(--text3)">Day {pts.length}</text>
+                    <text x={W / 2} y={H} textAnchor="middle" fontSize={10} fill="var(--text3)">Annualised Volatility (%)</text>
+                  </svg>
+                );
+              })()}
+              <p style={{ fontSize: 13, color: "var(--text2)", marginTop: 12 }}>
+                Volatility is expected to <strong style={{ color: "var(--text)" }}>{d.garch_30d_forecast > d.garch_current_vol ? "rise" : "fall"}</strong> from {fmtPct(d.garch_current_vol)} to {fmtPct(d.garch_30d_forecast)} over 30 days.
+                The shaded band shows the 95% confidence interval.
+              </p>
+            </div>
+          )}
+
+          {tab === "forward" && (
+            <div className="grid-2">
+              {Object.entries(d.forward_distributions || {}).map(([h, fd]) => (
+                <div key={h} className="card">
+                  <h3 style={{ marginBottom: 10 }}>Horizon: {h} days</h3>
+                  <p className={`metric-value ${fd.expected_return_ann >= 0 ? "pos" : "neg"}`} style={{ marginBottom: 12 }}>
+                    {fmtPct(fd.expected_return_ann)}
+                  </p>
+                  <div className="stack-sm" style={{ fontSize: 13 }}>
+                    {[["Annualised Vol", fmtPct(fd.annualised_vol)], ["Skewness", fmtMono(fd.skewness)],
+                      ["Excess Kurtosis", fmtMono(fd.excess_kurtosis)], ["VaR 95%", fmtPct(fd.var_95_pct)],
+                      ["CVaR 95%", fmtPct(fd.cvar_95_pct)], ["P(loss > 10%)", fmtPct(fd.prob_loss_over_10pct)]].map(([l, v]) => (
+                      <div key={l} style={{ display: "flex", justifyContent: "space-between" }}>
+                        <span style={{ color: "var(--text3)" }}>{l}</span>
+                        <span className="mono" style={{ color: l.includes("VaR") || l.includes("CVaR") || l.includes("P(") ? "var(--red)" : "var(--text)" }}>{v}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ marginTop: 10 }}>
+                    <span className={`badge ${fd.skewness < -0.5 ? "badge-red" : fd.skewness > 0.5 ? "badge-green" : "badge-gray"}`}>
+                      {fd.skewness < -0.5 ? "Left-skewed" : fd.skewness > 0.5 ? "Right-skewed" : "Symmetric"}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {tab === "params" && (
+            <div className="card">
+              <h3 style={{ marginBottom: 16 }}>Regime-Adapted Optimisation Parameters</h3>
+              {[
+                { l: "λ Return", v: d.adaptive_parameters?.lam_return, base: 1.0 },
+                { l: "λ Vol", v: d.adaptive_parameters?.lam_vol, base: 1.0 },
+                { l: "λ CVaR", v: d.adaptive_parameters?.lam_cvar, base: 1.0 },
+                { l: "Max Weight", v: d.adaptive_parameters?.max_weight, base: 0.4 },
+                { l: "Target Vol", v: d.adaptive_parameters?.target_vol_ann, base: 0.15 },
+                { l: "Position Scale", v: d.adaptive_parameters?.position_scale, base: 1.0 },
+              ].map(p => (
+                <div key={p.l} style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
+                  <span style={{ fontSize: 12, color: "var(--text3)", width: 110, flexShrink: 0 }}>{p.l}</span>
+                  <div style={{ flex: 1, height: 6, background: "var(--bg4)", borderRadius: 3, position: "relative" }}>
+                    <div style={{ position: "absolute", left: "50%", top: 0, width: 1, height: "100%", background: "var(--border2)" }} />
+                    <div style={{ height: "100%", borderRadius: 3, width: `${clamp((p.v / (p.base * 2)) * 100, 0, 100)}%`, background: p.v > p.base ? "var(--green)" : p.v < p.base * 0.7 ? "var(--red)" : "var(--accent)" }} />
+                  </div>
+                  <span className="mono" style={{ fontSize: 12, width: 50, textAlign: "right" }}>{fmtMono(p.v)}</span>
+                </div>
+              ))}
+              <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
+                <span className="badge badge-gray">Method: {d.adaptive_parameters?.optimization_method}</span>
+                <span className="badge badge-gray">Entropy: {fmtMono(d.adaptive_parameters?.regime_entropy)}</span>
+              </div>
+              {(d.parameter_notes || []).map((note, i) => (
+                <div key={i} className="card-sm" style={{ marginTop: 10, borderLeft: "3px solid var(--amber)" }}>
+                  <p style={{ fontSize: 12, color: "var(--amber)" }}>{note}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {tab === "weights" && (
+            <div className="stack">
+              <div className="grid-2">
+                <div className="card"><WeightDonut weights={d.optimal_weights || {}} title="Regime-Optimal Allocation" /></div>
+                <div className="grid-2">
+                  <Metric label="Expected Return" value={fmtPct(d.portfolio_stats?.expected_return)} />
+                  <Metric label="Volatility" value={fmtPct(d.portfolio_stats?.volatility)} />
+                  <Metric label="Sharpe Ratio" value={fmtMono(d.portfolio_stats?.sharpe_ratio)} />
+                  <Metric label="CVaR 95%" value={fmtPct(d.portfolio_stats?.cvar_95)} color="red" />
+                </div>
+              </div>
+              <div className="card" style={{ overflowX: "auto" }}>
+                <h3 style={{ marginBottom: 14 }}>Regime Probability Confidence Intervals</h3>
+                <table>
+                  <thead><tr><th>Regime</th><th className="td-right">Probability</th><th className="td-right">Lower 95%</th><th className="td-right">Upper 95%</th><th className="td-right">Certainty</th></tr></thead>
+                  <tbody>
+                    {Object.entries(d.uncertainty?.regime_ci || {}).map(([r, ci]) => (
+                      <tr key={r}>
+                        <td>{r}</td>
+                        <td className="td-right td-mono">{(ci.mean * 100).toFixed(1)}%</td>
+                        <td className="td-right td-mono">{(ci.lower_95 * 100).toFixed(1)}%</td>
+                        <td className="td-right td-mono">{(ci.upper_95 * 100).toFixed(1)}%</td>
+                        <td className="td-right">
+                          <span className={`badge ${ci.half_width < 0.05 ? "badge-green" : ci.half_width < 0.15 ? "badge-amber" : "badge-red"}`}>
+                            {ci.half_width < 0.05 ? "Very certain" : ci.half_width < 0.15 ? "Fairly certain" : "Uncertain"}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="card">
+                <h3 style={{ marginBottom: 14 }}>Weight Sensitivity to Regime Shifts</h3>
+                {Object.entries(d.uncertainty?.weight_sensitivity || {}).sort((a, b) => b[1] - a[1]).map(([t, v]) => (
+                  <div key={t} className="signal-row">
+                    <span className="signal-label mono">{t.replace(".NS", "")}</span>
+                    <div className="signal-bar">
+                      <div className="signal-fill" style={{ width: `${clamp(v * 1000, 0, 100)}%`, background: "var(--accent)" }} />
+                    </div>
+                    <span className="signal-val">{fmtMono(v, 4)}</span>
+                  </div>
+                ))}
+                <p style={{ fontSize: 12, color: "var(--text3)", marginTop: 10 }}>
+                  GARCH mixing time: ~{Math.round(d.mixing_time_days || 0)} days ({((d.mixing_time_days || 0) / 252).toFixed(1)} years) for the market to fully change character.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// SETTINGS
+function Settings() {
+  const [store, setState] = useStore();
+  const [url, setUrl] = useState(BASE);
+  const [online, setOnline] = useState(null);
+
+  async function ping() {
+    try {
+      await apiGet("/api/health");
+      setOnline(true);
+    } catch { setOnline(false); }
+  }
+
+  useEffect(() => { ping(); }, []);
+
+  function importPortfolioCsv(parsed) {
+    const importedValue = parsed.entries.reduce((sum, entry) => {
+      const shares = Number.isFinite(entry.shares) ? entry.shares : 0;
+      const price = Number.isFinite(entry.price) ? entry.price : 0;
+      return sum + shares * price;
+    }, 0);
+    setState({
+      tickers: parsed.tickers,
+      portfolioEntries: parsed.entries,
+      portfolioValue: importedValue > 0 ? Math.round(importedValue) : store.portfolioValue,
+    });
+  }
+
+  return (
+    <div className="page fade-in">
+      <div className="section-header">
+        <h1 className="section-title">Platform Settings</h1>
+        <p className="section-sub">Change app settings and data options.</p>
+        <div className="section-line" />
+      </div>
+      <div className="stack">
+        <div className="card">
+          <h3 style={{ marginBottom: 14 }}>Portfolio Import</h3>
+          <PortfolioCsvImport onImport={importPortfolioCsv} />
+        </div>
+        <div className="card">
+          <h3 style={{ marginBottom: 14 }}>Backend Connection</h3>
+          <div style={{ marginBottom: 12 }}>
+            <label>API Base URL</label>
+            <input value={url} onChange={e => setUrl(e.target.value)} />
+            <p style={{ fontSize: 11, color: "var(--text3)", marginTop: 4 }}>Uses same-origin API by default. Set <span className="mono">window.__VITE_API_BASE_URL</span> only if your API runs on another URL.</p>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <button className="btn btn-sm btn-outline" onClick={ping}>Test Connection</button>
+            {online !== null && (
+              <span className={`badge ${online ? "badge-green" : "badge-red"}`}>{online ? "● Backend online" : "● Backend offline"}</span>
+            )}
+          </div>
+        </div>
+        <div className="card">
+          <h3 style={{ marginBottom: 14 }}>Default Portfolio</h3>
+          <div className="form-grid">
+            <div>
+              <label>Risk-Free Rate (%)</label>
+              <input type="number" value={store.riskFreeRate * 100} onChange={e => setState({ riskFreeRate: +e.target.value / 100 })} step="0.5" />
+            </div>
+            <div>
+              <label>Portfolio Value (₹)</label>
+              <input type="number" value={store.portfolioValue} onChange={e => setState({ portfolioValue: +e.target.value })} />
+            </div>
+          </div>
+        </div>
+        <div className="card">
+          <h3 style={{ marginBottom: 14 }}>Data</h3>
+          <div style={{ display: "flex", gap: 10 }}>
+            <button className="btn btn-sm btn-outline" onClick={() => setState({
+              m3: { result: null, status: "idle" }, m4: { result: null, status: "idle" },
+              m5: { result: null, status: "idle" }, m6: { result: null, status: "idle" },
+              m7: { result: null, status: "idle" },
+            })}>Clear All Results</button>
+            <button className="btn btn-sm btn-outline" onClick={() => { setState({ tickers: DEFAULT_PORTFOLIO_ENTRIES.map(entry => entry.ticker), portfolioEntries: DEFAULT_PORTFOLIO_ENTRIES, riskFreeRate: 0.07, portfolioValue: 1000000 }); }}>Reset Defaults</button>
+          </div>
+        </div>
+        <div className="card">
+          <h3 style={{ marginBottom: 10 }}>About ClearView Analytics</h3>
+          <div style={{ fontSize: 13, color: "var(--text3)", lineHeight: 1.7 }}>
+            <p>ClearView Analytics focuses on portfolio modeling, stress analytics, allocation analytics, trade simulation, and market regime analytics.</p>
+            <p style={{ marginTop: 6 }}>This platform provides analytics, not financial advice. Decision responsibility always remains with the user.</p>
+            <p style={{ marginTop: 6 }}>Backend: FastAPI + Python. Frontend: React.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── App Shell ────────────────────────────────────────────────────────────────
+function App() {
+  const [authUser, setAuthUser] = useState(() => window.localStorage.getItem(AUTH_STORAGE_KEY) || "");
+  const [page, setPage] = useState("dashboard");
+  const [store] = useStore();
+
+  function handleLogin(email) {
+    window.localStorage.setItem(AUTH_STORAGE_KEY, email);
+    setAuthUser(email);
+  }
+
+  function handleLogout() {
+    window.localStorage.removeItem(AUTH_STORAGE_KEY);
+    setAuthUser("");
+    setPage("dashboard");
+  }
+
+  if (!authUser) {
+    return <LoginGate onLogin={handleLogin} />;
+  }
+
+  const NAV = [
+    { id: "dashboard", label: "Overview", icon: "⌂", module: null },
+    { id: "portfolio", label: "Portfolio", icon: "◎", module: "m3" },
+    { id: "stress", label: "Stress", icon: "⚡", module: "m4" },
+    { id: "optimisation", label: "Allocation", icon: "⬡", module: "m5" },
+    { id: "trade", label: "Trade", icon: "🔐", module: "m6" },
+    { id: "regime", label: "Regime", icon: "◉", module: "m7" },
+    { id: "settings", label: "Settings", icon: "⚙", module: null },
+  ];
+
+  const PAGES = { dashboard: Dashboard, portfolio: Portfolio, stress: StressTest, optimisation: Optimisation, trade: Trade, regime: Regime, settings: Settings };
+  const PageComponent = PAGES[page] || Dashboard;
+
+  const titles = {
+    dashboard: "Analytics Overview",
+    portfolio: "Portfolio Analytics",
+    stress: "Stress Analytics",
+    optimisation: "Allocation Analytics",
+    trade: "Trade Analytics",
+    regime: "Regime Analytics",
+    settings: "Platform Settings",
+  };
+
+  return (
+    <div className="shell">
+      <aside className="sidebar">
+        <div className="sidebar-logo">
+          <div className="logo-mark">CV</div>
+          <div className="logo-text">ClearView Analytics</div>
+        </div>
+        <div className="nav-section">Modules</div>
+        {NAV.map(n => {
+          const status = n.module ? store[n.module]?.status : null;
+          return (
+            <div key={n.id} className={`nav-item${page === n.id ? " active" : ""}`} onClick={() => setPage(n.id)}>
+              <span className="nav-icon">{n.icon}</span>
+              <span style={{ flex: 1 }}>{n.label}</span>
+              {status && <div className={`nav-dot ${status}`} />}
+            </div>
+          );
+        })}
+        <div style={{ flex: 1 }} />
+        <div style={{ padding: "16px 20px", borderTop: "1px solid var(--border)" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+            <div className={`nav-dot ${store.backendOnline ? "success" : "error"}`} />
+            <span style={{ fontSize: 11, color: "var(--text3)" }}>{store.backendOnline ? "Backend online" : "Backend offline"}</span>
+          </div>
+        </div>
+      </aside>
+      <div className="main">
+        {!store.backendOnline && (
+          <div className="offline-banner">
+            ⚠ Backend unreachable — check that FastAPI is running and VITE_API_BASE_URL is set correctly.
+          </div>
+        )}
+        <header className="topbar">
+          <span className="topbar-title">{titles[page]}</span>
+          <div className="topbar-tickers">
+            {store.tickers.map(t => <span key={t} className="ticker-pill">{t}</span>)}
+          </div>
+          <span className="badge badge-gray" style={{ marginRight: 8 }}>{authUser}</span>
+          <button className="btn btn-sm btn-outline" onClick={handleLogout}>Sign Out</button>
+          <div className="backend-badge">
+            <div className={`backend-dot${store.backendOnline ? "" : " offline"}`} />
+            <span>{store.backendOnline ? "Connected" : "Offline"}</span>
+          </div>
+        </header>
+        <PageComponent setPage={setPage} />
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

@@ -156,8 +156,8 @@ def get_market_regime(
     try:
         m7 = _load_m7()
 
-        from portfolio.data_loader import load_price_data
-        from portfolio.optimizer   import compute_daily_returns
+        from portfolio.portfolio_complete import load_price_data
+        from portfolio.portfolio_complete   import compute_daily_returns
 
         # ── Load live data ────────────────────────────────────────────────────
         prices = load_price_data(tickers, period="3y")

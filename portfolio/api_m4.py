@@ -79,13 +79,13 @@ def get_scenario_analysis(
     """
 
     # ── Imports from existing M4 modules ─────────────────────────────────────
-    from portfolio.data_loader   import load_price_data
-    from portfolio.optimizer     import (
+    from portfolio.portfolio_complete   import load_price_data
+    from portfolio.portfolio_complete     import (
         PortfolioOptimizer, compute_daily_returns,
         compute_expected_returns, compute_covariance_matrix,
     )
-    from portfolio.scenario_engine import ScenarioEngine
-    from portfolio.risk_metrics    import (
+    from portfolio.portfolio_complete import ScenarioEngine
+    from portfolio.portfolio_complete    import (
         compute_parametric_var, compute_historical_var,
         compute_cvar, compute_component_var,
     )
@@ -95,7 +95,7 @@ def get_scenario_analysis(
     _examples = os.path.join(os.path.dirname(__file__), "..", "examples")
     if _examples not in sys.path:
         sys.path.insert(0, _examples)
-    from run_milestone4_ENHANCED import get_enhanced_scenarios, analyze_impact
+    from examples.run_milestone4_ENHANCED import get_enhanced_scenarios, analyze_impact
 
     result = {
         "tickers":           tickers,
