@@ -67,6 +67,7 @@ from dataclasses import dataclass
 from datetime import datetime
 import hashlib
 import os
+import re
 import cvxpy as cp
 import matplotlib.pyplot as plt
 import numpy as np
@@ -110,10 +111,13 @@ def _generate_cache_filename(tickers: List[str], start_date: Optional[str], end_
     hash_obj = hashlib.md5(combined.encode())
     hash_str = hash_obj.hexdigest()[:8]
     
-    # Create cache directory if it doesn't exist
-    cache_dir = "data_cache"
+    # Create cache directory if it doesn't exist.
+    # Vercel functions are read-only except /tmp, so use /tmp there.
+    cache_dir = os.getenv("DATA_CACHE_DIR")
+    if not cache_dir:
+        cache_dir = "/tmp/data_cache" if os.getenv("VERCEL") else "data_cache"
     if not os.path.exists(cache_dir):
-        os.makedirs(cache_dir)
+        os.makedirs(cache_dir, exist_ok=True)
     
     return os.path.join(cache_dir, f"market_data_{hash_str}.csv")
 
@@ -161,6 +165,108 @@ def _save_to_cache(data: pd.DataFrame, cache_file: str) -> None:
         print(f"Data cached to: {cache_file}")
     except Exception as e:
         print(f"Warning: Could not save to cache: {e}")
+
+
+_NSE_NAME_TO_SYMBOL = {
+    "BHARATELECTRONICSLTD": "BEL.NS",
+    "BIOCONLIMITED": "BIOCON.NS",
+    "COFORGELIMITED": "COFORGE.NS",
+    "DRREDDYSLABORATORIES": "DRREDDY.NS",
+    "HCLTECHNOLOGIESLTD": "HCLTECH.NS",
+    "HDFCBANKLTD": "HDFCBANK.NS",
+    "JBMAUTOLIMITED": "JBMA.NS",
+    "JINDALSTAINLESSLIMITED": "JSL.NS",
+    "KFINTECHNOLOGIESLIMITED": "KFINTECH.NS",
+    "MOTILALOSNASDAQ100ETF": "MON100.NS",
+    "NIPINDETFNIFTYBEES": "NIFTYBEES.NS",
+    "SAKSOFTLIMITED": "SAKSOFT.NS",
+    "STATEBANKOFINDIA": "SBIN.NS",
+    "TATAMOTORSLIMITED": "TATAMOTORS.NS",
+}
+_YF_TICKER_SEARCH_CACHE: Dict[str, str] = {}
+
+
+def _normalize_nse_ticker(raw: str) -> str:
+    """
+    Convert common company-name style inputs into valid NSE ticker symbols.
+    """
+    value = str(raw or "").strip().upper().rstrip(".")
+    if not value:
+        return value
+
+    # Keep indices/explicit symbols untouched (e.g. ^NSEI)
+    if value.startswith("^"):
+        return value
+
+    # If this is already a compact exchange symbol, ensure NSE suffix
+    if re.fullmatch(r"[A-Z0-9_-]+(?:\.[A-Z]{1,4})?", value):
+        if "." not in value:
+            return f"{value}.NS"
+        return value
+
+    # Company name fallback (e.g., "HDFC BANK LTD.NS", "DR. REDDY S LABORATORIES")
+    base = value[:-3] if value.endswith(".NS") else value
+    compact = re.sub(r"[^A-Z0-9]+", "", base)
+    mapped = _NSE_NAME_TO_SYMBOL.get(compact)
+    if mapped:
+        return mapped
+
+    # Dynamic Yahoo Finance lookup for unknown names/symbol variants.
+    # This keeps CSV/company-name ingestion flexible without hardcoding every name.
+    search_queries = [base]
+    simplified = re.sub(r"\b(LTD|LIMITED|INC|PLC|CO|COMPANY)\b", "", base).strip()
+    if simplified and simplified not in search_queries:
+        search_queries.append(simplified)
+
+    for query in search_queries:
+        qkey = query.upper()
+        if qkey in _YF_TICKER_SEARCH_CACHE:
+            cached = _YF_TICKER_SEARCH_CACHE[qkey]
+            if cached:
+                return cached
+            continue
+        try:
+            search = yf.Search(query=query, max_results=8)
+            quotes = getattr(search, "quotes", []) or []
+            picked = ""
+            for q in quotes:
+                symbol = str(q.get("symbol", "")).upper().strip()
+                exchange = str(q.get("exchange", "")).upper().strip()
+                if not symbol:
+                    continue
+                if symbol.endswith(".NS"):
+                    picked = symbol
+                    break
+                if exchange in {"NSE", "NSI", "NATIONAL STOCK EXCHANGE OF INDIA"}:
+                    picked = symbol if "." in symbol else f"{symbol}.NS"
+                    break
+            _YF_TICKER_SEARCH_CACHE[qkey] = picked
+            if picked:
+                return picked
+        except Exception:
+            _YF_TICKER_SEARCH_CACHE[qkey] = ""
+
+    # Last-resort cleanup for unknown names
+    guessed = re.sub(r"[^A-Z0-9]+", "", base)
+    return f"{guessed}.NS" if guessed else value
+
+
+def _normalize_ticker_list(tickers: List[str]) -> List[str]:
+    out: List[str] = []
+    seen = set()
+    for ticker in tickers:
+        norm = _normalize_nse_ticker(ticker)
+        if norm and norm not in seen:
+            seen.add(norm)
+            out.append(norm)
+    return out
+
+
+def normalize_tickers_for_market_data(tickers: List[str]) -> List[str]:
+    """
+    Public helper to normalize symbols/company names into yfinance-ready tickers.
+    """
+    return _normalize_ticker_list(tickers)
 
 
 def fetch_market_data(
@@ -220,6 +326,13 @@ def fetch_market_data(
     """
     if not tickers:
         raise ValueError("Tickers list cannot be empty")
+
+    original_tickers = list(tickers)
+    tickers = _normalize_ticker_list(tickers)
+    if not tickers:
+        raise ValueError("No valid tickers found after normalization")
+    if tickers != original_tickers:
+        print(f"Normalized tickers: {original_tickers} -> {tickers}")
     
     # Validate period if using period (not date range)
     if not (start_date and end_date):

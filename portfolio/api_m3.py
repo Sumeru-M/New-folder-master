@@ -66,7 +66,7 @@ def get_portfolio_construction(
     """
 
     # ── Imports from existing M3 modules ─────────────────────────────────────
-    from portfolio.portfolio_complete  import load_price_data
+    from portfolio.portfolio_complete  import load_price_data, normalize_tickers_for_market_data
     from portfolio.portfolio_complete    import (
         PortfolioOptimizer,
         compute_daily_returns,
@@ -93,6 +93,8 @@ def get_portfolio_construction(
     }
 
     try:
+        tickers = normalize_tickers_for_market_data(tickers)
+
         # ── Load prices ───────────────────────────────────────────────────────
         prices = load_price_data(tickers, period=period)
         if prices is None or prices.empty:

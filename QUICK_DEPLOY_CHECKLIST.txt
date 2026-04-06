@@ -1,0 +1,110 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                  CLEARVIEW ANALYTICS - VERCEL DEPLOYMENT                  ║
+║                            QUICK CHECKLIST                                ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+STEP 1: PREPARE CODE
+═══════════════════════════════════════════════════════════════════════════
+  ☐ All changes committed to git
+  ☐ Code pushed to GitHub
+  ☐ requirements.txt is up to date
+  ☐ app.py exists in root directory
+  ☐ frontend/index.html exists
+
+STEP 2: GENERATE AUTH_SECRET
+═══════════════════════════════════════════════════════════════════════════
+  ☐ Run: openssl rand -hex 32
+  ☐ Copy the output (you'll need it in Step 4)
+
+STEP 3: CREATE VERCEL PROJECT
+═══════════════════════════════════════════════════════════════════════════
+  ☐ Go to https://vercel.com/new
+  ☐ Click "Import Git Repository"
+  ☐ Select your GitHub repository
+  ☐ Click "Import"
+  ☐ Vercel auto-detects Python framework
+  ☐ Click "Deploy"
+  ☐ Wait for deployment to complete (2-3 minutes)
+
+STEP 4: SET ENVIRONMENT VARIABLES
+═══════════════════════════════════════════════════════════════════════════
+  ☐ Go to Vercel Dashboard → Your Project
+  ☐ Click "Settings" → "Environment Variables"
+  ☐ Add CORS_ORIGINS:
+      Name: CORS_ORIGINS
+      Value: https://<your-project>.vercel.app
+      Environment: Production
+  ☐ Add AUTH_SECRET:
+      Name: AUTH_SECRET
+      Value: (paste from Step 2)
+      Environment: Production
+  ☐ Click "Save"
+
+STEP 5: REDEPLOY WITH VARIABLES
+═══════════════════════════════════════════════════════════════════════════
+  ☐ Go to "Deployments" tab
+  ☐ Find the latest deployment
+  ☐ Click the three dots menu
+  ☐ Select "Redeploy"
+  ☐ Wait for redeployment to complete
+
+STEP 6: VERIFY DEPLOYMENT
+═══════════════════════════════════════════════════════════════════════════
+  ☐ Health check:
+      curl https://<your-project>.vercel.app/api/health
+      Expected: {"status":"ok"}
+  
+  ☐ Frontend loads:
+      Visit https://<your-project>.vercel.app/ in browser
+  
+  ☐ Can register user:
+      curl -X POST https://<your-project>.vercel.app/api/auth/register \
+        -H "Content-Type: application/json" \
+        -d '{"username":"test","password":"test123","email":"test@example.com"}'
+
+STEP 7: OPTIONAL - ADD MONGODB (for persistent data)
+═══════════════════════════════════════════════════════════════════════════
+  ☐ Create MongoDB Atlas account (https://www.mongodb.com/cloud/atlas)
+  ☐ Create a cluster
+  ☐ Get connection string
+  ☐ Add MONGODB_URI environment variable in Vercel
+  ☐ Redeploy
+
+STEP 8: OPTIONAL - ADD CUSTOM DOMAIN
+═══════════════════════════════════════════════════════════════════════════
+  ☐ Go to Vercel Project Settings → Domains
+  ☐ Add your domain
+  ☐ Follow DNS configuration instructions
+  ☐ Update CORS_ORIGINS with custom domain
+  ☐ Redeploy
+
+═══════════════════════════════════════════════════════════════════════════
+
+YOUR DEPLOYMENT URL:
+  https://<your-project>.vercel.app
+
+ENVIRONMENT VARIABLES NEEDED:
+  ✓ CORS_ORIGINS (required)
+  ✓ AUTH_SECRET (required)
+  ○ MONGODB_URI (optional, for persistent data)
+  ○ Custom domain (optional)
+
+TROUBLESHOOTING:
+  • Build fails? Check Vercel build logs
+  • CORS error? Ensure CORS_ORIGINS matches your URL
+  • API returns 500? Check function logs
+  • Data not persisting? Use MongoDB
+
+DOCUMENTATION:
+  • VERCEL_QUICK_START.md - 5-minute guide
+  • VERCEL_README.md - Complete guide
+  • DEPLOYMENT_CHECKLIST.md - Detailed checklist
+  • DEPLOYMENT_SUMMARY.md - Full summary
+
+═══════════════════════════════════════════════════════════════════════════
+
+✅ DEPLOYMENT COMPLETE!
+
+Your ClearView Analytics app is now live on Vercel! 🚀
+
+═══════════════════════════════════════════════════════════════════════════

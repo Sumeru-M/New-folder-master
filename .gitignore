@@ -26,6 +26,7 @@ wheels/
 # Data cache
 data_cache/
 *.csv
+artifacts/auth/
 
 # Jupyter Notebook
 .ipynb_checkpoints

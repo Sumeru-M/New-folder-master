@@ -20,6 +20,7 @@ import os
 import types
 import importlib.util
 import warnings
+from datetime import datetime, timedelta
 
 warnings.filterwarnings("ignore")
 
@@ -156,11 +157,27 @@ def get_market_regime(
     try:
         m7 = _load_m7()
 
-        from portfolio.portfolio_complete import load_price_data
+        from portfolio.portfolio_complete import load_price_data, normalize_tickers_for_market_data
         from portfolio.portfolio_complete   import compute_daily_returns
 
+        tickers = normalize_tickers_for_market_data(tickers)
+
         # ── Load live data ────────────────────────────────────────────────────
-        prices = load_price_data(tickers, period="3y")
+        # load_price_data/get_stock_data does not support period="3y",
+        # so request an explicit date range for a true ~3-year window.
+        # If network/date-range fetch fails, fall back to period-based cached data.
+        end_date = datetime.utcnow().date()
+        start_date = end_date - timedelta(days=365 * 3)
+        try:
+            prices = load_price_data(
+                tickers,
+                start_date=start_date.isoformat(),
+                end_date=end_date.isoformat(),
+            )
+        except Exception:
+            prices = load_price_data(tickers, period="2y")
+            if prices is None or prices.empty:
+                prices = load_price_data(tickers, period="5y")
         if prices is None or prices.empty:
             result["error"] = "Could not load price data."
             return result

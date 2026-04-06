@@ -310,11 +310,11 @@ def get_virtual_trade_and_security(
         # ── Run the full virtual trade simulation pipeline ─────────────────────
         import numpy as np
         import pandas as pd
-        from portfolio.portfolio_complete import load_price_data
+        from portfolio.portfolio_complete import load_price_data, normalize_tickers_for_market_data
         from portfolio.portfolio_complete   import compute_daily_returns
 
         # Fetch historical returns for all tickers (existing + new)
-        all_tickers = list(set(list(holdings.keys()) + [ticker]))
+        all_tickers = normalize_tickers_for_market_data(list(set(list(holdings.keys()) + [ticker])))
         prices_df   = load_price_data(all_tickers, period="2y")
         if prices_df is None or prices_df.empty:
             result["error"] = "Could not load price data for simulation."

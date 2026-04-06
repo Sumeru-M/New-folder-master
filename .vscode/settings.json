@@ -1,5 +1,6 @@
 {
     "python.analysis.extraPaths": [
         "./New-folder-main"
-    ]
+    ],
+    "kiroAgent.configureMCP": "Disabled"
 }

@@ -10,3 +10,4 @@ statsmodels>=0.14,<1.0
 matplotlib>=3.8,<4.0
 seaborn>=0.13,<1.0
 pymongo>=4.8,<5.0
+PyJWT[crypto]>=2.9,<3.0

@@ -96,7 +96,7 @@ def get_institutional_optimisation(
     """
 
     # ── Imports from existing M5 modules ─────────────────────────────────────
-    from portfolio.portfolio_complete import load_price_data, compute_daily_returns
+    from portfolio.portfolio_complete import load_price_data, compute_daily_returns, normalize_tickers_for_market_data
     from portfolio.constraints import build_institutional_constraints
     from portfolio.optimization_engine import (
         optimize_mean_variance,
@@ -141,6 +141,8 @@ def get_institutional_optimisation(
     }
 
     try:
+        tickers = normalize_tickers_for_market_data(tickers)
+
         # ── Load data ─────────────────────────────────────────────────────────
         prices = load_price_data(tickers, period="2y")
         if prices is None or prices.empty:

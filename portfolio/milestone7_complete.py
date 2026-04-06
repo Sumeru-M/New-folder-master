@@ -437,7 +437,7 @@ def _initialise_params(obs: np.ndarray, K: int, seed: int = 42) -> HMMParameters
     degenerate local optima (compared to random initialisation).
 
     Transition matrix A is initialised with high persistence (0.9 on diagonal)
-    and uniform off-diagonal mass.
+    and uniform off-diagonal mass to encourage state diversity.
     """
     rng = np.random.default_rng(seed)
     T, M = obs.shape
@@ -463,9 +463,12 @@ def _initialise_params(obs: np.ndarray, K: int, seed: int = 42) -> HMMParameters
         else:
             covs[k] = np.eye(M) * 0.1
 
-    # High-persistence transition matrix
-    A = np.full((K, K), (1.0 - 0.9) / (K - 1))
-    np.fill_diagonal(A, 0.9)
+    # Transition matrix with moderate persistence to encourage state diversity
+    # Use 0.85 instead of 0.9 to allow more transitions between states
+    persistence = 0.85
+    off_diag_prob = (1.0 - persistence) / (K - 1)
+    A = np.full((K, K), off_diag_prob)
+    np.fill_diagonal(A, persistence)
 
     pi = np.ones(K) / K
 
@@ -485,27 +488,33 @@ def _m_step(
     reg:   float = 1e-4,
 ) -> HMMParameters:
     """
-    M-step closed-form updates:
+    M-step closed-form updates with regularization to prevent degenerate solutions:
 
         π_k     = γ_1(k)
-        A_{ij}  = Σ_t ξ_t(i,j) / Σ_t γ_t(i)
+        A_{ij}  = Σ_t ξ_t(i,j) / Σ_t γ_t(i)  (with min-probability floor)
         μ_k     = Σ_t γ_t(k) O_t / Σ_t γ_t(k)
         Σ_k     = Σ_t γ_t(k)(O_t-μ_k)(O_t-μ_k)ᵀ / Σ_t γ_t(k)  +  reg·I
 
     Numerical safeguards:
     - Row-normalise π and A to maintain valid probability distributions.
     - Add `reg` × I to each Σ_k to guarantee positive-definiteness.
+    - Apply minimum probability floor to transition matrix to prevent absorbing states.
     """
     T = len(obs)
 
     # Initial distribution
     pi = gamma[0] / (gamma[0].sum() + 1e-300)
 
-    # Transition matrix
+    # Transition matrix with minimum probability floor to prevent degenerate solutions
     xi_sum    = xi.sum(axis=0)                          # (K, K)
     gamma_sum = gamma[:-1].sum(axis=0)                  # (K,)
     A         = xi_sum / (gamma_sum[:, None] + 1e-300)
-    A         = A / (A.sum(axis=1, keepdims=True) + 1e-300)
+    
+    # Apply minimum probability floor: each transition must have at least 0.5% probability
+    # This prevents one state from becoming absorbing
+    min_prob = 0.005
+    A = np.maximum(A, min_prob)
+    A = A / (A.sum(axis=1, keepdims=True) + 1e-300)
 
     # Emission parameters
     means = np.zeros((K, M))
@@ -528,18 +537,49 @@ def _m_step(
 
 def _reorder_states(params: HMMParameters) -> HMMParameters:
     """
-    Re-order states by ascending realised-volatility emission mean (column 1).
-    This enforces identifiability:
-        state 0 = lowest vol, state K-1 = highest vol.
-    After permutation, transitions in A and initial π are permuted accordingly.
+    Re-order states to enforce identifiability based on regime characteristics.
+    
+    The 4 regimes should be ordered by increasing "crisis-ness":
+        state 0 = Low-Vol Bull (low vol, positive return, minimal drawdown)
+        state 1 = High-Vol Bear (high vol, negative return, significant drawdown)
+        state 2 = Crisis (very high vol, very negative return, severe drawdown)
+        state 3 = Transitional (intermediate characteristics)
+    
+    We use a composite "crisis score" that combines:
+    - Volatility (feature 1): higher vol = higher crisis
+    - Return (feature 0): lower return = higher crisis
+    - Drawdown (feature 3): more negative = higher crisis
     """
-    order     = np.argsort(params.means[:, 1])
-    inv_order = np.argsort(order)            # inverse permutation for A
-
+    K = params.means.shape[0]
+    
+    # Extract features
+    returns = params.means[:, 0]      # Feature 0: mean return
+    vols = params.means[:, 1]         # Feature 1: volatility
+    drawdowns = params.means[:, 3]    # Feature 3: drawdown (negative values)
+    
+    # Normalize each feature to [0, 1]
+    def normalize(x):
+        x_min, x_max = x.min(), x.max()
+        if x_max == x_min:
+            return np.zeros_like(x)
+        return (x - x_min) / (x_max - x_min)
+    
+    vol_norm = normalize(vols)
+    ret_norm = normalize(returns)  # Higher return = lower crisis
+    draw_norm = normalize(drawdowns)  # More negative drawdown = higher crisis
+    
+    # Crisis score: combines all three factors
+    # Higher vol + lower return + more negative drawdown = higher crisis
+    crisis_score = vol_norm + (1.0 - ret_norm) + draw_norm
+    
+    # Sort by crisis score (ascending)
+    order = np.argsort(crisis_score)
+    
+    # Apply permutation to all parameters
     new_means = params.means[order]
-    new_covs  = params.covs[order]
-    new_pi    = params.pi[order]
-    new_A     = params.A[np.ix_(order, order)]
+    new_covs = params.covs[order]
+    new_pi = params.pi[order]
+    new_A = params.A[np.ix_(order, order)]
 
     return HMMParameters(pi=new_pi, A=new_A, means=new_means, covs=new_covs)
 

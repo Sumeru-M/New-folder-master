@@ -1,0 +1,78 @@
+# Vercel Ignore File
+# Files and directories to exclude from Vercel deployment
+
+# Development
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.pytest_cache/
+.coverage
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Git
+.git/
+.gitignore
+.github/
+
+# Documentation
+*.md
+docs/
+
+# Testing
+tests/
+test_*.py
+*_test.py
+
+# Notebooks
+notebooks/
+*.ipynb
+
+# Examples
+examples/
+
+# Cache
+.tmp_mpl/
+data_cache/
+__pycache__/
+
+# Temporary files
+*.tmp
+*.log
+Newfoldermain.zip
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker (not needed on Vercel)
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Render (not needed on Vercel)
+render.yaml
+Procfile
+
+# Path directory (not needed)
+path/

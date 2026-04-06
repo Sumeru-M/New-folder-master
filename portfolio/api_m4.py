@@ -79,7 +79,7 @@ def get_scenario_analysis(
     """
 
     # ── Imports from existing M4 modules ─────────────────────────────────────
-    from portfolio.portfolio_complete   import load_price_data
+    from portfolio.portfolio_complete   import load_price_data, normalize_tickers_for_market_data
     from portfolio.portfolio_complete     import (
         PortfolioOptimizer, compute_daily_returns,
         compute_expected_returns, compute_covariance_matrix,
@@ -109,6 +109,8 @@ def get_scenario_analysis(
     }
 
     try:
+        tickers = normalize_tickers_for_market_data(tickers)
+
         # ── Load data and build optimal portfolio ─────────────────────────────
         prices  = load_price_data(tickers, period="2y")
         if prices is None or prices.empty:
