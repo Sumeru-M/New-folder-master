@@ -9,13 +9,12 @@
   ],
   "routes": [
     {
+      "src": "/api/(.*)",
+      "dest": "app.py"
+    },
+    {
       "src": "/(.*)",
       "dest": "app.py"
     }
-  ],
-  "env": {
-    "CORS_ORIGINS": "@cors_origins",
-    "AUTH_SECRET": "@auth_secret",
-    "DATA_CACHE_DIR": "/tmp/data_cache"
-  }
+  ]
 }
