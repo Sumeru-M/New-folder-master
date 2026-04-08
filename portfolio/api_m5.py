@@ -186,11 +186,20 @@ def get_institutional_optimisation(
         min_feasible = 1.0 / N
         eff_max_w    = max(max_weight, min_feasible + 0.01)
         sector_map   = {t: get_sector(t) for t in valid}
+        
+        # Calculate minimum required sector cap to prevent solver failure
+        sector_counts = pd.Series(list(sector_map.values())).value_counts()
+        max_sector_concentration = float(sector_counts.max()) / N
+        if max_sector_concentration == 1.0:
+            eff_sector_cap = 1.0
+        else:
+            eff_sector_cap = max(sector_cap, float(max_sector_concentration))
+
         cb = build_institutional_constraints(
             n_assets=N, tickers=valid,
             max_weight=eff_max_w,
             sector_map=sector_map,
-            sector_cap=sector_cap,
+            sector_cap=eff_sector_cap,
         )
         rf = risk_free_rate
 

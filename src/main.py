@@ -250,6 +250,7 @@ class M3Request(BaseModel):
 
 class M4Request(BaseModel):
     tickers: list[str]
+    current_weights: list[float] | None = None
     portfolio_value: float = 1_000_000
     risk_free_rate: float = 0.07
     confidence_level: float = 0.95
@@ -412,6 +413,7 @@ def m4_scenarios(req: M4Request, _username: str = Depends(_auth_user)) -> JSONRe
     try:
         result = get_scenario_analysis(
             tickers=req.tickers,
+            current_weights=req.current_weights,
             portfolio_value=req.portfolio_value,
             risk_free_rate=req.risk_free_rate,
             confidence_level=req.confidence_level,

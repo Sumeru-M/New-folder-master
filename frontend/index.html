@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>ClearView | Intelligent Portfolio Analytics</title>
+<title>ClearView Analytics | Portfolio Analytics</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Sora:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
@@ -367,7 +367,8 @@ function alignEntriesToTickers(tickers, existingEntries) {
 
 function parseOptionalNumber(raw) {
   if (raw === undefined || raw === null || String(raw).trim() === "") return null;
-  const num = Number(String(raw).replace(/,/g, "").trim());
+  const cleaned = String(raw).replace(/[^\d.-]/g, "").trim();
+  const num = Number(cleaned);
   return Number.isFinite(num) ? num : null;
 }
 
@@ -458,15 +459,33 @@ function weightsFromEntries(entries, tickers) {
   const input = entries || [];
   const list = tickers || [];
   const weightMap = {};
+  
+  let totalValue = 0;
+  const valueMap = {};
   input.forEach(entry => {
-    if (entry?.ticker && Number.isFinite(entry.weight)) {
-      weightMap[entry.ticker] = entry.weight > 1 ? entry.weight / 100 : entry.weight;
+    if (entry?.ticker && Number.isFinite(entry.shares) && Number.isFinite(entry.price) && entry.shares > 0 && entry.price > 0) {
+      const val = entry.shares * entry.price;
+      valueMap[entry.ticker] = val;
+      totalValue += val;
     }
   });
+
+  if (totalValue > 0) {
+    list.forEach(ticker => {
+      weightMap[ticker] = (valueMap[ticker] || 0) / totalValue;
+    });
+  } else {
+    input.forEach(entry => {
+      if (entry?.ticker && Number.isFinite(entry.weight)) {
+        weightMap[entry.ticker] = entry.weight > 1 ? entry.weight / 100 : entry.weight;
+      }
+    });
+  }
+
   const series = list.map(ticker => weightMap[ticker] || 0);
-  const total = series.reduce((sum, v) => sum + v, 0);
-  if (total <= 0) return list.map(() => (100 / Math.max(list.length, 1)));
-  return series.map(v => (v / total) * 100);
+  const totalWeight = series.reduce((sum, v) => sum + v, 0);
+  if (totalWeight <= 0) return list.map(() => (100 / Math.max(list.length, 1)));
+  return series.map(v => (v / totalWeight) * 100);
 }
 
 function holdingsFromEntries(entries) {
@@ -520,7 +539,7 @@ const fmt = n => isNaN(n) ? "—" : n.toLocaleString("en-IN");
 const fmtPct = (n, d = 2) => isNaN(n) ? "—" : (n * 100).toFixed(d) + "%";
 const fmtMono = (n, d = 3) => isNaN(n) ? "—" : Number(n).toFixed(d);
 const fmtINR = n => isNaN(n) ? "—" : "₹" + Math.abs(n).toLocaleString("en-IN", { maximumFractionDigits: 0 });
-const sign = n => n >= 0 ? "+" : "";
+const sign = n => n > 0 ? "+" : n < 0 ? "-" : "";
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
 function regimeColor(r) {
@@ -720,7 +739,7 @@ function LoginGate({ onAuthenticated, authError }) {
     <div className="auth-shell">
       <div className="auth-wrap">
         <section className="auth-panel">
-          <h1 className="auth-title">ClearView Intelligence Platform</h1>
+          <h1 className="auth-title">ClearView Analytics Platform</h1>
           <p className="auth-sub">Professional portfolio analytics with clear insights, designed for fast and confident decisions.</p>
           <div className="auth-disclaimer">
             Important: This platform does not give financial advice. It only shows analytics.
@@ -877,7 +896,7 @@ function FrontierChart({ frontier, specialPoints }) {
 function Dashboard({ setPage }) {
   const [store, setState, setModule, setStatus] = useStore();
   const [tickers, setTickers] = useState(store.tickers);
-  const [rf, setRf] = useState(store.riskFreeRate * 100);
+  const [rf, setRf] = useState(() => +(store.riskFreeRate * 100).toFixed(4));
   const [pv, setPv] = useState(store.portfolioValue);
 
   useEffect(() => {
@@ -1066,12 +1085,18 @@ function Portfolio() {
   const [store, setState, setModule, setStatus] = useStore();
   const [tickers, setTickers] = useState(store.tickers);
   const [period, setPeriod] = useState("2y");
-  const [rf, setRf] = useState(store.riskFreeRate * 100);
+  const [rf, setRf] = useState(() => +(store.riskFreeRate * 100).toFixed(4));
   const [weights, setWeights] = useState(weightsFromEntries(store.portfolioEntries, store.tickers));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [tab, setTab] = useState("frontier");
   const ms = store.m3;
+
+  useEffect(() => {
+    setTickers(store.tickers);
+    setWeights(weightsFromEntries(store.portfolioEntries, store.tickers));
+    setRf(+(store.riskFreeRate * 100).toFixed(4));
+  }, [store.tickers, store.portfolioEntries, store.riskFreeRate]);
 
   function syncTickers(nextTickers) {
     const normalized = nextTickers.slice(0, MAX_PORTFOLIO_ENTRIES);
@@ -1269,8 +1294,9 @@ function Portfolio() {
 function StressTest() {
   const [store, setState, setModule, setStatus] = useStore();
   const [tickers, setTickers] = useState(store.tickers);
+  const [weights, setWeights] = useState(() => weightsFromEntries(store.portfolioEntries, store.tickers));
   const [pv, setPv] = useState(store.portfolioValue);
-  const [rf, setRf] = useState(store.riskFreeRate * 100);
+  const [rf, setRf] = useState(() => +(store.riskFreeRate * 100).toFixed(4));
   const [mode, setMode] = useState("ALL");
   const [custom, setCustom] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -1278,13 +1304,19 @@ function StressTest() {
   const [expanded, setExpanded] = useState(null);
   const ms = store.m4;
 
+  useEffect(() => {
+    setWeights(weightsFromEntries(store.portfolioEntries, tickers));
+  }, [tickers, store.portfolioEntries]);
+
   const CODES = ["CRISIS_1","CRISIS_2","MOD_1","MOD_2","MOD_3","MILD_1","MILD_2","MILD_3","MILD_4","GEOPOLITICAL","INFLATION","RATE_SHOCK","LIQUIDITY"];
 
   async function run() {
     setLoading(true); setError(null); setStatus("m4", "loading");
     try {
       const scenarios = mode === "CUSTOM" ? custom.join(",") : mode;
-      const res = await apiPost("/api/m4/scenarios", { tickers, portfolio_value: pv, risk_free_rate: rf / 100, scenarios });
+      const totalWeight = weights.reduce((a, b) => a + b, 0);
+      const normWeights = weights.map(w => w / totalWeight);
+      const res = await apiPost("/api/m4/scenarios", { tickers, current_weights: normWeights, portfolio_value: pv, risk_free_rate: rf / 100, scenarios });
       setModule("m4", res);
     } catch (e) { setError(e.message); setStatus("m4", "error"); }
     setLoading(false);
@@ -1309,6 +1341,18 @@ function StressTest() {
           </div>
           <div><label>Portfolio Value (₹)</label><input type="number" value={pv} onChange={e => setPv(+e.target.value)} /></div>
           <div><label>Risk-Free Rate (%)</label><input type="number" value={rf} onChange={e => setRf(+e.target.value)} step="0.5" /></div>
+        </div>
+        <div className="stack-sm" style={{ marginBottom: 16 }}>
+          <label>Current Weights</label>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {tickers.map((t, i) => (
+              <div key={t} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span className="mono" style={{ fontSize: 11, color: "var(--text3)", width: 100 }}>{t}</span>
+                <input type="number" value={(weights[i] || 0).toFixed(1)} onChange={e => { const w = [...weights]; w[i] = +e.target.value; setWeights(w); }} style={{ width: 64 }} />
+                <span style={{ fontSize: 11, color: "var(--text3)" }}>%</span>
+              </div>
+            ))}
+          </div>
         </div>
         <div style={{ marginBottom: 16 }}>
           <label>Scenarios</label>
@@ -1408,9 +1452,9 @@ function StressTest() {
                 <div key={k} className="signal-row">
                   <span className="signal-label mono">{k.replace(".NS", "")}</span>
                   <div className="signal-bar">
-                    <div className="signal-fill" style={{ width: `${v.toFixed(1)}%`, background: "var(--accent)" }} />
+                    <div className="signal-fill" style={{ width: `${(v * 100).toFixed(1)}%`, background: "var(--accent)" }} />
                   </div>
-                  <span className="signal-val">{v.toFixed(1)}%</span>
+                  <span className="signal-val">{(v * 100).toFixed(1)}%</span>
                 </div>
               ))}
             </div>
@@ -1426,15 +1470,23 @@ function Optimisation() {
   const [store, setState, setModule, setStatus] = useStore();
   const [tickers, setTickers] = useState(store.tickers);
   const [pv, setPv] = useState(store.portfolioValue);
-  const [rf, setRf] = useState(store.riskFreeRate * 100);
+  const [rf, setRf] = useState(() => +(store.riskFreeRate * 100).toFixed(4));
   const [maxW, setMaxW] = useState(40);
-  const [weights, setWeights] = useState(store.tickers.map(() => 100 / store.tickers.length));
+  const [weights, setWeights] = useState(() => weightsFromEntries(store.portfolioEntries, store.tickers));
   const [methods, setMethods] = useState(["mean_variance", "min_variance", "cvar", "risk_parity", "max_diversification", "multi_objective"]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [tab, setTab] = useState("comparison");
   const [selMethod, setSelMethod] = useState(null);
   const ms = store.m5;
+  
+  // Sync weights when global store changes
+  useEffect(() => {
+    setWeights(weightsFromEntries(store.portfolioEntries, store.tickers));
+    setTickers(store.tickers);
+    setPv(store.portfolioValue);
+    setRf(+(store.riskFreeRate * 100).toFixed(4));
+  }, [store.portfolioEntries, store.tickers, store.portfolioValue, store.riskFreeRate]);
 
   const METHOD_OPTIONS = [
     { key: "mean_variance", label: "Mean Variance" }, { key: "min_variance", label: "Min Variance" },
@@ -1474,7 +1526,7 @@ function Optimisation() {
         <div className="form-grid" style={{ marginBottom: 16 }}>
           <div style={{ gridColumn: "1 / -1" }}>
             <label>Tickers</label>
-            <TickerInput tickers={tickers} onChange={t => { setTickers(t); setWeights(t.map(() => 100 / t.length)); }} />
+            <TickerInput tickers={tickers} onChange={t => { setTickers(t); setWeights(weightsFromEntries(store.portfolioEntries, t)); }} />
           </div>
           <div><label>Portfolio Value (₹)</label><input type="number" value={pv} onChange={e => setPv(+e.target.value)} /></div>
           <div><label>Risk-Free Rate (%)</label><input type="number" value={rf} onChange={e => setRf(+e.target.value)} step="0.5" /></div>
@@ -1538,9 +1590,9 @@ function Optimisation() {
                 </table>
               </div>
               <div className="grid-3">
-                <Metric label="Return Δ vs Current" value={(d.improvement_vs_current?.return_delta * 100 || 0).toFixed(2)} suffix="%" color={d.improvement_vs_current?.return_delta >= 0 ? "green" : "red"} />
-                <Metric label="Volatility Δ" value={(d.improvement_vs_current?.vol_delta * 100 || 0).toFixed(2)} suffix="%" color={d.improvement_vs_current?.vol_delta <= 0 ? "green" : "red"} />
-                <Metric label="Sharpe Δ" value={fmtMono(d.improvement_vs_current?.sharpe_delta)} color={d.improvement_vs_current?.sharpe_delta >= 0 ? "green" : "red"} />
+                <Metric label="Return Δ vs Current" value={(d.improvement_vs_current?.return_delta >= 0 ? "+" : "") + (d.improvement_vs_current?.return_delta * 100 || 0).toFixed(2)} suffix="%" color={d.improvement_vs_current?.return_delta >= 0 ? "green" : "red"} />
+                <Metric label="Volatility Δ" value={(d.improvement_vs_current?.vol_delta >= 0 ? "+" : "") + (d.improvement_vs_current?.vol_delta * 100 || 0).toFixed(2)} suffix="%" color={d.improvement_vs_current?.vol_delta <= 0 ? "green" : "red"} />
+                <Metric label="Sharpe Δ" value={(d.improvement_vs_current?.sharpe_delta >= 0 ? "+" : "") + fmtMono(d.improvement_vs_current?.sharpe_delta)} color={d.improvement_vs_current?.sharpe_delta >= 0 ? "green" : "red"} />
               </div>
               <div className="card-sm">
                 <span style={{ fontSize: 12, color: "var(--text3)" }}>Stability factor = </span>
@@ -1609,6 +1661,17 @@ function Optimisation() {
               </div>
             </div>
           )}
+          <div className="card" style={{ marginTop: 20, background: "var(--bg3)" }}>
+            <h4 style={{ marginBottom: 10 }}>Glossary of Strategy Terms</h4>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px 20px", fontSize: 13 }}>
+              <div><strong>Mean-Variance:</strong> Traditional approach balancing return vs risk (volatility).</div>
+              <div><strong>Min-Variance:</strong> Focuses purely on minimising risk, regardless of returns.</div>
+              <div><strong>CVaR (95% Conf):</strong> 'Conditional Value at Risk'. The average loss in the worst-case 5% of scenarios.</div>
+              <div><strong>Risk Parity:</strong> Allocates weights so each stock contributes equally to total risk.</div>
+              <div><strong>Max Diversification:</strong> Aims to create the most 'un-correlated' portfolio possible.</div>
+              <div><strong>Health Score:</strong> A proprietary rating of how robust and diversified the strategy is.</div>
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -1736,6 +1799,12 @@ function Trade() {
         <h1 className="section-title">Trade Simulator & Security Review</h1>
         <p className="section-sub">Preview trade impact and run security checks before you act.</p>
         <div className="section-line" />
+      </div>
+
+      <div className="card" style={{ marginBottom: 20, borderLeft: "3px solid var(--amber)", background: "rgba(255, 179, 71, 0.05)" }}>
+        <p style={{ fontSize: 13, color: "var(--amber)", fontStyle: "italic", lineHeight: 1.5 }}>
+          <strong>Note:</strong> The Security Testing segment is strictly for demonstration, personal interest, and understanding the core mechanics of cybersecurity. It is not financial or security advice.
+        </p>
       </div>
 
       <div className="card" style={{ marginBottom: 20 }}>
@@ -1935,7 +2004,7 @@ function Trade() {
 function Regime() {
   const [store, setState, setModule, setStatus] = useStore();
   const [tickers, setTickers] = useState(store.tickers);
-  const [rf, setRf] = useState(store.riskFreeRate * 100);
+  const [rf, setRf] = useState(() => +(store.riskFreeRate * 100).toFixed(4));
   const [h1, setH1] = useState(21);
   const [h2, setH2] = useState(63);
   const [appetite, setAppetite] = useState("balanced");
@@ -1948,6 +2017,11 @@ function Regime() {
   const [error, setError] = useState(null);
   const [tab, setTab] = useState("status");
   const ms = store.m7;
+
+  useEffect(() => {
+    setTickers(store.tickers);
+    setRf(+(store.riskFreeRate * 100).toFixed(4));
+  }, [store.tickers, store.riskFreeRate]);
 
   async function run() {
     setLoading(true); setError(null); setStatus("m7", "loading");
@@ -2046,9 +2120,9 @@ function Regime() {
                 ))}
               </div>
               <div style={{ display: "flex", justifyContent: "center", gap: 12, marginBottom: 14, flexWrap: "wrap" }}>
-                <span className="badge badge-gray">Log-likelihood: {fmtMono(d.log_likelihood, 1)}</span>
-                <span className="badge badge-gray">{d.log_likelihood > 5000 ? "Excellent fit" : d.log_likelihood > 3000 ? "Good fit" : "Acceptable fit"}</span>
-                <span className="badge badge-gray">ESS: {d.uncertainty?.effective_sample_size}</span>
+                <span className="badge badge-gray">Confidence: {fmtMono(d.log_likelihood, 1)}</span>
+                <span className="badge badge-gray">{d.log_likelihood > 5000 ? "Highly Reliable Fit" : d.log_likelihood > 3000 ? "Reliable Fit" : "Historical Model Fit"}</span>
+                <span className="badge badge-gray">Data Quality (ESS): {d.uncertainty?.effective_sample_size}</span>
               </div>
               <p style={{ fontSize: 13, color: "var(--text2)", maxWidth: 500, margin: "0 auto", lineHeight: 1.6 }}>
                 {REGIME_DESC[d.current_regime] || REGIME_DESC["Transitional"]}
@@ -2160,12 +2234,12 @@ function Regime() {
                     {fmtPct(fd.expected_return_ann)}
                   </p>
                   <div className="stack-sm" style={{ fontSize: 13 }}>
-                    {[["Annualised Vol", fmtPct(fd.annualised_vol)], ["Skewness", fmtMono(fd.skewness)],
-                      ["Tail Shape", fmtMono(fd.excess_kurtosis)], ["VaR 95%", fmtPct(fd.var_95_pct)],
-                      ["Deep-Loss 95%", fmtPct(fd.cvar_95_pct)], ["Chance of >10% loss", fmtPct(fd.prob_loss_over_10pct)]].map(([l, v]) => (
+                    {[["Annualised Vol", fmtPct(fd.annualised_vol)], ["Market Skew", fmtMono(fd.skewness)],
+                      ["Tail Risk Shape", fmtMono(fd.excess_kurtosis)], ["VaR (95% Conf)", fmtPct(fd.var_95_pct)],
+                      ["Deep Loss (95% Conf)", fmtPct(fd.cvar_95_pct)], ["Chance of >10% Loss", fmtPct(fd.prob_loss_over_10pct)]].map(([l, v]) => (
                       <div key={l} style={{ display: "flex", justifyContent: "space-between" }}>
                         <span style={{ color: "var(--text3)" }}>{l}</span>
-                        <span className="mono" style={{ color: l.includes("VaR") || l.includes("CVaR") || l.includes("P(") ? "var(--red)" : "var(--text)" }}>{v}</span>
+                        <span className="mono" style={{ color: l.includes("VaR") || l.includes("Conf") ? "var(--red)" : "var(--text)" }}>{v}</span>
                       </div>
                     ))}
                   </div>
@@ -2183,12 +2257,12 @@ function Regime() {
             <div className="card">
               <h3 style={{ marginBottom: 16 }}>Auto-Tuned Strategy Settings</h3>
               {[
-                { l: "λ Return", v: d.adaptive_parameters?.lam_return, base: 1.0 },
-                { l: "λ Vol", v: d.adaptive_parameters?.lam_vol, base: 1.0 },
-                { l: "Tail-Risk Weight", v: d.adaptive_parameters?.lam_cvar, base: 1.0 },
-                { l: "Max Weight", v: d.adaptive_parameters?.max_weight, base: 0.4 },
-                { l: "Target Vol", v: d.adaptive_parameters?.target_vol_ann, base: 0.15 },
-                { l: "Position Scale", v: d.adaptive_parameters?.position_scale, base: 1.0 },
+                { l: "Return Chasing", v: d.adaptive_parameters?.lam_return, base: 1.0 },
+                { l: "Risk Penalisation", v: d.adaptive_parameters?.lam_vol, base: 1.0 },
+                { l: "Tail-Risk Limit", v: d.adaptive_parameters?.lam_cvar, base: 1.0 },
+                { l: "Max Stock Weight", v: d.adaptive_parameters?.max_weight, base: 0.4 },
+                { l: "Target Volatility", v: d.adaptive_parameters?.target_vol_ann, base: 0.15 },
+                { l: "Position Scaling", v: d.adaptive_parameters?.position_scale, base: 1.0 },
               ].map(p => (
                 <div key={p.l} style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
                   <span style={{ fontSize: 12, color: "var(--text3)", width: 110, flexShrink: 0 }}>{p.l}</span>
@@ -2258,6 +2332,17 @@ function Regime() {
                   Estimated market reset time: ~{Math.round(d.mixing_time_days || 0)} days ({((d.mixing_time_days || 0) / 252).toFixed(1)} years).
                 </p>
               </div>
+              <div className="card" style={{ marginTop: 20, background: "var(--bg3)" }}>
+                <h4 style={{ marginBottom: 10 }}>Market Regime Concepts</h4>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px 20px", fontSize: 13 }}>
+                  <div><strong>ESS (Data Quality):</strong> 'Effective Sample Size'. Higher means the model has more useful historical data for this state.</div>
+                  <div><strong>Mixing Time (Reset):</strong> The estimated number of days until the current regime signal naturally fades away.</div>
+                  <div><strong>VaR (95% Confidence):</strong> 'Value at Risk'. The threshold where there is only a 5% chance of a worse loss.</div>
+                  <div><strong>Deep Loss (CVaR):</strong> The average size of losses expected in extreme scenarios.</div>
+                  <div><strong>HMM Fit:</strong> Indicates how well the regime model matches patterns in live price data.</div>
+                  <div><strong>Weight Sensitivity:</strong> How much our weights would change if the market state shifted slightly.</div>
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -2325,7 +2410,7 @@ function Settings() {
           <div className="form-grid">
             <div>
               <label>Risk-Free Rate (%)</label>
-              <input type="number" value={store.riskFreeRate * 100} onChange={e => setState({ riskFreeRate: +e.target.value / 100 })} step="0.5" />
+              <input type="number" value={+(store.riskFreeRate * 100).toFixed(4)} onChange={e => setState({ riskFreeRate: +e.target.value / 100 })} step="0.5" />
             </div>
             <div>
               <label>Portfolio Value (₹)</label>

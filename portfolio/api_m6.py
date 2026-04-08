@@ -373,7 +373,7 @@ def get_virtual_trade_and_security(
                     "median_cagr":   round(float(hd.get("real",    {}).get("median_cagr",     0)), 4),
                     "p5_value":      round(float(hd.get("real",    {}).get("p5_value",         0)), 2),
                     "p95_value":     round(float(hd.get("real",    {}).get("p95_value",        0)), 2),
-                    "prob_loss":     round(float(hd.get("real",    {}).get("prob_loss",        0)), 4),
+                    "prob_loss":     round(float(hd.get("real",    {}).get("downside_prob",        0)), 4),
                 }
 
         result["monte_carlo"] = {

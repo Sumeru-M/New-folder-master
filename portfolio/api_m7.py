@@ -199,6 +199,7 @@ def get_market_regime(
             is_returns         = True,
             horizons           = horizons,
             rf_base            = risk_free_rate,
+            risk_appetite      = risk_appetite,
             hmm_restarts       = hmm_restarts,
             hmm_max_iter       = hmm_max_iter,
             garch_n_sim        = garch_n_sim,

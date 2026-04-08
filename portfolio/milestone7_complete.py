@@ -698,6 +698,12 @@ def run_hmm(
     filtered = np.exp(log_alpha - log_alpha.max(axis=1, keepdims=True))
     filtered /= filtered.sum(axis=1, keepdims=True)
 
+    # Prevent exactly 0% or 100% certainty — apply a small floor
+    # so that no single regime ever claims absolute certainty
+    _prob_floor = 0.005   # 0.5% minimum per regime
+    filtered = np.maximum(filtered, _prob_floor)
+    filtered /= filtered.sum(axis=1, keepdims=True)
+
     # Viterbi path
     path = viterbi(obs, params)
 
@@ -1985,6 +1991,7 @@ def compute_adaptive_parameters(
     crisis_rf_premium:  float           = 0.02,
     bear_rf_premium:    float           = 0.01,
     K:                  int             = 4,
+    risk_appetite:      str             = "balanced",
 ) -> AdaptiveParameters:
     """
     Compute regime-blended optimizer parameters.
@@ -1998,6 +2005,7 @@ def compute_adaptive_parameters(
     crisis_rf_premium  : extra rf in crisis (flight-to-quality)
     bear_rf_premium    : extra rf in bear regime
     K                  : number of regimes
+    risk_appetite      : "conservative" | "balanced" | "aggressive"
 
     Returns
     -------
@@ -2024,11 +2032,34 @@ def compute_adaptive_parameters(
     max_w  = _blend(_MAX_WEIGHT,      blend_w)
     tgt_v  = _blend(_TARGET_VOL,      blend_w)
 
+    # ── Risk appetite adjustment ──────────────────────────────────────────
+    # Multipliers shift the blended parameters based on user preference
+    appetite = risk_appetite.lower().strip() if isinstance(risk_appetite, str) else "balanced"
+    if appetite == "conservative":
+        lam_r *= 0.5     # halve return chasing
+        lam_v *= 1.8     # much higher vol penalty
+        lam_c *= 2.0     # much higher tail-risk penalty
+        lam_d *= 1.5     # higher drawdown penalty
+        max_w *= 0.7     # tighter concentration limit
+        tgt_v *= 0.65    # significantly lower target vol
+    elif appetite == "aggressive":
+        lam_r *= 1.8     # chase returns harder
+        lam_v *= 0.5     # tolerate more vol
+        lam_c *= 0.4     # tolerate more tail risk
+        lam_d *= 0.3     # tolerate more drawdown
+        max_w  = min(max_w * 1.5, 0.50)  # allow more concentration
+        tgt_v *= 1.5     # higher target vol
+    # "balanced" — no adjustment (default)
+
     # CVaR confidence level tightens under crisis
     p_crisis = float(p[_CRISIS]) if K > _CRISIS else 0.0
     p_bear   = float(p[_BEAR])   if K > _BEAR   else 0.0
     p_bull   = float(p[_BULL])   if K > _BULL   else 0.0
     cvar_conf = 0.95 + p_crisis * 0.04    # ∈ [0.95, 0.99]
+    if appetite == "conservative":
+        cvar_conf = min(cvar_conf + 0.02, 0.99)   # tighter tail
+    elif appetite == "aggressive":
+        cvar_conf = max(cvar_conf - 0.02, 0.90)   # looser tail
 
     # Risk-free rate: flight-to-quality adjustment
     rf_adj  = rf_base + p_crisis * crisis_rf_premium + p_bear * bear_rf_premium
@@ -2042,19 +2073,33 @@ def compute_adaptive_parameters(
     # Dominant regime
     dominant = int(np.argmax(p))
 
-    # Recommended optimization method based on regime
-    if p_crisis > 0.4:
-        method = "cvar"           # tail-risk focused in crisis
-    elif p_bull > 0.6:
-        method = "mean_variance"  # return/risk tradeoff in bull
-    elif p_bear > 0.5:
-        method = "min_variance"   # capital preservation in bear
-    else:
-        method = "multi_objective"  # balanced in uncertainty
+    # Recommended optimization method based on regime + appetite
+    if appetite == "conservative":
+        if p_crisis > 0.2 or p_bear > 0.3:
+            method = "min_variance"
+        else:
+            method = "cvar"
+    elif appetite == "aggressive":
+        if p_bull > 0.3:
+            method = "mean_variance"
+        else:
+            method = "multi_objective"
+    else:  # balanced
+        if p_crisis > 0.4:
+            method = "cvar"
+        elif p_bull > 0.6:
+            method = "mean_variance"
+        elif p_bear > 0.5:
+            method = "min_variance"
+        else:
+            method = "multi_objective"
 
     # Narrative notes
     notes = _generate_notes(p, blend_w, shrinkage, p_crisis, p_bear, p_bull,
                             lam_r, lam_v, lam_c, max_w, position_scale)
+    # Add risk appetite note
+    if appetite != "balanced":
+        notes.append(f"Risk appetite set to '{appetite}': parameters adjusted accordingly.")
 
     return AdaptiveParameters(
         lam_return       = lam_r,
@@ -2788,6 +2833,7 @@ def run_adaptive_intelligence(
     is_returns:          bool                  = False,
     horizons:            List[int]             = [21, 63],
     rf_base:             float                 = 0.07,
+    risk_appetite:       str                   = "balanced",
     sector_map:          Optional[Dict]        = None,
     existing_weights:    Optional[np.ndarray]  = None,
     hmm_restarts:        int                   = 3,
@@ -2902,6 +2948,7 @@ def run_adaptive_intelligence(
         stationary_dist   = trans_analysis.stationary_dist,
         garch_vol_current = garch_forecast.current_vol_ann,
         rf_base           = rf_base,
+        risk_appetite     = risk_appetite,
     )
     _log(f"  Dominant: {STATE_LABELS[adaptive_params.dominant_regime]}  "
          f"entropy={adaptive_params.regime_entropy:.3f}  "

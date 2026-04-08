@@ -26,6 +26,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 def get_scenario_analysis(
     tickers: list,
+    current_weights: list[float] | None = None,
     portfolio_value: float = 1_000_000,
     risk_free_rate: float = 0.07,
     confidence_level: float = 0.95,
@@ -125,7 +126,10 @@ def get_scenario_analysis(
 
         opt     = PortfolioOptimizer(mu, sigma, risk_free_rate)
         opt_res = opt.optimize_max_sharpe()
-        weights = opt_res.weights
+        if current_weights and len(current_weights) == len(valid):
+            weights = pd.Series(dict(zip(valid, current_weights)))
+        else:
+            weights = opt_res.weights
 
         result["optimal_portfolio"] = {
             "weights":         {t: round(float(w), 4) for t, w in weights.items()},
