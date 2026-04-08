@@ -1408,9 +1408,9 @@ function StressTest() {
                 <div key={k} className="signal-row">
                   <span className="signal-label mono">{k.replace(".NS", "")}</span>
                   <div className="signal-bar">
-                    <div className="signal-fill" style={{ width: `${(v * 100).toFixed(1)}%`, background: "var(--accent)" }} />
+                    <div className="signal-fill" style={{ width: `${v.toFixed(1)}%`, background: "var(--accent)" }} />
                   </div>
-                  <span className="signal-val">{(v * 100).toFixed(1)}%</span>
+                  <span className="signal-val">{v.toFixed(1)}%</span>
                 </div>
               ))}
             </div>

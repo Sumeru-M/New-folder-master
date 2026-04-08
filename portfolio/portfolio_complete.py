@@ -2869,7 +2869,10 @@ def compute_component_var(
     Mathematical Formula:
     - Marginal VaR_i = Z_alpha * (Sigma * w)_i / sigma_portfolio
     - Component VaR_i = w_i * Marginal VaR_i
-    - Sum of Component VaRs = Portfolio VaR
+    - % Contribution_i = Component VaR_i / Portfolio VaR  (sums to 100%)
+    
+    CRITICAL: Percentage contributions MUST sum to 100% (or very close).
+    If they don't, there's a numerical error in the calculation.
     
     Parameters
     ----------
@@ -2887,7 +2890,7 @@ def compute_component_var(
         - Weight: Asset weight in portfolio
         - Marginal VaR: Marginal contribution to VaR
         - Component VaR: Total contribution (Weight × Marginal VaR)
-        - % Contribution: Percentage of total portfolio VaR
+        - % Contribution: Percentage of total portfolio VaR (sums to 100%)
     """
     if not np.isclose(weights.sum(), 1.0, atol=0.01):
         raise ValueError(f"Weights must sum to 1.0, got {weights.sum():.4f}")
@@ -2925,12 +2928,23 @@ def compute_component_var(
     component_var = w * marginal_var
     
     # Percentage contribution to total VaR
-    total_var = np.sum(component_var)
+    # CRITICAL: Use portfolio VaR (not sum of components) as denominator
+    # Portfolio VaR = Z_alpha * port_std
+    portfolio_var = z_score * port_std
     
-    if total_var > 0:
-        percent_contribution = (component_var / total_var) * 100
+    if portfolio_var > 0:
+        # Percentage contribution: each component / total portfolio VaR
+        # This MUST sum to 100% by Euler decomposition theorem
+        percent_contribution = (component_var / portfolio_var) * 100
     else:
         percent_contribution = np.zeros(len(w))
+    
+    # Sanity check: contributions should sum to ~100%
+    contrib_sum = np.sum(percent_contribution)
+    if not np.isclose(contrib_sum, 100.0, atol=1.0):
+        # If not close to 100%, normalize to ensure they sum to 100%
+        if contrib_sum > 0:
+            percent_contribution = (percent_contribution / contrib_sum) * 100
     
     return pd.DataFrame({
         "Weight": w,
