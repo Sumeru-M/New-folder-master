@@ -1,129 +1,77 @@
-# ClearView Analytics (Deployable Full Stack)
+# 🛡️ ClearView Analytics: Institutional Risk & Intelligence Engine
 
-This repo now runs as a single deployable FastAPI product:
+[![Vercel Deployment](https://img.shields.io/badge/Deployment-Live-success?style=flat-square&logo=vercel)](https://clearview-analytics-prod.vercel.app)
+[![Tech Stack](https://img.shields.io/badge/Stack-FastAPI%20%7C%20Vanilla%20JS%20%7C%20Python-blue?style=flat-square)](https://fastapi.tiangolo.com/)
+[![Security](https://img.shields.io/badge/Security-ML--DSA--III%20%2F%20PQC-blueviolet?style=flat-square)](https://csrc.nist.gov/projects/post-quantum-cryptography)
 
-- Backend APIs: `/api/m3` to `/api/m7`
-- Frontend: served from `frontend/index.html` at `/`
-- Health check: `/api/health`
+**ClearView Analytics** is a high-fidelity quantitative finance platform designed for institutional-grade portfolio optimization, regime-switching intelligence, and post-quantum secure risk management.
 
-## What Was Wired
+---
 
-- Unified backend entrypoint: `src/main.py`
-- Username/password authentication:
-  - `POST /api/auth/register`
-  - `POST /api/auth/login`
-  - `GET /api/auth/config`
-  - `GET /api/auth/me`
-- Connected API routes:
-  - `POST /api/m3/optimize`
-  - `POST /api/m4/scenarios`
-  - `POST /api/m5/institutional`
-  - `POST /api/m6/simulate`
-  - `POST /api/m6/security/test`
-  - `POST /api/m7/regime`
-- Frontend default API base now uses same-origin in deployed environments.
-- Added attack-type mapping in M6 security test endpoint for frontend compatibility.
+## 🚀 Key Capabilities
 
-## Local Run
+### 📈 Quantitative Intelligence (M3–M7)
+- **Regime-Switching Engine (M7):** Advanced Hidden Markov Models (HMM) coupled with GARCH(1,1) filters to detect market shifts and modulate risk and allocation dynamically.
+- **Monte Carlo Projection (M6):** High-precision path modeling for 1Y/3Y/5Y horizons, accurately quantifying the **Probability of Loss** and downside risks.
+- **Institutional Optimizer (M5):** Robust Black-Litterman and Markowitz frontiers for sophisticated multi-asset allocation.
+- **Stress Testing (M4):** Macroeconomic scenario analysis covering inflation spikes, rate hikes, and historical crisis replays.
 
-1. Create/activate a virtual environment.
-2. Install dependencies:
+### 🛡️ Post-Quantum Immune Defense
+- **ML-DSA-III (Crystals-Dilithium):** Implementation of NIST-standard post-quantum signatures for transaction integrity.
+- **Bayesian Immune Layer:** An adaptive security pipeline that learns threat patterns using Neutral-point LLR Bayesian posteriors.
+- **Episodic Threat Memory:** Cosine-similarity memory store for tracking and neutralizing adversarial anomalies in real-time.
 
-```bash
-pip install -r requirements.txt
-```
+---
 
-3. Start server:
+## 🛠️ Tech Stack & Architecture
 
-```bash
-uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
-```
+- **Backend:** [FastAPI](https://fastapi.tiangolo.com/) (Python 3.11)
+- **Frontend:** Pure Vanilla JS & CSS for maximum performance and a premium "Glassmorphism" aesthetic.
+- **Libraries:** `NumPy`, `Pandas`, `SciPy`, `CVXPY`, `hmmlearn`, `Statsmodels`.
+- **Cloud Infrastructure:** [Vercel](https://vercel.com/) (Serverless Lambda deployment).
 
-4. Open:
+---
 
-- App: `http://localhost:8000/`
-- Health: `http://localhost:8000/api/health`
+## 💻 Local Setup
 
-## Docker Run
+1. **Clone & Explore:**
+   ```bash
+   git clone https://github.com/Sumeru-M/New-folder-master.git
+   cd New-folder-master
+   ```
 
-Build:
+2. **Environment Ready:**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-```bash
-docker build -t clearview-analytics .
-```
+3. **Ignite the Engine:**
+   ```bash
+   uvicorn src.main:app --reload
+   ```
+   Access the cockpit at `http://localhost:8000`.
 
-Run:
+---
 
-```bash
-docker run --rm -p 8000:8000 clearview-analytics
-```
+## ☁️ Cloud Deployment
 
-## Render Deployment
+The platform is fully optimized for **Vercel** via `app.py` and `vercel.json`.
 
-This repo includes:
+### Required Environment Variables:
+| Variable | Description |
+|----------|-------------|
+| `AUTH_SECRET` | Secure JWT key for the integrated identity system. |
+| `CORS_ORIGINS` | Permitted domains for cross-origin resource sharing. |
+| `MONGODB_URI` | *(Optional)* Connection string for persistent Bayesian memory storage. |
 
-- `Procfile`
-- `render.yaml`
+---
 
-You can deploy directly to Render from this repository. The app starts with:
+## 📜 Repository Structure
+- `src/`: Core FastAPI server and business logic.
+- `portfolio/`: High-performance quantitative engines (M3–M7).
+- `frontend/`: Interactive Glassmorphism UI components.
+- `docs/`: Expanded technical documentation and research notebooks.
 
-```bash
-uvicorn src.main:app --host 0.0.0.0 --port $PORT
-```
+---
 
-## Vercel Deployment (Global)
-
-This repo is Vercel-ready with a FastAPI entrypoint at `app.py`.
-
-### Option A: Deploy from GitHub (recommended)
-
-1. Push your latest code to GitHub.
-2. In Vercel: `Add New Project` -> import this repo.
-3. Framework preset: let Vercel auto-detect FastAPI/Python.
-4. Set environment variables in Project Settings -> Environment Variables:
-   - `CORS_ORIGINS=https://<your-project>.vercel.app`
-   - `AUTH_SECRET=<your-jwt-secret>`
-   - `AUTH_DB_PATH=<optional-custom-path-for-sqlite-auth-db>`
-   - `AUTH_TOKEN_TTL_SECONDS=604800` (optional)
-   - `MONGODB_URI=<your-mongodb-connection-string>` (optional but recommended for persistent Bayesian memory)
-   - `MONGODB_DB=clearview_analytics` (optional)
-   - `MONGODB_MEMORY_COLLECTION=bayesian_immune_memory` (optional)
-   - `MONGODB_EVENTS_COLLECTION=bayesian_security_events` (optional)
-5. Deploy.
-
-### Option B: Deploy from CLI
-
-```bash
-npm i -g vercel
-vercel login
-vercel
-vercel --prod
-```
-
-Then set env vars (example):
-
-```bash
-vercel env add CORS_ORIGINS production
-vercel env add MONGODB_URI production
-```
-
-### Post-deploy checks
-
-- App: `https://<your-project>.vercel.app/`
-- Health: `https://<your-project>.vercel.app/api/health`
-
-### Custom domain
-
-In Vercel Project -> `Settings -> Domains`, add your domain and follow DNS instructions.
-
-## Notes
-
-- `CORS_ORIGINS` can be set as a comma-separated env var. Default is `*`.
-- Frontend can optionally be pointed to a custom backend by setting `window.__VITE_API_BASE_URL`.
-- `DATA_CACHE_DIR` can override market-data cache path. On Vercel, `/tmp/data_cache` is used automatically.
-- Username/password auth is enabled by default.
-  - Set `AUTH_SECRET` in production.
-  - Optional: `AUTH_DB_PATH`, `AUTH_TOKEN_TTL_SECONDS`.
-- Mongo-backed Bayesian memory is optional:
-  - Set `MONGODB_URI` to enable persistent immune memory.
-  - The API stores learned Bayesian threat patterns and security events in MongoDB.
+Developed with precision for institutional risk management. **View the live demo:** [clearview-analytics-prod.vercel.app](https://clearview-analytics-prod.vercel.app)
