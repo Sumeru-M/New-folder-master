@@ -1132,41 +1132,41 @@ class ImpactAnalyzer:
         if abs(dr) < 1e-4:
             lines.append("--  Expected return: negligible change.")
         elif dr > 0:
-            lines.append(f"UP  Expected return: +{dr:.2%} p.a. (positive).")
+            lines.append(f"Increases expected return: +{dr:.2%} p.a. (positive impact).")
         else:
-            lines.append(f"DN  Expected return: {dr:.2%} p.a. (negative).")
+            lines.append(f"Decreases expected return: {dr:.2%} p.a. (negative impact).")
 
         dv = delta["volatility_change"]
         if abs(dv) < 1e-4:
             lines.append("--  Volatility: negligible change.")
         elif dv > 0:
-            lines.append(f"UP  Volatility: +{dv:.2%} p.a. -- portfolio risk increases.")
+            lines.append(f"Increases volatility: +{dv:.2%} p.a. -- portfolio risk increases.")
         else:
-            lines.append(f"DN  Volatility: {dv:.2%} p.a. -- portfolio risk decreases.")
+            lines.append(f"Decreases volatility: {dv:.2%} p.a. -- portfolio risk decreases.")
 
         ds = delta["sharpe_change"]
         if abs(ds) < 0.01:
             lines.append("--  Sharpe ratio: negligible change.")
         elif ds > 0:
-            lines.append(f"UP  Sharpe: +{ds:.2f} -- trade improves risk-adjusted returns.")
+            lines.append(f"Improved Sharpe: +{ds:.2f} -- trade improves risk-adjusted efficiency.")
         else:
-            lines.append(f"DN  Sharpe: {ds:.2f} -- trade reduces risk-adjusted efficiency.")
+            lines.append(f"Reduced Sharpe: {ds:.2f} -- trade reduces risk-adjusted efficiency.")
 
         dc = delta["cvar_change"]
         if abs(dc) < 1e-4:
             lines.append("--  Tail risk (CVaR 95%): negligible change.")
         elif dc > 0:
-            lines.append(f"UP  CVaR 95%: +{dc:.2%} daily -- expected tail loss increases.")
+            lines.append(f"Higher Tail Risk (95% CVaR): +{dc:.2%} daily -- expected worst-case loss increases.")
         else:
-            lines.append(f"DN  CVaR 95%: {dc:.2%} daily -- expected tail loss decreases.")
+            lines.append(f"Lower Tail Risk (95% CVaR): {dc:.2%} daily -- expected worst-case loss decreases.")
 
         dd = delta["diversification_change"]
         if abs(dd) < 0.01:
             lines.append("--  Diversification ratio: negligible change.")
         elif dd > 0:
-            lines.append(f"UP  Diversification ratio: +{dd:.3f} -- portfolio becomes more diversified.")
+            lines.append(f"Better Diversification: +{dd:.3f} -- portfolio becomes more spread out.")
         else:
-            lines.append(f"DN  Diversification ratio: {dd:.3f} -- concentration increases.")
+            lines.append(f"Reduced Diversification: {dd:.3f} -- portfolio concentration increases.")
 
         pos = sum(1 for k in ("expected_return_change", "sharpe_change", "diversification_change")
                   if delta[k] > 0.001)
@@ -1259,8 +1259,12 @@ def _summarise(
     p75_value      = float(np.percentile(terminal_values, 75))
     p95_value      = float(np.percentile(terminal_values, 95))
 
-    downside_prob  = float(np.mean(terminal_values < initial_value))
-    shortfall_prob = float(np.mean(terminal_values < 0.8 * initial_value))
+    # Fix: Ensure robust comparison with initial_value to detect any loss-making paths
+    downside_count = int(np.count_nonzero(terminal_values < initial_value))
+    downside_prob = float(downside_count) / n_paths
+    
+    shortfall_count = int(np.count_nonzero(terminal_values < 0.8 * initial_value))
+    shortfall_prob = float(shortfall_count) / n_paths
 
     with np.errstate(divide="ignore", invalid="ignore"):
         ratio = np.where(initial_value > 0, terminal_values / initial_value, 1.0)

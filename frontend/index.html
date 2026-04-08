@@ -1858,10 +1858,10 @@ function Trade() {
 
           {/* Portfolio impact */}
           <div className="grid-4">
-            <Metric label="Return Δ" value={fmtPct(d.portfolio_impact?.expected_return_change)} color={d.portfolio_impact?.expected_return_change >= 0 ? "green" : "red"} />
-            <Metric label="Volatility Δ" value={fmtPct(d.portfolio_impact?.volatility_change)} color={d.portfolio_impact?.volatility_change <= 0 ? "green" : "red"} />
-            <Metric label="Sharpe Δ" value={fmtMono(d.portfolio_impact?.sharpe_change)} color={d.portfolio_impact?.sharpe_change >= 0 ? "green" : "red"} />
-            <Metric label="Tail-Risk Change" value={fmtPct(d.portfolio_impact?.cvar_change)} color={d.portfolio_impact?.cvar_change >= 0 ? "green" : "red"} />
+            <Metric label="Return Δ" value={(d.portfolio_impact?.expected_return_change >= 0 ? "+" : "") + fmtPct(d.portfolio_impact?.expected_return_change)} color={d.portfolio_impact?.expected_return_change >= 0 ? "green" : "red"} />
+            <Metric label="Volatility Δ" value={(d.portfolio_impact?.volatility_change >= 0 ? "+" : "") + fmtPct(d.portfolio_impact?.volatility_change)} color={d.portfolio_impact?.volatility_change <= 0 ? "green" : "red"} />
+            <Metric label="Sharpe Δ" value={(d.portfolio_impact?.sharpe_change >= 0 ? "+" : "") + fmtMono(d.portfolio_impact?.sharpe_change)} color={d.portfolio_impact?.sharpe_change >= 0 ? "green" : "red"} />
+            <Metric label="Tail-Risk Δ" value={(d.portfolio_impact?.cvar_change >= 0 ? "+" : "") + fmtPct(d.portfolio_impact?.cvar_change)} color={d.portfolio_impact?.cvar_change <= 0 ? "green" : "red"} />
           </div>
 
           {/* Monte Carlo */}
@@ -1884,7 +1884,7 @@ function Trade() {
                     <div className="pbar-fill" style={{ width: `${((hz.virtual_value - hz.p5_value) / (hz.p95_value - hz.p5_value + 0.01)) * 100}%`, background: "var(--accent)" }} />
                   </div>
                   <p style={{ fontSize: 11, color: "var(--text3)", marginTop: 4 }}>P5–P95: {fmtINR(hz.p5_value)} — {fmtINR(hz.p95_value)}</p>
-                  <p style={{ fontSize: 11, color: "var(--text3)" }}>Probability of loss: {fmtPct(hz.prob_loss)}</p>
+                  <p style={{ fontSize: 11, color: "var(--text3)" }}>Prob. of Loss (Virtual): <strong style={{ color: "var(--text)" }}>{fmtPct(hz.virtual?.prob_loss || 0)}</strong></p>
                 </div>
               ))}
             </div>
@@ -1991,6 +1991,27 @@ function Trade() {
                     <Metric label="Patterns Learned" value={d.security_summary.threat_patterns_learned} />
                   </div>
                 )}
+                <div className="card" style={{ marginTop: 20, background: "var(--bg3)" }}>
+                  <h4 style={{ marginBottom: 10 }}>Glossary of Trade & Security Terms</h4>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px 20px", fontSize: 13 }}>
+                    <div>
+                      <strong style={{ color: "var(--accent)" }}>Sharpe Ratio:</strong>
+                      <p style={{ color: "var(--text3)", marginTop: 4 }}>Measures risk-adjusted return. A positive Delta means the trade makes your portfolio more efficient.</p>
+                    </div>
+                    <div>
+                      <strong style={{ color: "var(--accent)" }}>Tail-Risk (95% CVaR):</strong>
+                      <p style={{ color: "var(--text3)", marginTop: 4 }}>The expected loss in the worst 5% of trading days. Lower is safer.</p>
+                    </div>
+                    <div>
+                      <strong style={{ color: "var(--accent)" }}>ML-DSA-III:</strong>
+                      <p style={{ color: "var(--text3)", marginTop: 4 }}>A Post-Quantum digital signature algorithm. It ensures the trade record cannot be faked even by future quantum machines.</p>
+                    </div>
+                    <div>
+                      <strong style={{ color: "var(--accent)" }}>Bayesian Layer:</strong>
+                      <p style={{ color: "var(--text3)", marginTop: 4 }}>An AI security filter that uses "prior knowledge" of past attacks to catch new, suspicious patterns.</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </div>
