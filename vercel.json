@@ -2,9 +2,6 @@
   "buildCommand": "pip install -r requirements.txt",
   "outputDirectory": ".",
   "framework": "python",
-  "python": {
-    "version": "3.11"
-  },
   "functions": {
     "app.py": {
       "runtime": "python3.11",
