@@ -1,4 +1,4 @@
-# 🛡️ ClearView Analytics: Institutional Risk & Intelligence Engine
+# ClearView Analytics: Institutional Risk & Intelligence Engine
 
 [![Vercel Deployment](https://img.shields.io/badge/Deployment-Live-success?style=flat-square&logo=vercel)](https://clearview-analytics-prod.vercel.app)
 [![Tech Stack](https://img.shields.io/badge/Stack-FastAPI%20%7C%20Vanilla%20JS%20%7C%20Python-blue?style=flat-square)](https://fastapi.tiangolo.com/)
@@ -8,22 +8,22 @@
 
 ---
 
-## 🚀 Key Capabilities
+## Key Capabilities
 
-### 📈 Quantitative Intelligence (M3–M7)
+### Quantitative Intelligence (M3–M7)
 - **Regime-Switching Engine (M7):** Advanced Hidden Markov Models (HMM) coupled with GARCH(1,1) filters to detect market shifts and modulate risk and allocation dynamically.
 - **Monte Carlo Projection (M6):** High-precision path modeling for 1Y/3Y/5Y horizons, accurately quantifying the **Probability of Loss** and downside risks.
 - **Institutional Optimizer (M5):** Robust Black-Litterman and Markowitz frontiers for sophisticated multi-asset allocation.
 - **Stress Testing (M4):** Macroeconomic scenario analysis covering inflation spikes, rate hikes, and historical crisis replays.
 
-### 🛡️ Post-Quantum Immune Defense
+### Post-Quantum Immune Defense
 - **ML-DSA-III (Crystals-Dilithium):** Implementation of NIST-standard post-quantum signatures for transaction integrity.
 - **Bayesian Immune Layer:** An adaptive security pipeline that learns threat patterns using Neutral-point LLR Bayesian posteriors.
 - **Episodic Threat Memory:** Cosine-similarity memory store for tracking and neutralizing adversarial anomalies in real-time.
 
 ---
 
-## 🛠️ Tech Stack & Architecture
+## Tech Stack & Architecture
 
 - **Backend:** [FastAPI](https://fastapi.tiangolo.com/) (Python 3.11)
 - **Frontend:** Pure Vanilla JS & CSS for maximum performance and a premium "Glassmorphism" aesthetic.
@@ -32,7 +32,7 @@
 
 ---
 
-## 💻 Local Setup
+## Local Setup
 
 1. **Clone & Explore:**
    ```bash
@@ -53,7 +53,7 @@
 
 ---
 
-## ☁️ Cloud Deployment
+## Cloud Deployment
 
 The platform is fully optimized for **Vercel** via `app.py` and `vercel.json`.
 
@@ -66,7 +66,7 @@ The platform is fully optimized for **Vercel** via `app.py` and `vercel.json`.
 
 ---
 
-## 📜 Repository Structure
+## Repository Structure
 - `src/`: Core FastAPI server and business logic.
 - `portfolio/`: High-performance quantitative engines (M3–M7).
 - `frontend/`: Interactive Glassmorphism UI components.
